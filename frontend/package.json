@@ -1,0 +1,46 @@
+{
+  "name": "3d_bin",
+  "author": "Aleksey Polyakov<superpolikow@gmail.com>",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@material-ui/core": "^4.11.3",
+    "@material-ui/icons": "^4.11.2",
+    "@react-three/drei": "^3.5.1",
+    "@wailsapp/runtime": "^1.0.10",
+    "core-js": "^3.6.4",
+    "fontsource-roboto": "^4.0.0",
+    "plotly.js": "^1.58.4",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-modal": "3.11.2",
+    "react-plotly.js": "^2.5.1",
+    "react-three-fiber": "^5.3.18",
+    "react-three-gui": "^0.4.2",
+    "stats.js": "^0.17.0",
+    "three": "^0.125.2",
+    "wails-react-scripts": "3.0.1-2",
+    "zustand": "^3.3.3"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

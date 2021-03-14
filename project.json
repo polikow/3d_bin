@@ -1,0 +1,25 @@
+{
+ "name": "3d_bin",
+ "description": "3D bin packing problem solver",
+ "author": {
+  "name": "Aleksey Polyakov",
+  "email": "superpolikow@gmail.com"
+ },
+ "version": "0.1.0",
+ "binaryname": "3d_bin",
+ "frontend": {
+  "dir": "frontend",
+  "install": "npm install",
+  "build": "npm run build",
+  "bridge": "src",
+  "serve": "npm run start"
+ },
+ "tags": "",
+ "WailsVersion": "",
+ "CrossCompile": false,
+ "Platform": "",
+ "Architecture": "",
+ "LdFlags": "",
+ "GoPath": "",
+ "UseFirebug": false
+}

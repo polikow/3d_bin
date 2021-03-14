@@ -1,0 +1,203 @@
+import React, {useState} from "react";
+import {useStore} from "../store";
+import {
+  Menu,
+  MenuItem,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+  TextField
+} from "@material-ui/core";
+import Floater from "./ui/Floater";
+import SimplePaper from "./ui/SimplePaper";
+import MenuTitle from "./ui/MenuTitle";
+import {changeStateArray} from "../utils";
+import ButtonAccept from "./ui/ButtonAccept";
+import ButtonAdd from "./ui/ButtonAdd";
+import ButtonCreate from "./ui/ButtonCreate";
+
+
+const rowsPerPage = 10
+
+
+export default ({open, onClose}) => {
+  const [blocks, setBlocks] = useStore(s => [s.blocks, s.setBlocks])
+
+  const onRemoveHandler = (index) => {
+    setBlocks(
+      blocks.filter((_, i) => index !== i)
+    )
+  }
+
+  const [indexChanging, setIndexChanging] = useState(null)
+  const onChangeHandler = (index) => {
+    setIndexChanging(index)
+  }
+
+  const onApplyChange = (index, w, h, l) => {
+    setIndexChanging(null)
+    setBlocks(
+      blocks.map((block, i) => index === i
+        ? [parseInt(w), parseInt(h), parseInt(l)]
+        : block
+      )
+    )
+  }
+
+  const onAddNewBlock = () => setBlocks([...blocks, [1, 1, 1]])
+
+  const [page, setPage] = useState(0)
+  const handleChangePage = (event, newPage) => setPage(newPage)
+
+  return (
+    <Floater open={open} onClose={onClose}>
+      <SimplePaper classes={["blocks-table-paper"]}>
+        <MenuTitle title="Размеры грузов"/>
+        <TableContainer>
+          <Table stickyHeader className="blocks-table">
+            <TableHead>
+              <TableRow>
+                <TableCell>№</TableCell>
+                <TableCell>Ширина</TableCell>
+                <TableCell>Высота</TableCell>
+                <TableCell>Длина</TableCell>
+                <TableCell> </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {
+                blocks
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((size, i) => {
+                    const index = i + page * rowsPerPage
+                    if (indexChanging === null) {
+                      return <Row key={index}
+                                  index={index} size={size}
+                                  onChange={onChangeHandler}
+                                  onRemove={onRemoveHandler}/>
+                    } else {
+                      if (index === indexChanging) {
+                        return <ChangeableRow key={index}
+                                              index={index} size={size}
+                                              onChange={onApplyChange}/>
+                      } else {
+                        return <Row key={index}
+                                    index={index} size={size}
+                                    onChange={onChangeHandler}
+                                    onRemove={onRemoveHandler}
+                                    showChange={false}/>
+                      }
+                    }
+                  })
+              }
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <TablePagination
+          component="div"
+          rowsPerPageOptions={[rowsPerPage]}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          count={blocks.length}
+          onChangePage={handleChangePage}
+        />
+        <ButtonAdd title="Добавить новый груз" onClick={onAddNewBlock}/>
+
+      </SimplePaper>
+    </Floater>
+  )
+}
+
+function ChangeMenu({index, onChange, onRemove}) {
+  const [anchorEl, setAnchorEl] = useState(null)
+  const openMenu = (event) => {
+    setAnchorEl(event.currentTarget)
+  }
+  const onCloseClick = () => {
+    setAnchorEl(null)
+  }
+
+  const onChangeClick = () => {
+    setAnchorEl(null)
+    onChange(index)
+  }
+
+  const onRemoveClick = () => {
+    setAnchorEl(null)
+    onRemove(index)
+  }
+
+  return <>
+    <ButtonCreate onClick={openMenu}/>
+    <Menu keepMounted
+          anchorEl={anchorEl}
+          open={anchorEl !== null}
+          onClose={onCloseClick}
+    >
+      <MenuItem onClick={onChangeClick}>Изменить</MenuItem>
+      <MenuItem onClick={onRemoveClick}>Удалить</MenuItem>
+    </Menu>
+  </>
+}
+
+function Row({index, size, onChange, onRemove, showChange = true}) {
+  return (
+    <TableRow key={index}>
+      <TableCell align="center">{index + 1}</TableCell>
+      <TableCell align="center">{size[0]}</TableCell>
+      <TableCell align="center">{size[1]}</TableCell>
+      <TableCell align="center">{size[2]}</TableCell>
+      <TableCell>
+        {showChange && (
+          <ChangeMenu
+            index={index}
+            onChange={onChange}
+            onRemove={onRemove}
+          />
+        )}
+      </TableCell>
+    </TableRow>
+  )
+}
+
+function ChangeableRow({index, size: initialSize, onChange}) {
+
+  const [size, setSize] = useState(initialSize)
+  const onSizeChange = (dimension) => (event) => {
+    const value = event.target.value < 1
+      ? 1
+      : event.target.value
+
+    const [newSize, changed] = changeStateArray(size)(dimension)(value)
+    if (changed) {
+      setSize(newSize)
+    }
+  }
+
+  const handleAccept = () => onChange(index, size[0], size[1], size[2])
+
+  return (
+    <TableRow key={index}>
+      <TableCell align="center">{index + 1}</TableCell>
+      <TableCell align="center">
+        <TextField type="number" className={"blocks-table-changeable-cell"}
+                   value={size[0]} onChange={onSizeChange(0)}/>
+      </TableCell>
+      <TableCell align="center">
+        <TextField type="number" className={"blocks-table-changeable-cell"}
+                   value={size[1]} onChange={onSizeChange(1)}/>
+      </TableCell>
+      <TableCell align="center">
+        <TextField type="number" className={"blocks-table-changeable-cell"}
+                   value={size[2]} onChange={onSizeChange(2)}/>
+      </TableCell>
+      <TableCell>
+        <ButtonAccept onClick={handleAccept}/>
+      </TableCell>
+    </TableRow>
+  )
+}
