@@ -16,7 +16,7 @@ func runWailsWithBindings(bindings ...interface{}) {
 
 	config := wails.AppConfig{
 		Width:  1200,
-		Height: 800,
+		Height: 950,
 		Title:  "3d_bin by Aleksey Polyakov",
 		JS:     js,
 		CSS:    css,

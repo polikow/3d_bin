@@ -34,6 +34,7 @@ export default ({open, onClose}) => {
   }
 
   const [indexChanging, setIndexChanging] = useState(null)
+  const isChanging = indexChanging !== null
   const onChangeHandler = (index) => {
     setIndexChanging(index)
   }
@@ -105,7 +106,7 @@ export default ({open, onClose}) => {
           count={blocks.length}
           onChangePage={handleChangePage}
         />
-        <ButtonAdd title="Добавить новый груз" onClick={onAddNewBlock}/>
+        <ButtonAdd disabled={isChanging} title="Добавить новый груз" onClick={onAddNewBlock}/>
 
       </SimplePaper>
     </Floater>
@@ -184,15 +185,15 @@ function ChangeableRow({index, size: initialSize, onChange}) {
     <TableRow key={index}>
       <TableCell align="center">{index + 1}</TableCell>
       <TableCell align="center">
-        <TextField type="number" className={"blocks-table-changeable-cell"}
+        <TextField type="number" className="blocks-table-changeable-cell"
                    value={size[0]} onChange={onSizeChange(0)}/>
       </TableCell>
       <TableCell align="center">
-        <TextField type="number" className={"blocks-table-changeable-cell"}
+        <TextField type="number" className="blocks-table-changeable-cell"
                    value={size[1]} onChange={onSizeChange(1)}/>
       </TableCell>
       <TableCell align="center">
-        <TextField type="number" className={"blocks-table-changeable-cell"}
+        <TextField type="number" className="blocks-table-changeable-cell"
                    value={size[2]} onChange={onSizeChange(2)}/>
       </TableCell>
       <TableCell>

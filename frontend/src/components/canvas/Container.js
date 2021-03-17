@@ -1,4 +1,4 @@
-import React, {useMemo} from "react";
+import React, {useEffect, useMemo} from "react";
 import * as THREE from "three";
 import Block from "./Block";
 import Label from "./Label";
@@ -9,24 +9,28 @@ import {useStore} from "../../store";
 const s = -0.1
 
 export default () => {
-  const {w, h, l} = useStore(s=>s.container)
+  const {w, h, l} = useStore(s => s.container)
+  const grid = useStore(s => s.grid)
 
   return (
     <>
       <Block onlyEdges color="black"
              p1={{x: 0, y: 0, z: 0}} p2={{x: w, y: h, z: l}}/>
       <Labels w={w} h={h} l={l}/>
-      <XYZGrids w={w} h={h} l={l}/>
+      {grid && <XYZGrids w={w} h={h} l={l}/>}
       <XYZLabels/>
     </>
   );
 }
 
 function Labels({w, h, l}) {
-  return <> <Label text={0} position={[s, 0, s]}/>
-    {arrayN(w).map(i => <Label key={i} text={i} position={[i, 0, s]}/>)}
-    {arrayN(h).map(i => <Label key={i} text={i} position={[s, i, s]}/>)}
-    {arrayN(l).map(i => <Label key={i} text={i} position={[s, 0, i]}/>)}
+  useEffect(() => console.log("labels"))
+  const labelScale = useStore(s=> s.labelScale)
+
+  return <> <Label text={0} position={[s, 0, s]} scale={labelScale}/>
+    {arrayN(w).map(i => <Label key={i} text={i} position={[i, 0, s]}  scale={labelScale}/>)}
+    {arrayN(h).map(i => <Label key={i} text={i} position={[s, i, s]}  scale={labelScale}/>)}
+    {arrayN(l).map(i => <Label key={i} text={i} position={[s, 0, i]}  scale={labelScale}/>)}
   </>
 }
 

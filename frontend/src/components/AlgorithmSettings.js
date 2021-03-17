@@ -19,7 +19,7 @@ export default React.memo(({algorithm, onChange}) => {
     }
   }
 
-  const [gaSettings, setGASettings] = useState({n: 2})
+  const [gaSettings, setGASettings] = useState()
   const changeGASettings = (option) => (event) => {
     const value = typeof event.target.value === "string"
       ? parseInt(event.target.value)

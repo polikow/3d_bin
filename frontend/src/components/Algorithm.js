@@ -96,9 +96,9 @@ function ResultPaper() {
 }
 
 export function solutionToString(solution) {
-  let s = `[(${solution[0].index}, ${solution[0].rotation})`
+  let s = `[(${solution[0].index + 1}, ${solution[0].rotation})`
   for (let i = 1; i < solution.length; i++) {
-    s += `,(${solution[i].index},${solution[i].rotation})`
+    s += `,(${solution[i].index + 1},${solution[i].rotation})`
   }
   s += "]"
   return s

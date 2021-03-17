@@ -1,7 +1,7 @@
 import React, {useEffect} from "react";
 import {useStore} from "../../store";
 import Block from "./Block";
-import {objCenter, objPositionForCargo} from "../../utils";
+import Label from "./Label";
 
 const colors =
   ["violet", "indigo", "blue", "green", "yellow", "orange", "red"].reverse()
@@ -10,31 +10,32 @@ const blocksPerRow = 5
 const gap = 2
 
 export default function () {
-  useEffect(() => console.log("cargo render"))
+  useEffect(() => console.log("cargo ui render"))
 
   const [blocks, opacity, isColorful, onlyEdges,
-    hasGaps, updateCargoSceneCamera] = useStore(
+    hasGaps, centerCameraAroundCargo] = useStore(
     s => [s.blocks, s.opacity, s.isColorful, s.onlyEdges,
-      s.hasGaps, s.updateCargoSceneCamera])
+      s.hasGaps, s.centerCameraAroundCargo])
 
   const space = spaceForOneBlock(blocks)
   const cargo = findBlocksPositions(blocks, space)
   const bound = boundingRect(blocks, space)
 
   useEffect(() => {
-      const position = objPositionForCargo(bound)
-      const target = objCenter(bound);
-      updateCargoSceneCamera(position, target)
+      centerCameraAroundCargo(bound)
     }, [bound[0], bound[1], bound[2]]
   ) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     cargo.map(({p1, p2}, i) => (
+      <>
+        <Label text={i + 1} position={[p2.x - (p2.x - p1.x) / 2, 0, p1.z - gap / 2]} scale={30}/>
         <Block key={i} p1={p1} p2={p2}
                gap={hasGaps}
                color={isColorful ? colors[i % colors.length] : "grey"}
                opacity={1 - opacity}
                onlyEdges={onlyEdges}/>
+      </>
       )
     )
   )
@@ -69,7 +70,6 @@ function findBlocksPositions(blocks) {
     const col = i % blocksPerRow
     const xShift = col * (xSpace + gap)
     const zShift = row * (zSpace + gap)
-    // console.log(`${i} block: row = ${row}, col = ${col}`)
     return blockPosition(block, xSpace, zSpace, xShift, zShift)
   })
 }

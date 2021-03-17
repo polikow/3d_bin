@@ -11,12 +11,18 @@ import {changeStateObj} from "../utils";
 export default ({open, onClose}) => {
 
   const [camera, setCamera] = useStore(s => [s.camera, s.setCamera])
+  const [targetContainer, setTargetContainer] = useStore(s => [s.targetContainer, s.setTargetContainer])
+
   const [opacity, setOpacity] = useStore(s => [s.opacity, s.setOpacity])
   const [isColorful, setIsColorful] = useStore(s => [s.isColorful, s.setIsColorful])
-  const [isDebugMode, setIsDebugMode] = useStore(s => [s.isDebugMode, s.setIsDebugMode])
   const [onlyEdges, setOnlyEdges] = useStore(s => [s.onlyEdges, s.setOnlyEdges])
   const [hasGaps, setHasGaps] = useStore(s => [s.hasGaps, s.setHasGaps])
-  const [targetContainer, setTargetContainer] = useStore(s => [s.targetContainer, s.setTargetContainer])
+
+  const [grid, setGrid] = useStore(s => [s.grid, s.setGrid])
+  const [labelScale, setLabelScale] = useStore(s => [s.labelScale, s.setLabelScale])
+
+  const [isDebugMode, setIsDebugMode] = useStore(s => [s.isDebugMode, s.setIsDebugMode])
+
 
   const onCameraChange = (property) => (value) => {
     const [newCamera, changed] = changeStateObj(camera)(property)(value)
@@ -46,8 +52,12 @@ export default ({open, onClose}) => {
   const toggleOnlyEdges = (event) => setOnlyEdges(event.target.checked)
   const toggleGaps = (event) => setHasGaps(event.target.checked)
 
+  const toggleGrid = (event) => setGrid(event.target.checked)
+  const handleLabelScale = (event, newValue) => setLabelScale(newValue)
+
   return (
     <Floater open={open} onClose={onClose}>
+
       <MenuPaper title="Камера">
         <ButtonGroup label="Угол обзора" onClick={handlePOVChange}>
           <Button color={povButtonColor(60)} value={60}>60</Button>
@@ -70,10 +80,18 @@ export default ({open, onClose}) => {
                 checked={hasGaps} onChange={toggleGaps}/>
       </MenuPaper>
 
+      <MenuPaper title="Вид контейнера">
+        <Switch label="Сетка"
+              checked={grid} onChange={toggleGrid}/>
+        <Slider label="Размер меток" min={1} max={20} step={1}
+                value={labelScale} onChange={handleLabelScale}/>
+      </MenuPaper>
+
       <MenuPaper>
         <Switch label="Режим отладки" color="secondary"
                 checked={isDebugMode} onChange={toggleDebugMode}/>
       </MenuPaper>
+
     </Floater>
   )
 }

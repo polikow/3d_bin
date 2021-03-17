@@ -1,7 +1,13 @@
 import create from "zustand"
-import {objCenter, objPosition} from "./utils";
+import {objCenter, objPosition, objPositionForCargo} from "./utils";
 
 const defaultContainer = {w: 2, h: 2, l: 2}
+const emptyResultObj =  {
+  iteration: null,
+  value: null,
+  solution: null,
+  packed: [],
+}
 
 export const [useStore] = create(set => ({
 
@@ -12,42 +18,34 @@ export const [useStore] = create(set => ({
   },
   setCamera: (camera) => set(() => ({camera})),
 
-  container: {w: 2, h: 2, l: 2},
-  setContainer: (container) => set(state => {
-    if (state.targetContainer) {
-      const camera = {
-        fov: state.camera.fov,
-        position: objPosition(container),
-        target: objCenter(container)
-      }
-      return {camera, container}
-    } else {
-      return {container}
-    }
-  }),
-
   isCargoScene: false,
-  updateCargoSceneCamera: (position, target) => set(state => {
-    const camera = {
-      fov: state.camera.fov,
-      position: position,
-      target: target,
-    }
-    return {camera}
-  }),
+  centerCameraAroundCargo: (cargo) => set(state => (
+    {camera: centeredCameraCargo(cargo, state.camera.fov)})),
 
+
+  container: defaultContainer,
+  setContainer: (container) => set(state => state.targetContainer
+    ? {
+      container,
+      camera: centeredCamera(container, state.camera.fov),
+      ...emptyResultObj,
+    }
+    : {
+      container,
+      ...emptyResultObj,
+    }
+  ),
 
   blocks: [
     [1, 1, 1],
     [1, 1, 1],
     [1, 1, 1],
     [1, 1, 1],
-    [1, 1, 1],
-    [1, 1, 1],
-    [1, 1, 1],
-    [1, 1, 1],
   ],
-  setBlocks: (blocks) => set(() => ({blocks})),
+  setBlocks: (blocks) => set(() => ({
+    blocks,
+    ...emptyResultObj,
+  })),
 
 
   isSearching: false,
@@ -60,7 +58,7 @@ export const [useStore] = create(set => ({
     set(() => ({iteration, value, solution, packed})),
 
 
-  opacity: 0.5,
+  opacity: 0.3,
   setOpacity: (opacity) => set(() => ({opacity})),
   isColorful: true,
   setIsColorful: (isColorful) => set(() => ({isColorful})),
@@ -71,19 +69,17 @@ export const [useStore] = create(set => ({
   hasGaps: false,
   setHasGaps: (hasGaps) => set(() => ({hasGaps})),
   targetContainer: true,
-  setTargetContainer: (targetContainer) => set(state => {
-    if (targetContainer) {
-      console.log("focus on container")
-      const camera = {
-        fov: state.camera.fov,
-        position: objPosition(state.container),
-        target: objCenter(state.container)
-      }
-      return {targetContainer, camera}
-    } else {
-      return {targetContainer}
+  setTargetContainer: (targetContainer) => set(state => targetContainer
+    ? {
+      targetContainer,
+      camera: centeredCamera(state.container, state.camera.fov)
     }
-  }),
+    : {targetContainer}),
+  grid: true,
+  setGrid: (grid) => set(() => ({grid})),
+  labelScale: 8,
+  setLabelScale: (labelScale) => set(() => ({labelScale})),
+
 
   menu: {
     settings: false,
@@ -109,19 +105,35 @@ export const [useStore] = create(set => ({
     set(state => {
       menu[option] = !state.menu[option]
       if (option === "blocks") {
-        return {menu, isCargoScene: true}
-
-      } else if (state.isCargoScene) {
-        const camera = {
-          fov: state.camera.fov,
-          position: objPosition(state.container),
-          target: objCenter(state.container)
+        return {
+          menu,
+          isCargoScene: true
         }
-        return {menu, isCargoScene: false, camera}
-
+      } else if (state.isCargoScene) {
+        return {
+          menu,
+          isCargoScene: false,
+          camera: centeredCamera(state.container, state.camera.fov)
+        }
       } else {
         return {menu}
       }
     })
   }
 }))
+
+function centeredCamera(obj, prevFOV) {
+  return {
+    fov: prevFOV,
+    position: objPosition(obj),
+    target: objCenter(obj)
+  }
+}
+
+function centeredCameraCargo(cargo, prevFOV) {
+  return {
+    fov: prevFOV,
+    position: objPositionForCargo(cargo),
+    target: objCenter(cargo)
+  }
+}

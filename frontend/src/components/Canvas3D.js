@@ -1,8 +1,8 @@
 import React, {useEffect} from "react";
 import {Canvas} from "react-three-fiber";
-import {OrbitControls, PerspectiveCamera} from "@react-three/drei";
 import DebugTools from "./canvas/Debug";
 import Light from "./canvas/Light";
+import Camera from "./canvas/Camera";
 import Container from "./canvas/Container";
 import Blocks from "./canvas/Blocks";
 import {useStore} from "../store";
@@ -40,18 +40,4 @@ function CargoScene() {
   return isCargoScene
     ? <Cargo/>
     : <></>
-}
-
-function Camera() {
-  const camera = useStore(s => s.camera)
-
-  return (
-    <>
-      <PerspectiveCamera makeDefault
-                         fov={camera.fov}
-                         position={camera.position}/>
-      <OrbitControls target={camera.target}/>
-    </>
-
-  )
 }
