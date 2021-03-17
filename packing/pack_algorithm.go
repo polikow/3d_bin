@@ -1,10 +1,8 @@
 package packing
 
-import "fmt"
-
 //Solution - порядок выполнения упаковки.
 //  index    - индекс размещаемого блока
-//  rotation - вариант поворота блока
+//  rotation - вариант поворота бл,ока
 type Solution []IndexRotation
 
 //  index    - индекс размещаемого блока
@@ -90,14 +88,11 @@ func (a *PackAlgorithm) reset(solution Solution) {
 //checkSolution проверяет решение.
 func (a PackAlgorithm) checkSolution(solution Solution) {
 	if len(solution) != len(a.blocks) {
-		panic(fmt.Sprintf(
-			"Wrong packed specified: len(packed) = %v, len(blocks) = %v",
-			len(solution), len(a.blocks)))
+		panic("Wrong packed specified")
 	}
 	for _, indexRotation := range solution {
 		if indexRotation.Rotation < XYZ || indexRotation.Rotation > YXZ {
-			panic(fmt.Sprintf(
-				"Wrong rotation specified: %v", indexRotation.Rotation))
+			panic("Wrong rotation specified: " + string(indexRotation.Rotation))
 		}
 	}
 	uniqueValues := make(map[int]bool, len(solution))
@@ -187,7 +182,7 @@ func (a *PackAlgorithm) findEmptyAreasOnAxis(axis Axis, position *BlockPosition)
 				newHigher = packed.P2.Z
 			}
 		default:
-			panic(fmt.Sprintf("wrong axis specified %v", axis))
+			panic("wrong axis specified " + string(axis))
 		}
 
 		if newLower == newHigher {
@@ -413,3 +408,26 @@ func (a *PackAlgorithm) selectFirstFittingArea(size uint) (uint, bool) {
 	return 0, false //не нашлось подходящего места
 }
 
+//insertUINT выполняет вставку элемента на место index.
+//Все элементы, начиная с index до последнего смещаются вправо.
+func insertUINT(s *[]uint, index int, value uint) {
+	if len(*s) == cap(*s) {
+		panic("not enough capacity")
+	}
+
+	*s = append(*s, 0)
+	copy((*s)[index+1:], (*s)[index:])
+	(*s)[index] = value
+}
+
+//insertBOOL выполняет вставку элемента на место index.
+//Все элементы, начиная с index до последнего смещаются вправо.
+func insertBOOL(s *[]bool, index int, value bool) {
+	if len(*s) == cap(*s) {
+		panic("not enough capacity")
+	}
+
+	*s = append(*s, false)
+	copy((*s)[index+1:], (*s)[index:])
+	(*s)[index] = value
+}
