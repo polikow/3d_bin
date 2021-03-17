@@ -66,32 +66,32 @@ func (a *App) RunAlgorithm(data map[string]interface{}) bool {
 	}
 
 	if ok {
-		a.runAndSendResults(algorithm)
+		result := packing.Evaluate(algorithm)
+		a.runtime.Events.Emit("result", result)
 	}
 
 	return ok
 }
 
-// runAndSendResults отсылает результаты (через события) по мере их получения:
+//// runAndSendResults отсылает результаты (через события) по мере их получения:
+////
+////  result - улучшенный результат,
+////  done   - конец работы алгоритма.
+//func (a *App) runAndSendResults(algorithm packing.SearchAlgorithm) {
+//	var (
+//		run = packing.StepByStepBetter(algorithm)
 //
-//  resultBetter - улучшенный результат,
-//  done         - конец работы алгоритма.
-func (a *App) runAndSendResults(algorithm packing.SearchAlgorithm) {
-	var (
-		run = packing.StepByStepBetter(algorithm)
-
-		result       packing.SearchResult
-		stillRunning bool
-	)
-	for {
-		result, stillRunning = run()
-		a.runtime.Events.Emit("result", result)
-		if !stillRunning {
-			break
-		}
-	}
-	a.runtime.Events.Emit("done", result.Iteration)
-}
+//		result       packing.SearchResult
+//		stillRunning bool
+//	)
+//	for {
+//		result, stillRunning = run()
+//		a.runtime.Events.Emit("result", result)
+//		if !stillRunning {
+//			break
+//		}
+//	}
+//	a.runtime.Events.Emit("done", result.Iteration)
 
 //Save отображает диалоговое окно, в котором пользователь выбирает файл,
 //в который необходимо сохранить некоторые данные.

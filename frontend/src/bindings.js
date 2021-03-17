@@ -22,11 +22,11 @@ export async function AppLoad(title: string, filter: string): Promise<any> {
   return JSON.parse(data)
 }
 
-export function AppRunAlgorithm(algorithm, settings, container, blocks) {
-  window.backend.App.RunAlgorithm({
+export function AppRunAlgorithm(algorithm, settings, container, blocks): Promise<any> {
+  return window.backend.App.RunAlgorithm({
     algorithm,
     settings,
     container,
     blocks
-  }).then(console.log)
+  })
 }

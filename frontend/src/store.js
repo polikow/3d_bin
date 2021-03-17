@@ -27,7 +27,7 @@ export const [useStore] = create(set => ({
   }),
 
   isCargoScene: false,
-  updateCargoSceneCamera: (position, target) => set(state=> {
+  updateCargoSceneCamera: (position, target) => set(state => {
     const camera = {
       fov: state.camera.fov,
       position: position,
@@ -50,16 +50,14 @@ export const [useStore] = create(set => ({
   setBlocks: (blocks) => set(() => ({blocks})),
 
 
+  isSearching: false,
+  setSearching: (isSearching) => set(() => ({isSearching})),
   iteration: null,
   value: null,
   solution: null,
   packed: [],
   setResult: ({iteration, value, solution, packed}) =>
-    set(()=> {
-      console.log("packed: ", packed)
-      return ({iteration, value, solution, packed});
-    }),
-  doneEvaluating: (iteration) => set(()=>({iteration})),
+    set(() => ({iteration, value, solution, packed})),
 
 
   opacity: 0.5,
@@ -73,7 +71,7 @@ export const [useStore] = create(set => ({
   hasGaps: false,
   setHasGaps: (hasGaps) => set(() => ({hasGaps})),
   targetContainer: true,
-  setTargetContainer: (targetContainer) => set(state=> {
+  setTargetContainer: (targetContainer) => set(state => {
     if (targetContainer) {
       console.log("focus on container")
       const camera = {

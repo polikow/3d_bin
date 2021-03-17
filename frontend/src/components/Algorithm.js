@@ -12,12 +12,14 @@ const algorithms = ["ais", "ga"]
 export default ({open, onClose}) => {
 
   const [blocks, container] = useStore(s => [s.blocks, s.container])
+  const [isSearching, setSearching] = useStore(s => [s.isSearching, s.setSearching])
   const setResult = useStore(s => s.setResult)
-  const doneEvaluating = useStore(s => s.doneEvaluating)
 
   useEffect(() => {
-    AppEvent("result", (result) => setResult(result))
-    AppEvent("done", (lastIteration) => doneEvaluating(lastIteration))
+    AppEvent("result", (result) => {
+      setResult(result)
+      setSearching(false)
+    })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const [algorithm, setAlgorithm] = useState("ais")
@@ -30,12 +32,18 @@ export default ({open, onClose}) => {
   }
 
   const [settings, setSettings] = useState(null)
-  const handleSettingsChange = (newSettings) => {
-    setSettings(newSettings)
-  }
+  const handleSettingsChange = (newSettings) => setSettings(newSettings)
+
 
   const startAlgorithm = (algorithm, settings) => () => {
+    setSearching(true)
     AppRunAlgorithm(algorithm, settings, container, blocks)
+      .then(() => console.log("started"))
+      .catch(err => {
+        console.log(`failed to start ${algorithm} with the settings:`, settings)
+        console.log(`error: ${err}`)
+        setSearching(false)
+      })
   }
 
   return (
@@ -50,6 +58,7 @@ export default ({open, onClose}) => {
                            onChange={handleSettingsChange}/>
 
         <Button variant="contained" color="primary" id="start-button"
+                disabled={isSearching}
                 onClick={startAlgorithm(algorithm, settings)}>
           Запустить
         </Button>

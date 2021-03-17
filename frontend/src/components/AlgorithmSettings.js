@@ -6,8 +6,8 @@ export default React.memo(({algorithm, onChange}) => {
 
   const [aisSettings, setAISSettings] = useState({
     np: 5,
-    ni: 250,
     ci: 1,
+    ni: 250,
   })
   const changeAISSettings = (option) => (event) => {
     const value = typeof event.target.value === "string"

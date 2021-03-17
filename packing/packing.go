@@ -29,6 +29,10 @@ type SearchResult struct {
 	Packed    []BlockPosition `json:"packed"`
 }
 
+func (s SearchResult) betterThan(another SearchResult) bool {
+	return s.Value >= another.Value
+}
+
 // Evaluate выполняет алгоритм до тех пор, пока это возможно.
 // Возвращает результат последней итерации алгоритма.
 func Evaluate(algorithm SearchAlgorithm) SearchResult {
@@ -57,7 +61,7 @@ func StepByStepBetter(algorithm SearchAlgorithm) func() (SearchResult, bool) {
 				return bestResult, false
 			} else {
 				newResult = algorithm.Run()
-				if newResult.Value > bestResult.Value {
+				if newResult.betterThan(bestResult) {
 					bestResult = newResult
 					return bestResult, true
 				} else {
@@ -68,7 +72,7 @@ func StepByStepBetter(algorithm SearchAlgorithm) func() (SearchResult, bool) {
 	}
 }
 
-func EvaluatePrint(algorithm SearchAlgorithm) SearchResult {
+func EvaluatePrintAll(algorithm SearchAlgorithm) SearchResult {
 	var result SearchResult
 	for {
 		if algorithm.Done() {
