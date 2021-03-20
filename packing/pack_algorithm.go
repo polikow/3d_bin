@@ -1,36 +1,22 @@
 package packing
 
-//Solution - порядок выполнения упаковки.
-//  index    - индекс размещаемого блока
-//  rotation - вариант поворота бл,ока
-type Solution []IndexRotation
-
-//  index    - индекс размещаемого блока
-//  rotation - вариант поворота блока
-type IndexRotation struct {
-	Index    int      `json:"index"`
-	Rotation Rotation `json:"rotation"`
-}
-
-//PackAlgorithm - алгоритм упаковки.
+// PackAlgorithm - алгоритм упаковки.
 type PackAlgorithm struct {
-	container Container //контейнер, в который упаковываются блоки
-	blocks    []Block   //блоки, которые необходимо упаковать
-	solution  Solution  //порядок упаковки
 
-	step   int             //текущий шаг алгоритма
-	packed []BlockPosition //положения уже упакованных блоков
+	container Container // контейнер, в который упаковываются блоки
+	blocks    []Block   // блоки, которые необходимо упаковать
+	solution  Solution  // порядок упаковки
 
-	//используется при поиске свободных мест для каждой оси
-	borders []uint //границы мест
-	isFree  []bool //флаг свободности для каждого места
+	step   int             // текущий шаг алгоритма
+	packed []BlockPosition // положения уже упакованных блоков
 
-	//смещение начальной точки по осям
-	shiftZ, shiftY, shiftX uint
-	//текущий слой заполнения (нижняя граница) (по Y)
-	layer uint
-	//индекс первого упакованного на этом уровне груза
-	layerFirstIndex int
+	// используется при поиске свободных мест для каждой оси
+	borders []uint // границы мест
+	isFree  []bool // флаг свободности для каждого места
+
+	shiftZ, shiftY, shiftX uint // смещение начальной точки по осям
+	layer                  uint // текущий слой заполнения(нижняя граница по Y)
+	layerFirstIndex        int  // индекс первого упакованного на этом уровне
 }
 
 func NewPackAlgorithm(container Container, blocks []Block) *PackAlgorithm {
@@ -55,9 +41,9 @@ func NewPackAlgorithm(container Container, blocks []Block) *PackAlgorithm {
 	}
 }
 
-//Run полностью выполняет упаковку до тех пор, пока это возможно.
-//Возвращает массив упакованных блоков.
-//(нужно скопировать результат, если он используется далее)
+// Run полностью выполняет упаковку до тех пор, пока это возможно.
+// Возвращает массив упакованных блоков.
+// (нужно скопировать результат, если он используется далее)
 func (a *PackAlgorithm) Run(solution Solution) []BlockPosition {
 	a.reset(solution)
 
@@ -85,7 +71,7 @@ func (a *PackAlgorithm) reset(solution Solution) {
 	a.layerFirstIndex = 0
 }
 
-//checkSolution проверяет решение.
+// checkSolution проверяет решение.
 func (a PackAlgorithm) checkSolution(solution Solution) {
 	if len(solution) != len(a.blocks) {
 		panic("Wrong packed specified")
@@ -104,8 +90,8 @@ func (a PackAlgorithm) checkSolution(solution Solution) {
 	}
 }
 
-//packNextBlock выполняет упаковку следующего блока. Если его упаковать нельзя,
-//то функция возвращает false, иначе true.
+// packNextBlock выполняет упаковку следующего блока. Если его упаковать нельзя,
+// то функция возвращает false, иначе true.
 func (a *PackAlgorithm) packNextBlock() (isPackable bool) {
 	if a.step >= len(a.blocks) {
 		return false
@@ -139,13 +125,13 @@ func (a *PackAlgorithm) packNextBlock() (isPackable bool) {
 	return true
 }
 
-//addToPacked - сохранение блока как успешно упакованного.
+// addToPacked - сохранение блока как успешно упакованного.
 func (a *PackAlgorithm) addToPacked(position BlockPosition) {
 	a.packed = append(a.packed, position)
 	a.step++
 }
 
-//moveDownOnAxis выполняет спуск вдоль заданной оси.
+// moveDownOnAxis выполняет спуск вдоль заданной оси.
 func (a *PackAlgorithm) moveDownOnAxis(axis Axis, position *BlockPosition) bool {
 	a.findEmptyAreasOnAxis(axis, position)
 	size := position.axisSize(axis)
@@ -156,12 +142,12 @@ func (a *PackAlgorithm) moveDownOnAxis(axis Axis, position *BlockPosition) bool 
 	return isPackable
 }
 
-//findEmptyAreasOnAxis находит свободные по оси axis места для блока.
+// findEmptyAreasOnAxis находит свободные по оси axis места для блока.
 func (a *PackAlgorithm) findEmptyAreasOnAxis(axis Axis, position *BlockPosition) {
 	a.prepareBordersAndAreas(axis)
 
-	//Поиск пересекающихся в плоскости блоков.
-	//Построение списка доступных мест по заданной оси.
+	// Поиск пересекающихся в плоскости блоков.
+	// Построение списка доступных мест по заданной оси.
 	for _, packed := range a.packed {
 		var newLower uint
 		var newHigher uint
@@ -192,13 +178,13 @@ func (a *PackAlgorithm) findEmptyAreasOnAxis(axis Axis, position *BlockPosition)
 	}
 }
 
-//prepareBordersAndAreas очищает от результатов предыдущего поиска.
+// prepareBordersAndAreas очищает от результатов предыдущего поиска.
 func (a *PackAlgorithm) prepareBordersAndAreas(searchAxis Axis) {
 	a.borders = a.borders[:0]
 	a.isFree = a.isFree[:0]
 
-	//изначально всего есть 1 свободная область, которая ограничена
-	//2 точками - начало и конец контейнера
+	// изначально всего есть 1 свободная область, которая ограничена
+	// 2 точками - начало и конец контейнера
 	a.borders = append(a.borders, 0)
 	switch searchAxis {
 	case X:
@@ -214,14 +200,14 @@ func (a *PackAlgorithm) prepareBordersAndAreas(searchAxis Axis) {
 	a.isFree = append(a.isFree, true)
 }
 
-//addOverlappingArea добавляет место в массив использованных мест.
+// addOverlappingArea добавляет место в массив использованных мест.
 //  newLower  - нижняя граница нового места,
 //  newHigher - верхняя граница нового места.
 func (a *PackAlgorithm) addOverlappingArea(newLower uint, newHigher uint) {
 	var (
 		i      = 0
-		lower  uint //нижняя граница места
-		higher uint //верхняя граница
+		lower  uint // нижняя граница места
+		higher uint // верхняя граница
 	)
 ApplyOverlappingArea:
 	for {
@@ -288,8 +274,8 @@ ApplyOverlappingArea:
 	}
 }
 
-//findStartingPoint находит точку, с которой начинается упаковка груза.
-//В этой точке невозможно пересечение с уже размещенными блоками.
+// findStartingPoint находит точку, с которой начинается упаковка груза.
+// В этой точке невозможно пересечение с уже размещенными блоками.
 func (a *PackAlgorithm) findStartingPoint(block Block) Point {
 	if len(a.packed) == 0 {
 		return Point{
@@ -299,9 +285,9 @@ func (a *PackAlgorithm) findStartingPoint(block Block) Point {
 		}
 	}
 
-	position := a.packed[len(a.packed)-1] //последний упакованный блок
+	position := a.packed[len(a.packed)-1] // последний упакованный блок
 
-	//изменение смещения начальной точки для этого блока
+	// изменение смещения начальной точки для этого блока
 	if a.shiftX < position.P2.X {
 		a.shiftX = position.P2.X
 	}
@@ -388,8 +374,8 @@ func (a *PackAlgorithm) findStartingPoint(block Block) Point {
 	}
 }
 
-//selectFirstFittingArea среди найденных мест находит точку в которой возможно
-//разместить блок.
+// selectFirstFittingArea среди найденных мест находит точку в которой возможно
+// разместить блок.
 func (a *PackAlgorithm) selectFirstFittingArea(size uint) (uint, bool) {
 	for i := 0; i < len(a.borders)-1; i++ {
 		if !a.isFree[i] {
@@ -408,8 +394,8 @@ func (a *PackAlgorithm) selectFirstFittingArea(size uint) (uint, bool) {
 	return 0, false //не нашлось подходящего места
 }
 
-//insertUINT выполняет вставку элемента на место index.
-//Все элементы, начиная с index до последнего смещаются вправо.
+// insertUINT выполняет вставку элемента на место index.
+// Все элементы, начиная с index до последнего смещаются вправо.
 func insertUINT(s *[]uint, index int, value uint) {
 	if len(*s) == cap(*s) {
 		panic("not enough capacity")
@@ -420,8 +406,8 @@ func insertUINT(s *[]uint, index int, value uint) {
 	(*s)[index] = value
 }
 
-//insertBOOL выполняет вставку элемента на место index.
-//Все элементы, начиная с index до последнего смещаются вправо.
+// insertBOOL выполняет вставку элемента на место index.
+// Все элементы, начиная с index до последнего смещаются вправо.
 func insertBOOL(s *[]bool, index int, value bool) {
 	if len(*s) == cap(*s) {
 		panic("not enough capacity")

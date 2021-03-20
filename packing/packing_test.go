@@ -57,6 +57,27 @@ func TestOverlapping(t *testing.T) {
 	}
 }
 
+func TestRandomSolution(t *testing.T) {
+	size := 10
+
+	for i := 0; i < 100; i++ {
+		solution := randomSolution(size)
+		for _, value := range solution {
+			rotation := value.Rotation
+			if rotation > YXZ || rotation < XYZ {
+				assert.Fail(t, "the rotation is wrong: ", rotation)
+			}
+			index := value.Index
+			if index >= size || index < 0 {
+				assert.Failf(
+					t, "", "the index (%v) is wrong: (must be between in [0, %v))",
+					index, size,
+				)
+			}
+		}
+	}
+}
+
 //todo test
 //func TestFindPosition(t *testing.T) {
 //	suite := []struct {

@@ -1,6 +1,7 @@
 package packing
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 	"time"
@@ -17,27 +18,17 @@ const clonalgIntensityCoefficient = 3
 // Интенсивность мутации зависит от числа итераций без улучшений.
 // Чем больше итераций было выполнено без улучшений - тем больше интенсивность.
 type BCA struct {
+	searchState
 
 	//параметры алгоритма
-	container Container
-	blocks    []Block
-	np        int     // количество антител в популяции
-	ni        int     // максимальное число итераций без улучшений
-	ci        float64 // коэффициент интенсивности мутации
+	np int     // количество антител в популяции
+	ni int     // максимальное число итераций без улучшений
+	ci float64 // коэффициент интенсивности мутации
 
-	n                  int // размер задачи
-	containerVolume    float64
-	packAlgorithm      *PackAlgorithm
 	population         []Antibody
 	populationAffinity []float64
 	clones             []Antibody
 	clonesAffinity     []float64
-
-	bestValueFound              float64
-	bestSolutionFound           Solution
-	bestPackedFound             []BlockPosition
-	iterationsPassed            int
-	iterationsWithNoImprovement int
 }
 
 func NewBCA(container Container, blocks []Block, np int, ni int, ci float64) *BCA {
@@ -48,45 +39,30 @@ func NewBCA(container Container, blocks []Block, np int, ni int, ci float64) *BC
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	return &BCA{
-		container: container,
-		blocks:    blocks,
-		np:        np,
-		ni:        ni,
-		ci:        ci,
+		searchState: newSearchState(container, blocks),
 
-		n:                  n,
-		containerVolume:    float64(container.Volume()),
-		packAlgorithm:      NewPackAlgorithm(container, blocks),
+		np: np,
+		ni: ni,
+		ci: ci,
+
 		population:         make([]Antibody, np),
 		populationAffinity: make([]float64, np),
 		clones:             make([]Antibody, np),
 		clonesAffinity:     make([]float64, np),
-
-		bestValueFound:              0,
-		bestSolutionFound:           make(Solution, n),
-		bestPackedFound:             make([]BlockPosition, n),
-		iterationsPassed:            0,
-		iterationsWithNoImprovement: 0,
 	}
 }
 
 func (b *BCA) Run() SearchResult {
 	if b.Done() {
 		panic("error")
-	}
-
-	b.runIteration()
-
-	return SearchResult{
-		Iteration: b.iterationsPassed,
-		Value:     b.bestValueFound,
-		Solution:  b.bestSolutionFound,
-		Packed:    b.bestPackedFound,
+	} else {
+		b.runIteration()
+		return b.bestResult()
 	}
 }
 
 func (b *BCA) Done() bool {
-	return b.iterationsWithNoImprovement >= b.ni || b.bestValueFound == 1
+	return b.iterationsNoImprovement >= b.ni || b.bestValueFound == 1
 }
 
 func (b *BCA) runIteration() {
@@ -95,7 +71,7 @@ func (b *BCA) runIteration() {
 		b.findPopulationAffinity() // (2)
 	}
 	b.cloneAndReplace() // (3)
-	b.updateSearchState()
+	b.searchState.update(b.currentBest())
 }
 
 func (b *BCA) cloneAndReplace() {
@@ -106,12 +82,12 @@ func (b *BCA) cloneAndReplace() {
 		b.createNpClones(antibody)
 
 		// (4) мутирования случайного по схеме clonalg
-		randomClone := b.selectRandomClone()
-		clonalgIntensity := math.Exp(-clonalgIntensityCoefficient * affinity)
-		randomClone.mutate(clonalgIntensity)
+		clone := b.selectRandomClone()
+		intensity := math.Exp(-clonalgIntensityCoefficient * affinity)
+		clone.mutate(intensity)
 
 		// (5)
-		intensity := (float64(b.iterationsWithNoImprovement)/float64(b.ni) + 0.01) * b.ci
+		intensity = (float64(b.iterationsNoImprovement)/float64(b.ni) + 0.01) * b.ci
 		b.mutateClones(intensity)
 
 		// (6)
@@ -202,7 +178,8 @@ func (b BCA) selectRandomClone() Antibody {
 	return b.clones[rand.Intn(b.np)]
 }
 
-func (b *BCA) updateSearchState() {
+// currentBest - лучшее решение и цф на данной итерации.
+func (b BCA) currentBest() (Solution, float64) {
 	var (
 		bestAntibody = b.population[0]
 		bestAffinity = b.populationAffinity[0]
@@ -215,19 +192,88 @@ func (b *BCA) updateSearchState() {
 			bestAntibody = antibody
 		}
 	}
+	return Solution(bestAntibody), bestAffinity
+}
 
-	if b.bestValueFound < bestAffinity {
-		b.bestValueFound = bestAffinity
+// Antibody - антитело (решение задачи), в котором каждый ген состоит из:
+//  index    - индекс размещаемого блока
+//  rotation - вариант поворота блока
+type Antibody Solution
 
-		copy(b.bestSolutionFound, bestAntibody)
+// newAntibody создает новое случайное антитело.
+// Для создания случайных перестановок используется алгоритм Фишера-Йетса.
+func newAntibody(size int) Antibody {
+	return Antibody(randomSolution(size))
+}
 
-		packed := b.packAlgorithm.Run(b.bestSolutionFound)
-		b.bestPackedFound = append(b.bestPackedFound[:0], packed...)
+// makeClone создает клон текущего антитела.
+func (a Antibody) makeClone() Antibody {
+	clone := make([]IndexRotation, len(a))
+	copy(clone, a)
+	return clone
+}
 
-		b.iterationsWithNoImprovement = 0
-	} else {
-		b.iterationsWithNoImprovement++
+// makeClone создает клон текущего антитела в заданном участке памяти.
+// (память должна быть выделена)
+func (a Antibody) makeCloneInDestination(dst Antibody) Antibody {
+	copied := copy(dst, a)
+	if copied != len(a) {
+		panic(fmt.Sprintf(
+			"couldn't clone into dst. copied %v values instead of %v",
+			copied, len(a)))
+	}
+	return dst
+}
+
+// mutate мутирует антитело.
+func (a *Antibody) mutate(intensity float64) {
+	var (
+		antibody = *a
+		n        = len(antibody)
+
+		m = int(math.Ceil(float64(n) * intensity)) // всего мутаций
+		p = rand.Intn(m + 1)                       // перестановок
+		c = m - p                                  // изменений поворота
+	)
+
+	// выполнение попарных перестановок
+	for i := 0; i < p; i++ {
+		x, y := twoRandomInBounds(0, n-1)
+		antibody[x], antibody[y] = antibody[y], antibody[x]
 	}
 
-	b.iterationsPassed++
+	// изменение поворотов
+	for i := 0; i < c; i++ {
+		x := rand.Intn(n)
+		antibody[x].Rotation = antibody[x].Rotation.newRandom()
+	}
+}
+
+// hypermutation - оператор гипермутации.
+// (мутация конкретной области гипермутации)
+func (a *Antibody) hypermutation(intensity float64) {
+	var (
+		antibody = *a
+		n        = len(antibody)
+
+		lower    = rand.Intn(n - 1)                 // нижняя граница области
+		higher   = rand.Intn(n-lower-1) + lower + 1 // верхняя граница
+		areaSize = higher - lower                   // размер выбранной области
+
+		m = int(math.Ceil(float64(areaSize) * intensity)) // всего мутаций
+		p = rand.Intn(m + 1)                              // перестановок
+		c = m - p                                         // изменений поворота
+	)
+
+	// выполнение попарных перестановок
+	for i := 0; i < p; i++ {
+		x, y := twoRandomInBounds(lower, higher)
+		antibody[x], antibody[y] = antibody[y], antibody[x]
+	}
+
+	// изменение поворотов
+	for i := 0; i < c; i++ {
+		x := randomInBounds(lower, higher)
+		antibody[x].Rotation = antibody[x].Rotation.newRandom()
+	}
 }

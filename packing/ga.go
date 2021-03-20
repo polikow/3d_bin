@@ -6,6 +6,81 @@ import (
 	"sort"
 )
 
+type GA struct {
+	searchState
+
+	// входные параметры
+	np    int       // размер популяции
+	mp    float64   // вероятность мутации
+	ni    int       // количество итераций без улучшений
+	model Evolution // модель эволюции
+
+	population        []Chromosome // популяция хромосом
+	populationFitness []float64    // приспособленность популяции
+}
+
+func (g *GA) Run() SearchResult {
+	panic("implement me")
+}
+
+func (g *GA) Done() bool {
+	panic("implement me")
+}
+
+func (g *GA) runIteration() {
+	if g.iterationsPassed == 0 {
+		g.initializePopulation()
+		g.findPopulationFitness()
+	}
+	g.model.runSelection(g)
+	g.mutatePopulation()
+	g.searchState.update(g.currentBest())
+}
+
+func (g *GA) initializePopulation() {
+	for i := range g.population {
+		g.population[i] = newChromosome(g.n)
+	}
+}
+
+func (g GA) findPopulationFitness() {
+	g.populationFitness = g.populationFitness[0:]
+	for _, chromosome := range g.population {
+		fitness := g.findFitness(chromosome)
+		g.populationFitness = append(g.populationFitness, fitness)
+	}
+}
+
+func (g GA) findFitness(chromosome Chromosome) float64 {
+	packed := g.packAlgorithm.Run(Solution(chromosome))
+
+	packedVolume := blockPositionsVolume(packed)
+
+	return float64(packedVolume) / g.containerVolume
+}
+
+func (g *GA) mutatePopulation() {
+	for _, chromosome := range g.population {
+		chromosome.mutate()
+	}
+}
+
+func (g GA) currentBest() (Solution, float64) {
+	var (
+		bestChromosome = g.population[0]
+		bestFitness    = g.populationFitness[0]
+	)
+	for i := 0; i < g.np; i++ {
+		fitness := g.populationFitness[i]
+		chromosome := g.population[i]
+		if fitness > bestFitness {
+			bestFitness = fitness
+			bestChromosome = chromosome
+		}
+	}
+	return Solution(bestChromosome), bestFitness
+}
+
 type Evolution interface {
 	runSelection(g *GA)
 }
@@ -72,7 +147,8 @@ func (DarwinEvolution) runSelection(g *GA) {
 		i := len(newPopulation)
 		parent1 := parents[i]
 		parent2 := parents[i+1]
-		child1, child2 := Chromosome.crossover(parent1, parent2)
+		_, _ = Chromosome.crossover(parent1, parent2)
+		panic("not implemented")
 	}
 
 	// мутация новой популяции
@@ -101,101 +177,38 @@ func (p pairs) sort() {
 	sort.Sort(sort.Reverse(p))
 }
 
-type GA struct {
+type Chromosome Solution
 
-	// входные параметры
-	container Container
-	blocks    []Block
-	np        int       // размер популяции
-	mp        float64   // вероятность мутации
-	ni        int       // количество итераций без улучшений
-	model     Evolution // модель эволюции
-
-	n                 int           // размер задачи
-	containerVolume   float64       // объем контейнера
-	packAlgorithm     PackAlgorithm // алгоритм упаковки
-	population        []Chromosome  // популяция хромосом
-	populationFitness []float64     // приспособленность популяции
-
-	bestValueFound              float64
-	bestSolutionFound           Solution
-	bestPackedFound             []BlockPosition
-	iterationsPassed            int
-	iterationsWithNoImprovement int
+// newChromosome создает новую случайную хромосому.
+// Для создания случайных перестановок используется алгоритм Фишера-Йетса.
+func newChromosome(size int) Chromosome {
+	return Chromosome(randomSolution(size))
 }
 
-func (g *GA) Run() SearchResult {
-	panic("implement me")
-}
-
-func (g *GA) Done() bool {
-	panic("implement me")
-}
-
-func (g *GA) runIteration() {
-	if g.iterationsPassed == 0 {
-		g.initializePopulation()
-		g.findPopulationFitness()
-	}
-	g.model.runSelection(g)
-	g.mutatePopulation()
-	g.updateSearchState()
-}
-
-func (g *GA) initializePopulation() {
-	for i := range g.population {
-		g.population[i] = newChromosome(g.n)
-	}
-}
-
-func (g GA) findPopulationFitness() {
-	g.populationFitness = g.populationFitness[0:]
-	for _, chromosome := range g.population {
-		fitness := g.findFitness(chromosome)
-		g.populationFitness = append(g.populationFitness, fitness)
-	}
-}
-
-func (g GA) findFitness(chromosome Chromosome) float64 {
-	packed := g.packAlgorithm.Run(Solution(chromosome))
-
-	packedVolume := blockPositionsVolume(packed)
-
-	return float64(packedVolume) / g.containerVolume
-}
-
-func (g *GA) mutatePopulation() {
-	for _, chromosome := range g.population {
-		chromosome.mutate()
-	}
-}
-
-func (g *GA) updateSearchState() {
+// mutate мутирует хромосому.
+func (c *Chromosome) mutate() {
 	var (
-		bestAntibody = g.population[0]
-		bestAffinity = g.populationFitness[0]
+		chromosome = *c
+		n          = len(chromosome)
+
+		m  = n / 4            // всего мутаций
+		p  = rand.Intn(m + 1) // перестановок
+		ch = m - p            // изменений поворота
 	)
-	for i := 0; i < g.np; i++ {
-		affinity := g.populationFitness[i]
-		antibody := g.population[i]
-		if affinity > bestAffinity {
-			bestAffinity = affinity
-			bestAntibody = antibody
-		}
+
+	// выполнение попарных перестановок
+	for i := 0; i < p; i++ {
+		x, y := twoRandomInBounds(0, n-1)
+		chromosome[x], chromosome[y] = chromosome[y], chromosome[x]
 	}
 
-	if g.bestValueFound < bestAffinity {
-		g.bestValueFound = bestAffinity
-
-		copy(g.bestSolutionFound, bestAntibody)
-
-		packed := g.packAlgorithm.Run(g.bestSolutionFound)
-		g.bestPackedFound = append(g.bestPackedFound[:0], packed...)
-
-		g.iterationsWithNoImprovement = 0
-	} else {
-		g.iterationsWithNoImprovement++
+	// изменение поворотов
+	for i := 0; i < ch; i++ {
+		x := rand.Intn(n)
+		chromosome[x].Rotation = chromosome[x].Rotation.newRandom()
 	}
+}
 
-	g.iterationsPassed++
+func (c Chromosome) crossover(parent2 Chromosome) (Chromosome, Chromosome) {
+	panic("not implemented")
 }

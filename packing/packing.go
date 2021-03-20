@@ -1,108 +1,38 @@
 package packing
 
-import (
-	"fmt"
-	"math/rand"
-)
+import "math/rand"
 
-// SearchAlgorithm - базовый интерфейс для всех алгоритмов поиска.
-//
-// Run выполняет одну итерацию алгоритма. Результатом этого метода является
-// значение типа SearchResult.
-//
-// Done Возвращает значение false или true, в зависимости от того,
-// работает ли еще алгоритм или нет.
-type SearchAlgorithm interface {
-	Run() SearchResult
-	Done() bool
+//Solution - порядок выполнения упаковки.
+//  index    - индекс размещаемого блока
+//  rotation - вариант поворота бл,ока
+type Solution []IndexRotation
+
+//  index    - индекс размещаемого блока
+//  rotation - вариант поворота блока
+type IndexRotation struct {
+	Index    int      `json:"index"`
+	Rotation Rotation `json:"rotation"`
 }
 
-// SearchResult - результат работы одной итерации алгоритма, где:
-//  Iteration - итерация, на которой был найден,
-//  Value     - значение целевой функции,
-//  Solution  - найденное решение (порядок упаковки),
-//  Packed    - позиции упакованных грузов.
-type SearchResult struct {
-	Iteration int             `json:"iteration"`
-	Value     float64         `json:"value"`
-	Solution  Solution        `json:"solution"`
-	Packed    []BlockPosition `json:"packed"`
-}
+// randomSolution - создание случайного решения.
+// Для создания случайных перестановок используется алгоритм Фишера-Йетса.
+func randomSolution(size int) Solution {
+	s := make(Solution, size)
+	for i := range s {
+		s[i].Index = i
+	}
 
-func (s SearchResult) betterThan(another SearchResult) bool {
-	return s.Value >= another.Value
-}
-
-// Evaluate выполняет алгоритм до тех пор, пока это возможно.
-// Возвращает результат последней итерации алгоритма.
-func Evaluate(algorithm SearchAlgorithm) SearchResult {
-	var result SearchResult
-	for {
-		if algorithm.Done() {
-			break
-		} else {
-			result = algorithm.Run()
+	for i := len(s) - 1; i >= 0; i-- {
+		j := rand.Intn(i + 1)
+		if i != j {
+			s[j].Index, s[i].Index = s[i].Index, s[j].Index
 		}
 	}
-	return result
-}
-
-// StepByStepBetter возвращает функцию с состоянием, которая возвращает только
-// улучшенный результат работы алгоритма и значение false или true,
-// в зависимости от того, возможен ли дальнейший поиск решений.
-func StepByStepBetter(algorithm SearchAlgorithm) func() (SearchResult, bool) {
-	var bestResult SearchResult
-
-	return func() (SearchResult, bool) {
-		var newResult SearchResult
-
-		for {
-			if algorithm.Done() {
-				return bestResult, false
-			} else {
-				newResult = algorithm.Run()
-				if newResult.betterThan(bestResult) {
-					bestResult = newResult
-					return bestResult, true
-				} else {
-					continue
-				}
-			}
-		}
+	for i := range s {
+		s[i].Rotation = randomRotation()
 	}
-}
 
-func EvaluatePrintAll(algorithm SearchAlgorithm) SearchResult {
-	var result SearchResult
-	for {
-		if algorithm.Done() {
-			break
-		} else {
-			result = algorithm.Run()
-			fmt.Printf("%4d) %.5g\n", result.Iteration, result.Value)
-		}
-	}
-	return result
-}
-
-func EvaluatePrintBetter(algorithm SearchAlgorithm) SearchResult {
-	var (
-		bestResult SearchResult
-		result     SearchResult
-	)
-	for {
-		if algorithm.Done() {
-			break
-		} else {
-			result = algorithm.Run()
-
-			if bestResult.Value < result.Value {
-				bestResult = result
-				fmt.Printf("%4d) %.5g\n", result.Iteration, result.Value)
-			}
-		}
-	}
-	return bestResult
+	return s
 }
 
 // Груз является прямоугольным параллелепипедом, поэтому
