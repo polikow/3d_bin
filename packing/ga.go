@@ -10,10 +10,10 @@ type GA struct {
 	searchState
 
 	// входные параметры
-	np    int       // размер популяции
-	mp    float64   // вероятность мутации
-	ni    int       // количество итераций без улучшений
-	model Evolution // модель эволюции
+	np        int       // размер популяции
+	mp        float64   // вероятность мутации
+	ni        int       // количество итераций без улучшений
+	evolution Evolution // модель эволюции
 
 	population        []Chromosome // популяция хромосом
 	populationFitness []float64    // приспособленность популяции
@@ -32,7 +32,7 @@ func (g *GA) runIteration() {
 		g.initializePopulation()
 		g.findPopulationFitness()
 	}
-	g.model.runSelection(g)
+	g.evolution.runSelection(g)
 	g.mutatePopulation()
 	g.searchState.update(g.currentBest())
 }
@@ -185,6 +185,16 @@ func newChromosome(size int) Chromosome {
 	return Chromosome(randomSolution(size))
 }
 
+var emptyIndexRotation = IndexRotation{-1, 0}
+
+func emptyChromosome(size int) Chromosome {
+	chromosome := make(Chromosome, size)
+	for i := range chromosome {
+		chromosome[i] = emptyIndexRotation
+	}
+	return chromosome
+}
+
 // mutate мутирует хромосому.
 func (c *Chromosome) mutate() {
 	var (
@@ -209,6 +219,88 @@ func (c *Chromosome) mutate() {
 	}
 }
 
-func (c Chromosome) crossover(parent2 Chromosome) (Chromosome, Chromosome) {
-	panic("not implemented")
+// crossover - операция кроссинговера хромосом.(двойной кроссинговер)(PMX)
+func (c Chromosome) crossover(other Chromosome) (Chromosome, Chromosome) {
+	var (
+		parent1 = c
+		parent2 = other
+		n       = len(parent1)
+
+		child1 = emptyChromosome(n)
+		child2 = emptyChromosome(n)
+	)
+
+	// (1)
+	start, end := twoRandomInBounds(0, n)
+	if start > end {
+		start, end = end, start
+	}
+
+	// (2)
+	copy(child1[start:end], parent2[start:end])
+	copy(child2[start:end], parent1[start:end])
+
+	// (3) заполнение тех, которых нет в [start, end]
+	fillWithNoConflict(child1, parent1, start, end, n)
+	fillWithNoConflict(child2, parent2, start, end, n)
+
+	// (4) заполнение оставшихся
+	fillConflicted(child1, parent1, parent2, start, end)
+	fillConflicted(child2, parent2, parent1, start, end)
+
+	return child1, child2
+}
+
+func fillWithNoConflict(child, parent Chromosome, start, end, n int) {
+	for i := 0; i < start; i++ {
+		value := parent[i]
+		if contains(child[start:end], value) {
+			continue
+		} else {
+			child[i] = value
+		}
+	}
+	for i := end; i < n; i++ {
+		value := parent[i]
+		if contains(child[start:end], value) {
+			continue
+		} else {
+			child[i] = value
+		}
+	}
+}
+
+func contains(s []IndexRotation, value IndexRotation) bool {
+	for _, v := range s {
+		if v.Index == value.Index {
+			return true
+		}
+	}
+	return false
+}
+
+func fillConflicted(child, originalP, otherP Chromosome, start, end int) {
+	for i, indexRotation := range child {
+		if indexRotation == emptyIndexRotation {
+			o := originalP[i].Index // исходное значение на этой позиции
+			child[i] = mapped(originalP[start:end], otherP[start:end], o)
+		}
+	}
+}
+
+// mapped - подходящее значение для конфликтной позиции.
+//  originalP - 1й родитель для этой хромосомы,
+//  otherP    - 2й родитель.
+func mapped(originalP, otherP Chromosome, oIndex int) IndexRotation {
+	for i, v := range otherP {
+		if v.Index == oIndex {
+			mappedValue := originalP[i]
+			if contains(otherP, mappedValue) {
+				return mapped(originalP, otherP, mappedValue.Index)
+			} else {
+				return mappedValue
+			}
+		}
+	}
+	panic("can't find mapped element")
 }
