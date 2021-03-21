@@ -19,12 +19,33 @@ type GA struct {
 	populationFitness []float64    // приспособленность популяции
 }
 
+func NewGA(container Container, blocks []Block, np int, mp float64, ni int, evolution Evolution) *GA {
+	if np <= 0 || mp <= 0 || mp > 1 || ni <= 0 {
+		panic("wrong input values")
+	}
+
+	return &GA{
+		searchState:       newSearchState(container, blocks),
+		np:                np,
+		mp:                mp,
+		ni:                ni,
+		evolution:         evolution,
+		population:        make([]Chromosome, np),
+		populationFitness: make([]float64, 0, np),
+	}
+}
+
 func (g *GA) Run() SearchResult {
-	panic("implement me")
+	if g.Done() {
+		panic("error")
+	} else {
+		g.runIteration()
+		return g.bestResult()
+	}
 }
 
 func (g *GA) Done() bool {
-	panic("implement me")
+	return g.iterationsNoImprovement >= g.ni || g.bestValueFound == 1
 }
 
 func (g *GA) runIteration() {
@@ -34,6 +55,7 @@ func (g *GA) runIteration() {
 	}
 	g.evolution.runSelection(g)
 	g.mutatePopulation()
+	g.findPopulationFitness()
 	g.searchState.update(g.currentBest())
 }
 
@@ -43,9 +65,9 @@ func (g *GA) initializePopulation() {
 	}
 }
 
-func (g GA) findPopulationFitness() {
-	g.populationFitness = g.populationFitness[0:]
-	for _, chromosome := range g.population {
+func (g *GA) findPopulationFitness() {
+	for i := len(g.populationFitness); i < cap(g.populationFitness); i++ {
+		chromosome := g.population[i]
 		fitness := g.findFitness(chromosome)
 		g.populationFitness = append(g.populationFitness, fitness)
 	}
@@ -61,7 +83,9 @@ func (g GA) findFitness(chromosome Chromosome) float64 {
 
 func (g *GA) mutatePopulation() {
 	for _, chromosome := range g.population {
-		chromosome.mutate()
+		if rand.Float64() <= g.mp {
+			chromosome.mutate()
+		}
 	}
 }
 
@@ -100,9 +124,9 @@ func (DarwinEvolution) runSelection(g *GA) {
 		n  = g.np                               // хромосом в популяции
 		ne = int(math.Ceil(elite * float64(n))) // количество элитных хромосом
 		nn = n - ne                             // количество дочерних
-		np = nn + (nn % 2)                      // количество родительских
+		np = nn + (nn%2)*2                      // количество родителей
 
-		newPopulation = make([]Chromosome, 0, n)
+		newPopulation = make([]Chromosome, 0, n) // новая популяция
 		newFitness    = make([]float64, 0, n)
 
 		parents = make([]Chromosome, 0, np)
@@ -143,20 +167,21 @@ func (DarwinEvolution) runSelection(g *GA) {
 	}
 
 	// скрещивание
+	i := 0
 	for len(newPopulation) != cap(newPopulation) {
-		i := len(newPopulation)
 		parent1 := parents[i]
 		parent2 := parents[i+1]
-		_, _ = Chromosome.crossover(parent1, parent2)
-		panic("not implemented")
+		child1, child2 := Chromosome.crossover(parent1, parent2)
+
+		newPopulation = append(newPopulation, child1)
+		if len(newPopulation) != cap(newPopulation) {
+			newPopulation = append(newPopulation, child2)
+		}
+		i++
 	}
 
-	// мутация новой популяции
-	for _, chromosome := range newPopulation {
-		chromosome.mutate()
-	}
-
-	panic("implement me")
+	g.population = newPopulation
+	g.populationFitness = newFitness
 }
 
 type pairs struct {
@@ -182,12 +207,12 @@ type Chromosome Solution
 // newChromosome создает новую случайную хромосому.
 // Для создания случайных перестановок используется алгоритм Фишера-Йетса.
 func newChromosome(size int) Chromosome {
-	return Chromosome(randomSolution(size))
+	return Chromosome(newRandomSolution(size))
 }
 
 var emptyIndexRotation = IndexRotation{-1, 0}
 
-func emptyChromosome(size int) Chromosome {
+func newEmptyChromosome(size int) Chromosome {
 	chromosome := make(Chromosome, size)
 	for i := range chromosome {
 		chromosome[i] = emptyIndexRotation
@@ -201,9 +226,9 @@ func (c *Chromosome) mutate() {
 		chromosome = *c
 		n          = len(chromosome)
 
-		m  = n / 4            // всего мутаций
-		p  = rand.Intn(m + 1) // перестановок
-		ch = m - p            // изменений поворота
+		m  = int(math.Ceil(float64(n) / 4)) // всего мутаций
+		p  = rand.Intn(m + 1)               // перестановок
+		ch = m - p                          // изменений поворота
 	)
 
 	// выполнение попарных перестановок
@@ -226,8 +251,8 @@ func (c Chromosome) crossover(other Chromosome) (Chromosome, Chromosome) {
 		parent2 = other
 		n       = len(parent1)
 
-		child1 = emptyChromosome(n)
-		child2 = emptyChromosome(n)
+		child1 = newEmptyChromosome(n)
+		child2 = newEmptyChromosome(n)
 	)
 
 	// (1)
@@ -291,9 +316,9 @@ func fillConflicted(child, originalP, otherP Chromosome, start, end int) {
 // mapped - подходящее значение для конфликтной позиции.
 //  originalP - 1й родитель для этой хромосомы,
 //  otherP    - 2й родитель.
-func mapped(originalP, otherP Chromosome, oIndex int) IndexRotation {
-	for i, v := range otherP {
-		if v.Index == oIndex {
+func mapped(originalP, otherP Chromosome, originalIndex int) IndexRotation {
+	for i, value := range otherP {
+		if value.Index == originalIndex {
 			mappedValue := originalP[i]
 			if contains(otherP, mappedValue) {
 				return mapped(originalP, otherP, mappedValue.Index)

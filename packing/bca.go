@@ -203,7 +203,7 @@ type Antibody Solution
 // newAntibody создает новое случайное антитело.
 // Для создания случайных перестановок используется алгоритм Фишера-Йетса.
 func newAntibody(size int) Antibody {
-	return Antibody(randomSolution(size))
+	return Antibody(newRandomSolution(size))
 }
 
 // makeClone создает клон текущего антитела.

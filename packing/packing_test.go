@@ -61,7 +61,7 @@ func TestRandomSolution(t *testing.T) {
 	size := 10
 
 	for i := 0; i < 100; i++ {
-		solution := randomSolution(size)
+		solution := newRandomSolution(size)
 		for _, value := range solution {
 			rotation := value.Rotation
 			if rotation > YXZ || rotation < XYZ {
