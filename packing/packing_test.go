@@ -59,9 +59,10 @@ func TestOverlapping(t *testing.T) {
 
 func TestRandomSolution(t *testing.T) {
 	size := 10
+	random := NewRandomSeeded()
 
 	for i := 0; i < 100; i++ {
-		solution := newRandomSolution(size)
+		solution := newRandomSolution(random, size)
 		for _, value := range solution {
 			rotation := value.Rotation
 			if rotation > YXZ || rotation < XYZ {

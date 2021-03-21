@@ -7,10 +7,12 @@ import (
 )
 
 func TestChromosomeCrossover(t *testing.T) {
+	random := NewRandomSeeded()
+
 	for i := 0; i < 100; i++ {
-		c1 := newChromosome(5)
-		c2 := newChromosome(5)
-		child1, child2 := Chromosome.crossover(c1, c2)
+		c1 := newChromosome(random, 5)
+		c2 := newChromosome(random, 5)
+		child1, child2 := Chromosome.crossover(c1, c2, random)
 
 		for i := range child1 {
 			for j := range child1 {
@@ -54,6 +56,12 @@ func TestGA(t *testing.T) {
 		{Width: 2, Height: 2, Length: 1},
 		{Width: 2, Height: 2, Length: 2},
 	}
-	ga := NewGA(container, blocks, 100, 0.2, 500, DarwinEvolution{})
+
+	fmt.Printf("DarwinEvolution\n")
+	ga := NewGA(container, blocks, 100, 0.05, 500, DarwinEvolution{}, NewRandomSeeded())
+	EvaluatePrintBetter(ga)
+
+	fmt.Printf("\nDeVriesEvolution\n")
+	ga = NewGA(container, blocks, 100, 0.05, 500, DeVriesEvolution{}, NewRandomSeeded())
 	EvaluatePrintBetter(ga)
 }

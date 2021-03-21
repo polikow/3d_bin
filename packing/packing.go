@@ -16,20 +16,20 @@ type IndexRotation struct {
 
 // newRandomSolution - создание случайного решения.
 // Для создания случайных перестановок используется алгоритм Фишера-Йетса.
-func newRandomSolution(size int) Solution {
+func newRandomSolution(random *rand.Rand, size int) Solution {
 	s := make(Solution, size)
 	for i := range s {
 		s[i].Index = i
 	}
 
 	for i := len(s) - 1; i >= 0; i-- {
-		j := rand.Intn(i + 1)
+		j := random.Intn(i + 1)
 		if i != j {
 			s[j].Index, s[i].Index = s[i].Index, s[j].Index
 		}
 	}
 	for i := range s {
-		s[i].Rotation = randomRotation()
+		s[i].Rotation = randomRotation(random)
 	}
 
 	return s
@@ -55,8 +55,8 @@ const (
 const rotationsAmount = 6
 
 //newRandom случайно генерирует новое значение поворота, отличное от исходного.
-func (r Rotation) newRandom() Rotation {
-	var newRotation = Rotation(rand.Intn(rotationsAmount))
+func (r Rotation) newRandom(random *rand.Rand) Rotation {
+	var newRotation = Rotation(random.Intn(rotationsAmount))
 	if newRotation == r {
 		newRotation = (newRotation + 1) % rotationsAmount
 	}
@@ -64,8 +64,8 @@ func (r Rotation) newRandom() Rotation {
 }
 
 //randomRotation генерирует случайное значение поворота.
-func randomRotation() Rotation {
-	return Rotation(rand.Intn(rotationsAmount))
+func randomRotation(random *rand.Rand) Rotation {
+	return Rotation(random.Intn(rotationsAmount))
 }
 
 //Axis - одна из трех осей пространства.

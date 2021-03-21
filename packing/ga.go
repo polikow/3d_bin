@@ -1,7 +1,6 @@
 package packing
 
 import (
-	"math"
 	"math/rand"
 	"sort"
 )
@@ -10,26 +9,30 @@ type GA struct {
 	searchState
 
 	// входные параметры
-	np        int       // размер популяции
-	mp        float64   // вероятность мутации
-	ni        int       // количество итераций без улучшений
-	evolution Evolution // модель эволюции
+	np        int        // размер популяции
+	mp        float64    // вероятность мутации
+	ni        int        // количество итераций без улучшений
+	evolution Evolution  // модель эволюции
+	random    *rand.Rand // генератор случайных чисел
 
 	population        []Chromosome // популяция хромосом
 	populationFitness []float64    // приспособленность популяции
 }
 
-func NewGA(container Container, blocks []Block, np int, mp float64, ni int, evolution Evolution) *GA {
+func NewGA(container Container, blocks []Block, np int, mp float64, ni int, evolution Evolution, random *rand.Rand) *GA {
 	if np <= 0 || mp <= 0 || mp > 1 || ni <= 0 {
 		panic("wrong input values")
 	}
 
 	return &GA{
-		searchState:       newSearchState(container, blocks),
-		np:                np,
-		mp:                mp,
-		ni:                ni,
-		evolution:         evolution,
+		searchState: newSearchState(container, blocks),
+
+		np:        np,
+		mp:        mp,
+		ni:        ni,
+		evolution: evolution,
+		random:    random,
+
 		population:        make([]Chromosome, np),
 		populationFitness: make([]float64, 0, np),
 	}
@@ -40,7 +43,7 @@ func (g *GA) Run() SearchResult {
 		panic("error")
 	} else {
 		g.runIteration()
-		return g.bestResult()
+		return g.result()
 	}
 }
 
@@ -61,7 +64,7 @@ func (g *GA) runIteration() {
 
 func (g *GA) initializePopulation() {
 	for i := range g.population {
-		g.population[i] = newChromosome(g.n)
+		g.population[i] = newChromosome(g.random, g.n)
 	}
 }
 
@@ -74,17 +77,13 @@ func (g *GA) findPopulationFitness() {
 }
 
 func (g GA) findFitness(chromosome Chromosome) float64 {
-	packed := g.packAlgorithm.Run(Solution(chromosome))
-
-	packedVolume := blockPositionsVolume(packed)
-
-	return float64(packedVolume) / g.containerVolume
+	return g.findFill(Solution(chromosome))
 }
 
 func (g *GA) mutatePopulation() {
 	for _, chromosome := range g.population {
-		if rand.Float64() <= g.mp {
-			chromosome.mutate()
+		if g.random.Float64() <= g.mp {
+			chromosome.mutate(g.random)
 		}
 	}
 }
@@ -105,109 +104,11 @@ func (g GA) currentBest() (Solution, float64) {
 	return Solution(bestChromosome), bestFitness
 }
 
-type Evolution interface {
-	runSelection(g *GA)
-}
-
-// Выбор родителей происходит с помощью турнира размера 3.
-type DarwinEvolution struct{}
-
-func (DarwinEvolution) runSelection(g *GA) {
-	const elite float64 = 0.05
-
-	type pair struct {
-		chromosome Chromosome
-		fitness    float64
-	}
-
-	var (
-		n  = g.np                               // хромосом в популяции
-		ne = int(math.Ceil(elite * float64(n))) // количество элитных хромосом
-		nn = n - ne                             // количество дочерних
-		np = nn + (nn%2)*2                      // количество родителей
-
-		newPopulation = make([]Chromosome, 0, n) // новая популяция
-		newFitness    = make([]float64, 0, n)
-
-		parents = make([]Chromosome, 0, np)
-		rivals  = [3]pair{}
-	)
-
-	// сортировка хромосом популяции по значению приспособленности
-	pairs{c: g.population, f: g.populationFitness}.sort()
-
-	// элитные хромосомы становятся частью новой популяции
-	for i := 0; i < ne; i++ {
-		var (
-			chromosome = g.population[i]
-			fitness    = g.populationFitness[i]
-		)
-		newPopulation = append(newPopulation, chromosome)
-		newFitness = append(newFitness, fitness)
-	}
-
-	// выбор родителей
-	for len(parents) != cap(parents) {
-		for i := range rivals {
-			j := rand.Intn(n)
-			rivals[i] = pair{
-				chromosome: g.population[j],
-				fitness:    g.populationFitness[j],
-			}
-		}
-
-		// наиболее приспособленная особь становиться родительской
-		best := rivals[0]
-		for _, rival := range rivals {
-			if rival.fitness > best.fitness {
-				best = rival
-			}
-		}
-		parents = append(parents, best.chromosome)
-	}
-
-	// скрещивание
-	i := 0
-	for len(newPopulation) != cap(newPopulation) {
-		parent1 := parents[i]
-		parent2 := parents[i+1]
-		child1, child2 := Chromosome.crossover(parent1, parent2)
-
-		newPopulation = append(newPopulation, child1)
-		if len(newPopulation) != cap(newPopulation) {
-			newPopulation = append(newPopulation, child2)
-		}
-		i++
-	}
-
-	g.population = newPopulation
-	g.populationFitness = newFitness
-}
-
-type pairs struct {
-	c []Chromosome
-	f []float64
-}
-
-func (p pairs) Len() int { return len(p.c) }
-
-func (p pairs) Less(i, j int) bool { return p.f[i] < p.f[j] }
-
-func (p pairs) Swap(i, j int) {
-	p.c[i], p.c[j] = p.c[j], p.c[i]
-	p.f[i], p.f[j] = p.f[j], p.f[i]
-}
-
-func (p pairs) sort() {
-	sort.Sort(sort.Reverse(p))
-}
-
 type Chromosome Solution
 
 // newChromosome создает новую случайную хромосому.
-// Для создания случайных перестановок используется алгоритм Фишера-Йетса.
-func newChromosome(size int) Chromosome {
-	return Chromosome(newRandomSolution(size))
+func newChromosome(random *rand.Rand, size int) Chromosome {
+	return Chromosome(newRandomSolution(random, size))
 }
 
 var emptyIndexRotation = IndexRotation{-1, 0}
@@ -221,34 +122,34 @@ func newEmptyChromosome(size int) Chromosome {
 }
 
 // mutate мутирует хромосому.
-func (c *Chromosome) mutate() {
+func (c *Chromosome) mutate(random *rand.Rand) {
 	var (
 		chromosome = *c
 		n          = len(chromosome)
 
-		m  = int(math.Ceil(float64(n) / 4)) // всего мутаций
-		p  = rand.Intn(m + 1)               // перестановок
-		ch = m - p                          // изменений поворота
+		m  = ceilDivision(n, 4) // всего мутаций
+		p  = random.Intn(m + 1) // перестановок
+		ch = m - p              // изменений поворота
 	)
 
 	// выполнение попарных перестановок
 	for i := 0; i < p; i++ {
-		x, y := twoRandomInBounds(0, n-1)
+		x, y := intsInBounds(random, 0, n-1)
 		chromosome[x], chromosome[y] = chromosome[y], chromosome[x]
 	}
 
 	// изменение поворотов
 	for i := 0; i < ch; i++ {
-		x := rand.Intn(n)
-		chromosome[x].Rotation = chromosome[x].Rotation.newRandom()
+		x := random.Intn(n)
+		chromosome[x].Rotation = chromosome[x].Rotation.newRandom(random)
 	}
 }
 
 // crossover - операция кроссинговера хромосом.(двойной кроссинговер)(PMX)
-func (c Chromosome) crossover(other Chromosome) (Chromosome, Chromosome) {
+func (c Chromosome) crossover(c2 Chromosome, random *rand.Rand) (Chromosome, Chromosome) {
 	var (
 		parent1 = c
-		parent2 = other
+		parent2 = c2
 		n       = len(parent1)
 
 		child1 = newEmptyChromosome(n)
@@ -256,7 +157,7 @@ func (c Chromosome) crossover(other Chromosome) (Chromosome, Chromosome) {
 	)
 
 	// (1)
-	start, end := twoRandomInBounds(0, n)
+	start, end := intsInBounds(random, 0, n)
 	if start > end {
 		start, end = end, start
 	}
@@ -328,4 +229,146 @@ func mapped(originalP, otherP Chromosome, originalIndex int) IndexRotation {
 		}
 	}
 	panic("can't find mapped element")
+}
+
+// Evolution - модель эволюции.
+//
+// runSelection - селекция, в результате которой исходная популяция
+// заменяется новой.
+type Evolution interface {
+	runSelection(g *GA)
+}
+
+// DarwinEvolution - модель эволюции по Дарвину.
+type DarwinEvolution struct{}
+
+func (DarwinEvolution) runSelection(g *GA) {
+	const elite float64 = 0.05
+
+	type pair struct {
+		chromosome Chromosome
+		fitness    float64
+	}
+
+	var (
+		n  = len(g.population)            // хромосом в популяции
+		ne = ceilMultiplication(n, elite) // количество элитных хромосом
+		nn = n - ne                       // количество дочерних
+		np = nn + (nn%2)*2                // количество родителей
+
+		newPopulation = make([]Chromosome, 0, n) // новая популяция
+		newFitness    = make([]float64, 0, n)
+
+		parents = make([]Chromosome, 0, np)
+		rivals  = [3]pair{}
+	)
+
+	// сортировка хромосом популяции по значению приспособленности
+	pairs{c: g.population, f: g.populationFitness}.sort()
+
+	// элитные хромосомы становятся частью новой популяции
+	for i := 0; i < ne; i++ {
+		var (
+			chromosome = g.population[i]
+			fitness    = g.populationFitness[i]
+		)
+		newPopulation = append(newPopulation, chromosome)
+		newFitness = append(newFitness, fitness)
+	}
+
+	// выбор родителей происходит с помощью турнира размера 3.
+	for len(parents) != cap(parents) {
+		for i := range rivals {
+			j := g.random.Intn(n)
+			rivals[i] = pair{
+				chromosome: g.population[j],
+				fitness:    g.populationFitness[j],
+			}
+		}
+
+		// наиболее приспособленная особь становиться родительской
+		best := rivals[0]
+		for _, rival := range rivals {
+			if rival.fitness > best.fitness {
+				best = rival
+			}
+		}
+		parents = append(parents, best.chromosome)
+	}
+
+	// скрещивание
+	i := 0
+	for len(newPopulation) != cap(newPopulation) {
+		parent1 := parents[i]
+		parent2 := parents[i+1]
+		child1, child2 := Chromosome.crossover(parent1, parent2, g.random)
+
+		newPopulation = append(newPopulation, child1)
+		if len(newPopulation) != cap(newPopulation) {
+			newPopulation = append(newPopulation, child2)
+		}
+		i++
+	}
+
+	g.population = newPopulation
+	g.populationFitness = newFitness
+}
+
+type pairs struct {
+	c []Chromosome
+	f []float64
+}
+
+func (p pairs) Len() int { return len(p.c) }
+
+func (p pairs) Less(i, j int) bool { return p.f[i] < p.f[j] }
+
+func (p pairs) Swap(i, j int) {
+	p.c[i], p.c[j] = p.c[j], p.c[i]
+	p.f[i], p.f[j] = p.f[j], p.f[i]
+}
+
+func (p pairs) sort() {
+	sort.Sort(sort.Reverse(p))
+}
+
+//DeVriesEvolution - модель эволюции по де Фризу.
+type DeVriesEvolution struct{}
+
+const (
+	// вероятности возникновения катастрофы
+	beforeProbability = 0.012 // перед селекцией
+	afterProbability  = 0.018 // после селекции
+
+	// количество погибших в катастрофе (%)
+	minDeaths = 0.3
+	maxDeaths = 0.8
+)
+
+func (DeVriesEvolution) catastrophe(g *GA, probability float64) {
+	random := g.random
+	if random.Float64() <= probability {
+		var (
+			n             = len(g.population)
+			deathsPercent = float64InBounds(random, minDeaths, maxDeaths)
+			deaths        = ceilMultiplication(n, deathsPercent)
+		)
+		//fmt.Printf("catastrophe at %d! deaths: %.2g (%d)\n", g.iterationsPassed, deathsPercent, deaths)
+
+		for i := 0; i < deaths; i++ {
+			j := random.Intn(g.np)
+			chromosome := newChromosome(random, g.n)
+			g.population[j] = chromosome
+			// если у изначальной хромосомы было известно цф, то пересчитываем
+			if len(g.populationFitness) > j {
+				g.populationFitness[j] = g.findFitness(chromosome)
+			}
+		}
+	}
+}
+
+func (d DeVriesEvolution) runSelection(g *GA) {
+	d.catastrophe(g, beforeProbability)
+	DarwinEvolution{}.runSelection(g)
+	d.catastrophe(g, afterProbability)
 }

@@ -16,7 +16,7 @@ type SearchAlgorithm interface {
 
 // SearchResult - результат работы одной итерации алгоритма, где:
 //  Iteration - итерация, на которой был найден,
-//  Value     - значение целевой функции,
+//  Value     - лучшее значение цф за все итерации,
 //  Solution  - найденное решение (порядок упаковки),
 //  Packed    - позиции упакованных грузов.
 type SearchResult struct {
@@ -111,6 +111,7 @@ type searchState struct {
 	containerVolume float64        // объем контейнера
 	packAlgorithm   *PackAlgorithm // алгоритм упаковки
 
+	currentValue            float64         // лучшее цф на данной итерации
 	bestValueFound          float64         // лучшее найденное значение цф
 	bestSolutionFound       Solution        // лучшее найденное решение
 	bestPackedFound         []BlockPosition // лучшая упаковка грузов
@@ -137,6 +138,14 @@ func newSearchState(container Container, blocks []Block) searchState {
 	}
 }
 
+// findFill - поиск заполненности контейнера.
+func (s searchState) findFill(solution Solution) float64 {
+	packed := s.packAlgorithm.Run(solution)
+	packedVolume := blockPositionsVolume(packed)
+	return float64(packedVolume) / s.containerVolume
+}
+
+// update обновление состояния поиска.
 func (s *searchState) update(solution Solution, value float64) {
 	if s.bestValueFound < value {
 		s.bestValueFound = value
@@ -154,7 +163,7 @@ func (s *searchState) update(solution Solution, value float64) {
 	s.iterationsPassed++
 }
 
-func (s searchState) bestResult() SearchResult {
+func (s searchState) result() SearchResult {
 	return SearchResult{
 		Iteration: s.iterationsPassed,
 		Value:     s.bestValueFound,

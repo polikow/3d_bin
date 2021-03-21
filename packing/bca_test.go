@@ -28,17 +28,18 @@ func TestBCA(t *testing.T) {
 	fmt.Printf("blocks volume: %d\n", BlocksVolume(blocks))
 	fmt.Printf("container volume: %d\n", container.Volume())
 
-	bca := NewBCA(container, blocks, 5, 500, 1)
+	bca := NewBCA(container, blocks, 5, 500, 1, NewRandomSeeded())
 
 	EvaluatePrintBetter(bca)
 }
 
 func TestMakeCloneInDst(t *testing.T) {
 	antibodySize := 10
+	random := NewRandomSeeded()
 
 	antibodies := make([]Antibody, 1, 5)
 	for i := range antibodies {
-		antibodies[i] = newAntibody(antibodySize)
+		antibodies[i] = newAntibody(random, antibodySize)
 	}
 
 	clones := make([]Antibody, 1, 1)
