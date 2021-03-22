@@ -2,6 +2,7 @@ package main
 
 import (
 	"3d_bin/packing"
+	"encoding/json"
 	"errors"
 	"github.com/wailsapp/wails"
 	"github.com/wailsapp/wails/lib/logger"
@@ -12,10 +13,6 @@ import (
 type App struct {
 	logger  *wails.CustomLogger
 	runtime *wails.Runtime
-}
-
-func (a App) Test() bool {
-	return true
 }
 
 func NewApp() *App {
@@ -33,65 +30,74 @@ func (a *App) WailsInit(runtime *wails.Runtime) error {
 	return nil
 }
 
-// RunAlgorithm запускает выполнение заданного алгоритма.
-func (a *App) RunAlgorithm(data map[string]interface{}) bool {
-	ok := true
-
-	defer func() {
-		r := recover()
-		if r != nil {
-			a.logger.Errorf("%v\n", r)
-			ok = false
-		}
-	}()
-
-	algorithmName := data["algorithm"]
-	settings := data["settings"]
-	container := parseContainer(data["container"])
-	blocks := parseBlocks(data["blocks"])
-
-	a.logger.Infof("PARSED:\n%v %T\n%v\n", algorithmName, algorithmName, settings)
-
-	var algorithm packing.SearchAlgorithm
-	switch algorithmName {
-	case "ais":
-		np, ni, ci := parseAISSettings(settings)
-		algorithm = packing.NewBCA(container, blocks, np, ni, ci)
-
-	case "ga":
-		panic("ga is not implemented yet")
-
-	default:
-		panic("wrong algorithmName specified")
-	}
-
-	if ok {
-		result := packing.Evaluate(algorithm)
-		a.runtime.Events.Emit("result", result)
-	}
-
-	return ok
+func (a *App) Test(data string) {
+	a.logger.Infof("%v\n", data)
 }
 
-//// runAndSendResults отсылает результаты (через события) по мере их получения:
-////
-////  result - улучшенный результат,
-////  done   - конец работы алгоритма.
-//func (a *App) runAndSendResults(algorithm packing.SearchAlgorithm) {
-//	var (
-//		run = packing.StepByStepBetter(algorithm)
+// RunAlgorithm запускает выполнение заданного алгоритма.
 //
-//		result       packing.SearchResult
-//		stillRunning bool
-//	)
-//	for {
-//		result, stillRunning = run()
-//		a.runtime.Events.Emit("result", result)
-//		if !stillRunning {
-//			break
-//		}
-//	}
-//	a.runtime.Events.Emit("done", result.Iteration)
+// Возвращает true, если алгоритм был успешно запущен, иначе false.
+func (a *App) RunAlgorithm(data []byte) bool {
+	var (
+		algorithm packing.SearchAlgorithm
+		random    = packing.NewRandomSeeded()
+
+		// настройки алгоритма BCA
+		b struct {
+			Blocks    []packing.Block   `json:"blocks"`
+			Container packing.Container `json:"container"`
+			Np        int               `json:"np"`
+			Ni        int               `json:"ni"`
+			Ci        float64           `json:"ci"`
+		}
+
+		// настройки генетического алгоритма
+		g struct {
+			Blocks    []packing.Block   `json:"blocks"`
+			Container packing.Container `json:"container"`
+			Np        int               `json:"np"`
+			Mp        float64           `json:"mp"`
+			Ni        int               `json:"ni"`
+			Evolution string            `json:"evolution"`
+		}
+	)
+
+AlgorithmSetup:
+	switch {
+
+	case json.Unmarshal(data, &b) == nil:
+		container, blocks, np, ni, ci := b.Container, b.Blocks, b.Np, b.Ni, b.Ci
+		algorithm = packing.NewBCA(container, blocks, np, ni, ci, random)
+
+	case json.Unmarshal(data, &g) == nil:
+		container, blocks, np, mp, ni := g.Container, g.Blocks, g.Np, g.Mp, g.Ni
+		var evolution packing.Evolution
+		switch g.Evolution {
+		case "Дарвина":
+			evolution = packing.DarwinEvolution{}
+		case "де Фриза":
+			evolution = packing.DeVriesEvolution{}
+		default:
+			break AlgorithmSetup
+		}
+		algorithm = packing.NewGA(container, blocks, np, mp, ni, evolution, random)
+
+	default:
+		break AlgorithmSetup
+	}
+
+	if algorithm == nil {
+		return false
+	} else {
+		go a.evaluate(algorithm)
+		return true
+	}
+}
+
+func (a *App) evaluate(algorithm packing.SearchAlgorithm) {
+	result := packing.Evaluate(algorithm)
+	a.runtime.Events.Emit("result", result)
+}
 
 //Save отображает диалоговое окно, в котором пользователь выбирает файл,
 //в который необходимо сохранить некоторые данные.
@@ -152,51 +158,5 @@ func addJSONFormat(filename string) string {
 
 	default:
 		return filename + ".json"
-	}
-}
-
-func parseAISSettings(settings interface{}) (np, ni int, ci float64) {
-	s := settings.(map[string]interface{})
-	np = int(s["np"].(float64))
-	ni = int(s["ni"].(float64))
-	ci = s["ci"].(float64)
-	return
-}
-
-func parseContainer(container interface{}) packing.Container {
-	c := container.(map[string]interface{})
-	return packing.Container{
-		Width:  uint(c["w"].(float64)),
-		Height: uint(c["h"].(float64)),
-		Length: uint(c["l"].(float64)),
-	}
-}
-
-func parseBlocks(blocks interface{}) []packing.Block {
-	blocksSlice := blocks.([]interface{})
-	parsed := make([]packing.Block, 0, len(blocksSlice))
-	for _, block := range blocksSlice {
-		parsed = append(parsed, parseBlock(block))
-	}
-	return parsed
-}
-
-func parseBlock(block interface{}) packing.Block {
-	size := parseUINTSlice(block.([]interface{}))
-	return packing.Block{
-		Width:  size[0],
-		Height: size[1],
-		Length: size[2],
-	}
-}
-
-func parseUINTSlice(slice []interface{}) [3]uint {
-	if len(slice) != 3 {
-		panic(errors.New("wrong slice length"))
-	}
-	return [3]uint{
-		uint(slice[0].(float64)),
-		uint(slice[1].(float64)),
-		uint(slice[2].(float64)),
 	}
 }

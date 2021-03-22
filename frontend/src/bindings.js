@@ -22,11 +22,20 @@ export async function AppLoad(title: string, filter: string): Promise<any> {
   return JSON.parse(data)
 }
 
-export function AppRunAlgorithm(algorithm, settings, container, blocks): Promise<any> {
-  return window.backend.App.RunAlgorithm({
-    algorithm,
-    settings,
-    container,
-    blocks
+export function AppRunAlgorithm(container, blocks, settings): Promise<any> {
+  let data = JSON.stringify({
+    container: container,
+    blocks: blocks.map(blockToBlockObject),
+    ...settings
   })
+  console.log(data)
+  return window.backend.App.RunAlgorithm(data)
+}
+
+function blockToBlockObject(block) {
+  return {
+    w: block[0],
+    h: block[1],
+    l: block[2],
+  }
 }

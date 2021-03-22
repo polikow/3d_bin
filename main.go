@@ -28,7 +28,10 @@ func runWailsWithBindings(bindings ...interface{}) {
 		app.Bind(binding)
 	}
 
-	app.Run()
+	err := app.Run()
+	if err != nil {
+		panic("failed to run gui")
+	}
 }
 
 

@@ -37,7 +37,7 @@ export default ({open, onClose}) => {
 
   const startAlgorithm = (algorithm, settings) => () => {
     setSearching(true)
-    AppRunAlgorithm(algorithm, settings, container, blocks)
+    AppRunAlgorithm(container, blocks, settings)
       .then(() => console.log("started"))
       .catch(err => {
         console.log(`failed to start ${algorithm} with the settings:`, settings)
