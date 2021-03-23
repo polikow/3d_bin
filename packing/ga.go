@@ -21,7 +21,7 @@ type GA struct {
 
 func NewGA(container Container, blocks []Block, np int, mp float64, ni int, evolution Evolution, random *rand.Rand) *GA {
 	if np <= 0 || mp <= 0 || mp > 1 || ni <= 0 {
-		panic("wrong input values")
+		panic("ga: wrong input values")
 	}
 
 	return &GA{

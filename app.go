@@ -34,6 +34,14 @@ func (a *App) Test(data string) {
 	a.logger.Infof("%v\n", data)
 }
 
+type gaSettings struct {
+	Container packing.Container `json:"container"`
+	Blocks    []packing.Block   `json:"blocks"`
+	Np        int               `json:"np"`
+	Ni        int               `json:"ni"`
+	Ci        float64           `json:"ci"`
+}
+
 // RunAlgorithm запускает выполнение заданного алгоритма.
 //
 // Возвращает true, если алгоритм был успешно запущен, иначе false.
@@ -44,8 +52,8 @@ func (a *App) RunAlgorithm(data []byte) bool {
 
 		// настройки алгоритма BCA
 		b struct {
-			Blocks    []packing.Block   `json:"blocks"`
 			Container packing.Container `json:"container"`
+			Blocks    []packing.Block   `json:"blocks"`
 			Np        int               `json:"np"`
 			Ni        int               `json:"ni"`
 			Ci        float64           `json:"ci"`
@@ -53,29 +61,33 @@ func (a *App) RunAlgorithm(data []byte) bool {
 
 		// настройки генетического алгоритма
 		g struct {
-			Blocks    []packing.Block   `json:"blocks"`
 			Container packing.Container `json:"container"`
+			Blocks    []packing.Block   `json:"blocks"`
 			Np        int               `json:"np"`
 			Mp        float64           `json:"mp"`
 			Ni        int               `json:"ni"`
 			Evolution string            `json:"evolution"`
 		}
 	)
-
+	a.logger.Infof("AlgorithmSetup")
 AlgorithmSetup:
 	switch {
 
 	case json.Unmarshal(data, &b) == nil:
+		a.logger.Infof("parsing bca settings")
+		a.logger.Infof("%v", b)
 		container, blocks, np, ni, ci := b.Container, b.Blocks, b.Np, b.Ni, b.Ci
 		algorithm = packing.NewBCA(container, blocks, np, ni, ci, random)
 
 	case json.Unmarshal(data, &g) == nil:
+		a.logger.Infof("parsing ga settings")
+
 		container, blocks, np, mp, ni := g.Container, g.Blocks, g.Np, g.Mp, g.Ni
 		var evolution packing.Evolution
 		switch g.Evolution {
-		case "Дарвина":
+		case "Darwin":
 			evolution = packing.DarwinEvolution{}
-		case "де Фриза":
+		case "deVries":
 			evolution = packing.DeVriesEvolution{}
 		default:
 			break AlgorithmSetup

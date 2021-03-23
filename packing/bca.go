@@ -34,7 +34,7 @@ type BCA struct {
 func NewBCA(container Container, blocks []Block, np int, ni int, ci float64, random *rand.Rand) *BCA {
 	n := len(blocks)
 	if np <= 0 || ni <= 0 || ci <= 0 || n == 0 {
-		panic("wrong input values")
+		panic("bca: wrong input values")
 	}
 
 	return &BCA{

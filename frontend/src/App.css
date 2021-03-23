@@ -181,3 +181,11 @@ div.stats {
 .save-load > div p:last-of-type {
     padding-bottom: revert;
 }
+
+.algorithm-menu .selector:first-child {
+    margin-top: 7px;
+}
+
+.algorithm-menu .selector:nth-child(2) {
+    margin-top: 15px;
+}

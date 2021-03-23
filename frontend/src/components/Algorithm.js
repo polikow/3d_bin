@@ -7,7 +7,7 @@ import MenuPaperHideable from "./ui/MenuPaperHideable";
 import AlgorithmSettings from "./AlgorithmSettings";
 import {AppEvent, AppRunAlgorithm} from "../bindings";
 
-const algorithms = ["ais", "ga"]
+const algorithms = ["bca", "ga"]
 
 export default ({open, onClose}) => {
 
@@ -22,7 +22,7 @@ export default ({open, onClose}) => {
     })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const [algorithm, setAlgorithm] = useState("ais")
+  const [algorithm, setAlgorithm] = useState("bca")
   const handleOnAlgorithmChange = (event) => {
     const newAlgorithm = event.target.value
     if (!algorithms.includes(newAlgorithm)) {
@@ -32,7 +32,10 @@ export default ({open, onClose}) => {
   }
 
   const [settings, setSettings] = useState(null)
-  const handleSettingsChange = (newSettings) => setSettings(newSettings)
+  const handleSettingsChange = (newSettings) => {
+    console.log("change settings to:", newSettings)
+    setSettings(newSettings);
+  }
 
 
   const startAlgorithm = (algorithm, settings) => () => {
@@ -49,8 +52,8 @@ export default ({open, onClose}) => {
   return (
     <Floater open={open} onClose={onClose} classes={["algorithm-menu"]}>
       <MenuPaper title="Поиск упаковки">
-        <Select value={algorithm} onChange={handleOnAlgorithmChange}>
-          <MenuItem value={"ais"}>Искусственная иммунная сеть</MenuItem>
+        <Select className="selector" value={algorithm} onChange={handleOnAlgorithmChange}>
+          <MenuItem value={"bca"}>Искусственная иммунная сеть</MenuItem>
           <MenuItem value={"ga"}>Генетический алгоритм</MenuItem>
         </Select>
 
