@@ -25,7 +25,7 @@ export default ({open, onClose}) => {
 
 
   const onCameraChange = (property) => (value) => {
-    const [newCamera, changed] = changeStateObj(camera)(property)(value)
+    const [newCamera, changed] = changeStateObj(camera, property, value)
     if (changed) {
       setCamera(newCamera)
     }

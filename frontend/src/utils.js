@@ -1,4 +1,4 @@
-export const changeStateObj = stateObj => stateObjKey => newValue => {
+export const changeStateObj = (stateObj, stateObjKey, newValue) => {
   if (stateObj[stateObjKey] === undefined) {
     throw new Error(`key "${stateObjKey}" is not declared`)
   }
@@ -20,7 +20,7 @@ export const changeStateObj = stateObj => stateObjKey => newValue => {
   return [newStateObj, stateChanged]
 }
 
-export const changeStateArray = stateArray => stateArrayIndex => newValue => {
+export const changeStateArray = (stateArray, stateArrayIndex, newValue) => {
   if (stateArray[stateArrayIndex] === undefined) {
     throw new Error(`index "${stateArrayIndex}" is not declared`)
   }

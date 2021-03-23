@@ -34,7 +34,7 @@ func (a *App) Test(data string) {
 	a.logger.Infof("%v\n", data)
 }
 
-type gaSettings struct {
+type BCASettings struct {
 	Container packing.Container `json:"container"`
 	Blocks    []packing.Block   `json:"blocks"`
 	Np        int               `json:"np"`
@@ -42,46 +42,35 @@ type gaSettings struct {
 	Ci        float64           `json:"ci"`
 }
 
+type GASettings struct {
+	Container packing.Container `json:"container"`
+	Blocks    []packing.Block   `json:"blocks"`
+	Np        int               `json:"np"`
+	Mp        float64           `json:"mp"`
+	Ni        int               `json:"ni"`
+	Evolution string            `json:"evolution"`
+}
+
 // RunAlgorithm запускает выполнение заданного алгоритма.
 //
 // Возвращает true, если алгоритм был успешно запущен, иначе false.
 func (a *App) RunAlgorithm(data []byte) bool {
 	var (
-		algorithm packing.SearchAlgorithm
-		random    = packing.NewRandomSeeded()
+		algorithm packing.SearchAlgorithm     // выполняемый алгоритм
+		random    = packing.NewRandomSeeded() // генератор случайных чисел
 
-		// настройки алгоритма BCA
-		b struct {
-			Container packing.Container `json:"container"`
-			Blocks    []packing.Block   `json:"blocks"`
-			Np        int               `json:"np"`
-			Ni        int               `json:"ni"`
-			Ci        float64           `json:"ci"`
-		}
-
-		// настройки генетического алгоритма
-		g struct {
-			Container packing.Container `json:"container"`
-			Blocks    []packing.Block   `json:"blocks"`
-			Np        int               `json:"np"`
-			Mp        float64           `json:"mp"`
-			Ni        int               `json:"ni"`
-			Evolution string            `json:"evolution"`
-		}
+		b BCASettings // настройки алгоритма BCA
+		g GASettings  // настройки генетического алгоритма
 	)
 	a.logger.Infof("AlgorithmSetup")
 AlgorithmSetup:
 	switch {
 
-	case json.Unmarshal(data, &b) == nil:
-		a.logger.Infof("parsing bca settings")
-		a.logger.Infof("%v", b)
+	case parseBCASettings(data, &b):
 		container, blocks, np, ni, ci := b.Container, b.Blocks, b.Np, b.Ni, b.Ci
 		algorithm = packing.NewBCA(container, blocks, np, ni, ci, random)
 
-	case json.Unmarshal(data, &g) == nil:
-		a.logger.Infof("parsing ga settings")
-
+	case parseGASettings(data, &g):
 		container, blocks, np, mp, ni := g.Container, g.Blocks, g.Np, g.Mp, g.Ni
 		var evolution packing.Evolution
 		switch g.Evolution {
@@ -102,6 +91,26 @@ AlgorithmSetup:
 		return false
 	} else {
 		go a.evaluate(algorithm)
+		return true
+	}
+}
+
+func parseGASettings(data []byte, g *GASettings) bool {
+	e := json.Unmarshal(data, &g)
+	if e != nil || len(g.Blocks) == 0 ||
+		g.Np == 0 || g.Ni == 0 || g.Mp == 0 || g.Evolution == "" {
+		return false
+	} else {
+		return true
+	}
+}
+
+func parseBCASettings(data []byte, b *BCASettings) bool {
+	e := json.Unmarshal(data, &b)
+	if e != nil || len(b.Blocks) == 0 ||
+		b.Ci == 0 || b.Ni == 0 || b.Np == 0 {
+		return false
+	} else {
 		return true
 	}
 }

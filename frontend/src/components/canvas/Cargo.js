@@ -23,8 +23,7 @@ export default function () {
 
   useEffect(() => {
       centerCameraAroundCargo(bound)
-    }, [bound[0], bound[1], bound[2]]
-  ) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [bound[0], bound[1], bound[2]]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     cargo.map(({p1, p2}, i) => (

@@ -13,7 +13,7 @@ export default ({open, onClose}) => {
       ? 1
       : parseInt(event.target.value)
 
-    const [newContainer, changed] = changeStateObj(container)(parameter)(value)
+    const [newContainer, changed] = changeStateObj(container, parameter, value)
     if (changed) {
       setContainer(newContainer)
     }

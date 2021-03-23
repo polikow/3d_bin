@@ -173,7 +173,7 @@ function ChangeableRow({index, size: initialSize, onChange}) {
       ? 1
       : event.target.value
 
-    const [newSize, changed] = changeStateArray(size)(dimension)(value)
+    const [newSize, changed] = changeStateArray(size, dimension, value)
     if (changed) {
       setSize(newSize)
     }

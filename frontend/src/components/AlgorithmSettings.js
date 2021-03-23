@@ -13,7 +13,7 @@ export default React.memo(({algorithm, onChange}) => {
     const value = typeof event.target.value === "string"
       ? parseInt(event.target.value)
       : event.target.value
-    const [newState, changed] = changeStateObj(bcaSettings)(option)(value)
+    const [newState, changed] = changeStateObj(bcaSettings, option, value)
     if (changed) {
       setBCASettings(newState)
     }
@@ -29,7 +29,7 @@ export default React.memo(({algorithm, onChange}) => {
     const value = typeof event.target.value === "string"
       ? parseInt(event.target.value)
       : event.target.value
-    const [newState, changed] = changeStateObj(gaSettings)(option)(value)
+    const [newState, changed] = changeStateObj(gaSettings, option, value)
     if (changed) {
       setGASettings(newState)
     }
