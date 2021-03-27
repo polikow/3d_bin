@@ -146,7 +146,7 @@ func (b Block) findShift(rotation Rotation) (xShift, yShift, zShift uint) {
 	return
 }
 
-func BlocksVolume(blocks []Block) uint {
+func blocksVolume(blocks []Block) uint {
 	var blocksTotalVolume uint = 0
 	for _, block := range blocks {
 		blocksTotalVolume += block.Volume()
@@ -285,7 +285,7 @@ func (c Container) Volume() uint {
 
 //doBlocksFitInsideContainer вычисляет, вмещаются ли блоки внутри контейнера.
 func (c Container) doBlocksFitInside(blocks []Block) bool {
-	if c.Volume() <= BlocksVolume(blocks) {
+	if c.Volume() <= blocksVolume(blocks) {
 		return true
 	} else {
 		return false
@@ -312,4 +312,40 @@ func (c Container) isBlockInside(b BlockPosition) bool {
 		return false
 	}
 	return true
+}
+
+func GenerateRandomBlocks(random *rand.Rand, container Container) []Block {
+	const (
+		hugeBlockProbability = 0.05
+		bigBlockProbability  = 0.15
+
+		hugeMin, hugeMax   = 0.3, 0.9
+		bigMin, bigMax     = 0.2, 0.4
+		smallMin, smallMax = 0.05, 0.15
+	)
+	var blocks = make([]Block, 5)
+
+	for blocksVolume(blocks) > ceilMultiplicationUINT(container.Volume(), 1.2) {
+		var block Block
+		switch {
+		case random.Float64() <= hugeBlockProbability:
+			block = generateRandomBlock(random, container, hugeMin, hugeMax)
+			break
+		case random.Float64() <= bigBlockProbability:
+			block = generateRandomBlock(random, container, bigMin, bigMax)
+			break
+		default:
+			block = generateRandomBlock(random, container, smallMin, smallMax)
+		}
+		blocks = append(blocks, block)
+	}
+	return blocks
+}
+
+func generateRandomBlock(random *rand.Rand, container Container, min float64, max float64) Block {
+	return Block{
+		Width:  ceilMultiplicationUINT(container.Width, float64InBounds(random, min, max)),
+		Height: ceilMultiplicationUINT(container.Height, float64InBounds(random, min, max)),
+		Length: ceilMultiplicationUINT(container.Length, float64InBounds(random, min, max)),
+	}
 }

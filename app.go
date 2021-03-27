@@ -4,6 +4,7 @@ import (
 	"3d_bin/packing"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/wailsapp/wails"
 	"github.com/wailsapp/wails/lib/logger"
 	"io/ioutil"
@@ -28,10 +29,6 @@ func (a *App) WailsInit(runtime *wails.Runtime) error {
 	a.logger.Info("App is ready")
 	runtime.Events.Emit("ping")
 	return nil
-}
-
-func (a *App) Test(data string) {
-	a.logger.Infof("%v\n", data)
 }
 
 type BCASettings struct {
@@ -163,6 +160,27 @@ func (a App) Load(title, filter string) (string, error) {
 	}
 
 	return string(bytes), err
+}
+
+func parseContainer(data []byte, c *packing.Container) bool {
+	err := json.Unmarshal(data, &c)
+	if err != nil || c.Width == 0 || c.Height == 0 || c.Length == 0 {
+		return false
+	} else {
+		return true
+	}
+}
+
+func (a *App) Generate(data []byte) error {
+	var container packing.Container
+    if parseContainer(data, &container) {
+    	random := packing.NewRandomSeeded()
+		blocks := packing.GenerateRandomBlocks(random, container)
+		a.runtime.Events.Emit("blocks", blocks)
+		return nil
+	} else {
+		return fmt.Errorf("wrong container specified")
+	}
 }
 
 //addJSONFormat добавляет расширение .json, если оно не указано.

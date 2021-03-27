@@ -25,7 +25,7 @@ func TestBCA(t *testing.T) {
 		{Width: 2, Height: 2, Length: 2},
 	}
 
-	fmt.Printf("blocks volume: %d\n", BlocksVolume(blocks))
+	fmt.Printf("blocks volume: %d\n", blocksVolume(blocks))
 	fmt.Printf("container volume: %d\n", container.Volume())
 
 	bca := NewBCA(container, blocks, 5, 500, 1, NewRandomSeeded())

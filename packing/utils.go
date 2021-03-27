@@ -49,6 +49,10 @@ func ceilMultiplication(i int, f float64) int {
 	return int(math.Ceil(float64(i) * f))
 }
 
+func ceilMultiplicationUINT(u uint, f float64) uint {
+	return uint(math.Ceil(float64(u) * f))
+}
+
 func ceilDivision(i int, f float64) int {
 	return int(math.Ceil(float64(i) / f))
 }

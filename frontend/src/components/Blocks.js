@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import {useStore} from "../store";
 import {
+  Button,
   Menu,
   MenuItem,
   Table,
@@ -19,6 +20,7 @@ import {changeStateArray} from "../utils";
 import ButtonAccept from "./ui/ButtonAccept";
 import ButtonAdd from "./ui/ButtonAdd";
 import ButtonCreate from "./ui/ButtonCreate";
+import {AppGenerateRandomBlocks} from "../bindings";
 
 
 const rowsPerPage = 10
@@ -53,6 +55,13 @@ export default ({open, onClose}) => {
 
   const [page, setPage] = useState(0)
   const handleChangePage = (event, newPage) => setPage(newPage)
+
+  const container = useState(s => s.container)
+  const onGenerateBlocks = () => {
+    AppGenerateRandomBlocks(container)
+      .then(blocksObjects => setBlocks(blocksObjects.map))
+      .catch(console.error)
+  }
 
   return (
     <Floater open={open} onClose={onClose}>
@@ -106,7 +115,14 @@ export default ({open, onClose}) => {
           count={blocks.length}
           onChangePage={handleChangePage}
         />
-        <ButtonAdd disabled={isChanging} title="Добавить новый груз" onClick={onAddNewBlock}/>
+
+        <div id="add-generate-buttons">
+          <ButtonAdd disabled={isChanging} title="Добавить новый груз" onClick={onAddNewBlock}/>
+
+          <Button variant="contained" color="primary" onClick={onGenerateBlocks}>
+            Сенерировать случайные грузы
+          </Button>
+        </div>
 
       </SimplePaper>
     </Floater>

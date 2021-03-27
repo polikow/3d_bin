@@ -19,16 +19,16 @@ export default ({open, onClose}) => {
     }
   }
 
+
   return (
     <Floater open={open} onClose={onClose}>
       <MenuPaper title="Контейнер">
-        <TextField type="number" label="Ширина" className={"text-field"}
+        <TextField type="number" label="Ширина" className="text-field"
                    value={container.w} onChange={onContainerChange('w')}/>
-        <TextField type="number" label="Высота" className={"text-field"}
+        <TextField type="number" label="Высота" className="text-field"
                    value={container.h} onChange={onContainerChange('h')}/>
-        <TextField type="number" label="Длина" className={"text-field"}
+        <TextField type="number" label="Длина" className="text-field"
                    value={container.l} onChange={onContainerChange('l')}/>
-
       </MenuPaper>
     </Floater>
   )

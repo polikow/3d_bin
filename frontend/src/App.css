@@ -136,17 +136,6 @@ div.stats {
     width: 50px !important;
 }
 
-.blocks-table-paper > button:last-of-type {
-    align-self: center;
-    width: fit-content;
-    height: fit-content;
-    margin: 0 0 15px 0;
-}
-
-.blocks-table-paper > button:last-of-type svg {
-    margin-left: 12px !important;
-}
-
 .algorithm-menu {
     width: 360px;
 }
@@ -188,4 +177,25 @@ div.stats {
 
 .algorithm-menu .selector:nth-child(2) {
     margin-top: 15px;
+}
+
+#add-generate-buttons {
+    display: flex;
+    flex-flow: column;
+    margin: 0 10px 10px 10px;
+}
+
+#add-generate-buttons > button:first-child {
+    margin-bottom: 10px;
+}
+
+#add-generate-buttons > button:last-child {
+    align-self: center;
+    width: fit-content;
+    height: fit-content;
+    margin: 0 0 15px 0;
+}
+
+#add-generate-buttons > button:last-child svg {
+    margin-left: 12px !important;
 }

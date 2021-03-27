@@ -39,3 +39,8 @@ function blockToBlockObject(block) {
     l: block[2],
   }
 }
+
+export function AppGenerateRandomBlocks(container): Promise<any> {
+  let data = JSON.stringify(container)
+  return window.backend.App.Generate(data)
+}

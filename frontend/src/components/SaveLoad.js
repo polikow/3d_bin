@@ -12,10 +12,6 @@ export default ({open, onClose}) => {
   const [container, setContainer, blocks, setBlocks] = useStore(
     s => [s.container, s.setContainer, s.blocks, s.setBlocks])
 
-  function handleError(error) {
-    console.log(error)
-  }
-
   const handleSuccess = (message) => () => {
     console.log(message)
   }
@@ -23,7 +19,7 @@ export default ({open, onClose}) => {
   function saveTask() {
     AppSave("Сохранить задачу в файл...", fileFilter, {container, blocks})
       .then(handleSuccess("saved!"))
-      .catch(handleError)
+      .catch(console.error)
   }
 
   function loadTask() {
@@ -36,7 +32,7 @@ export default ({open, onClose}) => {
         setBlocks(blocks)
         handleSuccess("loaded")()
       })
-      .catch(handleError)
+      .catch(console.error)
   }
 
   const [iteration, value, solution, packed, setResult] = useStore(
@@ -46,7 +42,9 @@ export default ({open, onClose}) => {
     AppSave("Сохранить решение в файл...", fileFilter,
       {iteration, value, solution, packed})
       .then(handleSuccess("saved!"))
-      .catch(handleError)
+      .catch(function (error) {
+        console.error(error)
+      })
   }
 
   function loadSolution() {
@@ -61,7 +59,9 @@ export default ({open, onClose}) => {
         setResult({iteration, value, solution, packed})
         handleSuccess("loaded")()
       })
-      .catch(handleError)
+      .catch(function (error) {
+        console.error(error)
+      })
   }
 
   return (
