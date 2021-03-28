@@ -323,17 +323,17 @@ func GenerateRandomBlocks(random *rand.Rand, container Container) []Block {
 		bigMin, bigMax     = 0.25, 0.4
 		smallMin, smallMax = 0.05, 0.18
 	)
-	var blocks = make([]Block, 5)
+	var (
+		blocks []Block
+		block  Block
+	)
 
-	for blocksVolume(blocks) > ceilMultiplicationUINT(container.Volume(), 1.2) {
-		var block Block
+	for blocksVolume(blocks) <= ceilMultiplicationUINT(container.Volume(), 1.2) {
 		switch {
 		case random.Float64() <= hugeBlockProbability:
 			block = generateRandomBlock(random, container, hugeMin, hugeMax)
-			break
 		case random.Float64() <= bigBlockProbability:
 			block = generateRandomBlock(random, container, bigMin, bigMax)
-			break
 		default:
 			block = generateRandomBlock(random, container, smallMin, smallMax)
 		}

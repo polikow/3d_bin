@@ -64,9 +64,9 @@ AlgorithmSetup:
 		var evolution packing.Evolution
 		switch g.Evolution {
 		case "Darwin":
-			evolution = packing.DarwinEvolution{}
+			evolution = new(packing.DarwinEvolution)
 		case "deVries":
-			evolution = packing.DeVriesEvolution{}
+			evolution = new(packing.DeVriesEvolution)
 		default:
 			break AlgorithmSetup
 		}
@@ -137,15 +137,14 @@ func (a App) Load(title, filter string) (string, error) {
 }
 
 // Generate генерирует случайные грузы для заданного контейнера.
-func (a App) Generate(data []byte) error {
+func (a App) Generate(data []byte) ([]packing.Block, error) {
 	var container packing.Container
 	if parseContainer(data, &container) {
 		random := packing.NewRandomSeeded()
 		blocks := packing.GenerateRandomBlocks(random, container)
-		a.runtime.Events.Emit("blocks", blocks)
-		return nil
+		return blocks, nil
 	} else {
-		return errors.New("wrong container specified")
+		return nil, errors.New("wrong container specified")
 	}
 }
 

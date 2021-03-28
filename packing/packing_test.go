@@ -1,6 +1,7 @@
 package packing
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -161,4 +162,15 @@ func TestAxisSize(t *testing.T) {
 		size := position.axisSize(axis)
 		assert.Equal(t, expected, size)
 	}
+}
+
+func TestGenerateRandomBlocks(t *testing.T) {
+	container := Container{
+		Width:  2,
+		Height: 2,
+		Length: 2,
+	}
+	random := NewRandomSeeded()
+	blocks := GenerateRandomBlocks(random, container)
+	fmt.Println(blocks)
 }

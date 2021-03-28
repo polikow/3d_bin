@@ -56,10 +56,11 @@ export default ({open, onClose}) => {
   const [page, setPage] = useState(0)
   const handleChangePage = (event, newPage) => setPage(newPage)
 
-  const container = useState(s => s.container)
+  const container = useStore(s => s.container)
   const onGenerateBlocks = () => {
     AppGenerateRandomBlocks(container)
-      .then(blocksObjects => setBlocks(blocksObjects.map))
+      .then(blocksObjects =>
+        setBlocks(blocksObjects.map(block => [block.w, block.h, block.l])))
       .catch(console.error)
   }
 

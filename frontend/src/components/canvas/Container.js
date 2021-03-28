@@ -24,7 +24,6 @@ export default () => {
 }
 
 function Labels({w, h, l}) {
-  useEffect(() => console.log("labels"))
   const labelScale = useStore(s=> s.labelScale)
 
   return <> <Label text={0} position={[s, 0, s]} scale={labelScale}/>

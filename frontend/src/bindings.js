@@ -25,19 +25,15 @@ export async function AppLoad(title: string, filter: string): Promise<any> {
 export function AppRunAlgorithm(container, blocks, settings): Promise<any> {
   let data = JSON.stringify({
     container: container,
-    blocks: blocks.map(blockToBlockObject),
+    blocks: blocks.map(block => ({
+        w: block[0],
+        h: block[1],
+        l: block[2],
+      })),
     ...settings
   })
   console.log(data)
   return window.backend.App.RunAlgorithm(data)
-}
-
-function blockToBlockObject(block) {
-  return {
-    w: block[0],
-    h: block[1],
-    l: block[2],
-  }
 }
 
 export function AppGenerateRandomBlocks(container): Promise<any> {
