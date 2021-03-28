@@ -4,9 +4,7 @@ import (
 	"3d_bin/packing"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/wailsapp/wails"
-	"github.com/wailsapp/wails/lib/logger"
 	"io/ioutil"
 	"strings"
 )
@@ -16,21 +14,14 @@ type App struct {
 	runtime *wails.Runtime
 }
 
-func NewApp() *App {
-	return &App{
-		logger:  logger.NewCustomLogger("APP"),
-		runtime: nil,
-	}
-}
-
 func (a *App) WailsInit(runtime *wails.Runtime) error {
 	a.runtime = runtime
-	a.logger = a.runtime.Log.New("App")
-	a.logger.Info("App is ready")
-	runtime.Events.Emit("ping")
+	a.logger = a.runtime.Log.New("APP")
+	a.logger.Info("APP is ready")
 	return nil
 }
 
+// BCASettings - настройки алгоритма искусственной иммунной сети.
 type BCASettings struct {
 	Container packing.Container `json:"container"`
 	Blocks    []packing.Block   `json:"blocks"`
@@ -39,6 +30,7 @@ type BCASettings struct {
 	Ci        float64           `json:"ci"`
 }
 
+// GASettings - настройки
 type GASettings struct {
 	Container packing.Container `json:"container"`
 	Blocks    []packing.Block   `json:"blocks"`
@@ -50,8 +42,8 @@ type GASettings struct {
 
 // RunAlgorithm запускает выполнение заданного алгоритма.
 //
-// Возвращает true, если алгоритм был успешно запущен, иначе false.
-func (a *App) RunAlgorithm(data []byte) bool {
+// Возвращает true, если алгоритм был успешно запущен.
+func (a App) RunAlgorithm(data []byte) bool {
 	var (
 		algorithm packing.SearchAlgorithm     // выполняемый алгоритм
 		random    = packing.NewRandomSeeded() // генератор случайных чисел
@@ -92,27 +84,9 @@ AlgorithmSetup:
 	}
 }
 
-func parseGASettings(data []byte, g *GASettings) bool {
-	e := json.Unmarshal(data, &g)
-	if e != nil || len(g.Blocks) == 0 ||
-		g.Np == 0 || g.Ni == 0 || g.Mp == 0 || g.Evolution == "" {
-		return false
-	} else {
-		return true
-	}
-}
-
-func parseBCASettings(data []byte, b *BCASettings) bool {
-	e := json.Unmarshal(data, &b)
-	if e != nil || len(b.Blocks) == 0 ||
-		b.Ci == 0 || b.Ni == 0 || b.Np == 0 {
-		return false
-	} else {
-		return true
-	}
-}
-
-func (a *App) evaluate(algorithm packing.SearchAlgorithm) {
+// evaluate полностью выполняет алгоритм и возвращает результат через
+// событие "result"
+func (a App) evaluate(algorithm packing.SearchAlgorithm) {
 	result := packing.Evaluate(algorithm)
 	a.runtime.Events.Emit("result", result)
 }
@@ -162,6 +136,45 @@ func (a App) Load(title, filter string) (string, error) {
 	return string(bytes), err
 }
 
+// Generate генерирует случайные грузы для заданного контейнера.
+func (a App) Generate(data []byte) error {
+	var container packing.Container
+	if parseContainer(data, &container) {
+		random := packing.NewRandomSeeded()
+		blocks := packing.GenerateRandomBlocks(random, container)
+		a.runtime.Events.Emit("blocks", blocks)
+		return nil
+	} else {
+		return errors.New("wrong container specified")
+	}
+}
+
+// parseGASettings парсит настройки алгоритма.
+// Если они состовлены неправильно, то возвращает false.
+func parseGASettings(data []byte, g *GASettings) bool {
+	e := json.Unmarshal(data, &g)
+	if e != nil || len(g.Blocks) == 0 ||
+		g.Np == 0 || g.Ni == 0 || g.Mp == 0 || g.Evolution == "" {
+		return false
+	} else {
+		return true
+	}
+}
+
+// parseBCASettings парсит настройки алгоритма.
+// Если они состовлены неправильно, то возвращает false.
+func parseBCASettings(data []byte, b *BCASettings) bool {
+	e := json.Unmarshal(data, &b)
+	if e != nil || len(b.Blocks) == 0 ||
+		b.Ci == 0 || b.Ni == 0 || b.Np == 0 {
+		return false
+	} else {
+		return true
+	}
+}
+
+// parseContainer парсит контейнер.
+// Если параметры контейнера заданы неправильно, то возвращает false.
 func parseContainer(data []byte, c *packing.Container) bool {
 	err := json.Unmarshal(data, &c)
 	if err != nil || c.Width == 0 || c.Height == 0 || c.Length == 0 {
@@ -171,19 +184,7 @@ func parseContainer(data []byte, c *packing.Container) bool {
 	}
 }
 
-func (a *App) Generate(data []byte) error {
-	var container packing.Container
-    if parseContainer(data, &container) {
-    	random := packing.NewRandomSeeded()
-		blocks := packing.GenerateRandomBlocks(random, container)
-		a.runtime.Events.Emit("blocks", blocks)
-		return nil
-	} else {
-		return fmt.Errorf("wrong container specified")
-	}
-}
-
-//addJSONFormat добавляет расширение .json, если оно не указано.
+// addJSONFormat добавляет расширение .json, если оно не указано.
 func addJSONFormat(filename string) string {
 	lastDot := strings.LastIndex(filename, ".")
 	lastSlash := strings.LastIndex(filename, "/")

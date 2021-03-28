@@ -2,13 +2,12 @@ package packing
 
 // PackAlgorithm - алгоритм упаковки.
 type PackAlgorithm struct {
-
-	container Container // контейнер, в который упаковываются блоки
-	blocks    []Block   // блоки, которые необходимо упаковать
+	container Container // контейнер, в который упаковываются грузы
+	blocks    []Block   // грузы, которые необходимо упаковать
 	solution  Solution  // порядок упаковки
 
 	step   int             // текущий шаг алгоритма
-	packed []BlockPosition // положения уже упакованных блоков
+	packed []BlockPosition // положения уже упакованных грузов
 
 	// используется при поиске свободных мест для каждой оси
 	borders []uint // границы мест
@@ -42,7 +41,7 @@ func NewPackAlgorithm(container Container, blocks []Block) *PackAlgorithm {
 }
 
 // Run полностью выполняет упаковку до тех пор, пока это возможно.
-// Возвращает массив упакованных блоков.
+// Возвращает массив упакованных грузов.
 // (нужно скопировать результат, если он используется далее)
 func (a *PackAlgorithm) Run(solution Solution) []BlockPosition {
 	a.reset(solution)
@@ -77,8 +76,9 @@ func (a PackAlgorithm) checkSolution(solution Solution) {
 		panic("Wrong packed specified")
 	}
 	for _, indexRotation := range solution {
-		if indexRotation.Rotation < XYZ || indexRotation.Rotation > YXZ {
-			panic("Wrong rotation specified: " + string(indexRotation.Rotation))
+		rotation := indexRotation.Rotation
+		if rotation < XYZ || rotation > YXZ {
+			panic("Wrong rotation specified: " + string(rotation))
 		}
 	}
 	uniqueValues := make(map[int]bool, len(solution))
@@ -90,17 +90,17 @@ func (a PackAlgorithm) checkSolution(solution Solution) {
 	}
 }
 
-// packNextBlock выполняет упаковку следующего блока. Если его упаковать нельзя,
-// то функция возвращает false, иначе true.
+// packNextBlock выполняет упаковку следующего груза.
+// Если его упаковать нельзя, то функция возвращает false, иначе true.
 func (a *PackAlgorithm) packNextBlock() (isPackable bool) {
 	if a.step >= len(a.blocks) {
 		return false
 	}
 
-	indexRotation := a.solution[a.step]    //номер блока
-	block := a.blocks[indexRotation.Index] //пакуемый блок
-	rotation := indexRotation.Rotation     //его поворот
-	rotatedBlock := block.rotatedBlock(rotation)
+	indexRotation := a.solution[a.step]          // номер груза
+	block := a.blocks[indexRotation.Index]       // пакуемый груз
+	rotation := indexRotation.Rotation           // его поворот
+	rotatedBlock := block.rotatedBlock(rotation) // его повернутая версия
 
 	//1 этап - поиск начальной точки
 	startingPoint := a.findStartingPoint(rotatedBlock)
@@ -125,7 +125,7 @@ func (a *PackAlgorithm) packNextBlock() (isPackable bool) {
 	return true
 }
 
-// addToPacked - сохранение блока как успешно упакованного.
+// addToPacked - сохранение груза как успешно упакованного.
 func (a *PackAlgorithm) addToPacked(position BlockPosition) {
 	a.packed = append(a.packed, position)
 	a.step++
@@ -142,11 +142,11 @@ func (a *PackAlgorithm) moveDownOnAxis(axis Axis, position *BlockPosition) bool 
 	return isPackable
 }
 
-// findEmptyAreasOnAxis находит свободные по оси axis места для блока.
+// findEmptyAreasOnAxis находит свободные по оси axis места для груза.
 func (a *PackAlgorithm) findEmptyAreasOnAxis(axis Axis, position *BlockPosition) {
 	a.prepareBordersAndAreas(axis)
 
-	// Поиск пересекающихся в плоскости блоков.
+	// Поиск пересекающихся в плоскости грузов.
 	// Построение списка доступных мест по заданной оси.
 	for _, packed := range a.packed {
 		var newLower uint
@@ -275,7 +275,7 @@ ApplyOverlappingArea:
 }
 
 // findStartingPoint находит точку, с которой начинается упаковка груза.
-// В этой точке невозможно пересечение с уже размещенными блоками.
+// В этой точке невозможно пересечение с уже размещенными грузами.
 func (a *PackAlgorithm) findStartingPoint(block Block) Point {
 	if len(a.packed) == 0 {
 		return Point{
@@ -285,9 +285,9 @@ func (a *PackAlgorithm) findStartingPoint(block Block) Point {
 		}
 	}
 
-	position := a.packed[len(a.packed)-1] // последний упакованный блок
+	position := a.packed[len(a.packed)-1] // последний упакованный груз
 
-	// изменение смещения начальной точки для этого блока
+	// изменение смещения начальной точки для этого груза
 	if a.shiftX < position.P2.X {
 		a.shiftX = position.P2.X
 	}
@@ -375,7 +375,7 @@ func (a *PackAlgorithm) findStartingPoint(block Block) Point {
 }
 
 // selectFirstFittingArea среди найденных мест находит точку в которой возможно
-// разместить блок.
+// разместить груз.
 func (a *PackAlgorithm) selectFirstFittingArea(size uint) (uint, bool) {
 	for i := 0; i < len(a.borders)-1; i++ {
 		if !a.isFree[i] {

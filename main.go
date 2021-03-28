@@ -6,11 +6,10 @@ import (
 )
 
 func main() {
-	app := NewApp()
-	runWailsWithBindings(app)
+	runWails(new(App))
 }
 
-func runWailsWithBindings(bindings ...interface{}) {
+func runWails(bindings ...interface{}) {
 	js := mewn.String("./frontend/build/static/js/main.js")
 	css := mewn.String("./frontend/build/static/css/main.css")
 

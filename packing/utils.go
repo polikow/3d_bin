@@ -6,6 +6,21 @@ import (
 	"time"
 )
 
+// NewRandom создает новый генератор случайных чисел с заданным seed значением.
+func NewRandom(seed int64) *rand.Rand {
+	return rand.New(rand.NewSource(seed).(rand.Source64))
+}
+
+// NewRandomSeeded создает новый генератор случайных чисел со seed значением,
+// зависящим от текущего времени.
+func NewRandomSeeded() *rand.Rand {
+	return NewRandom(TimeSeed())
+}
+
+func TimeSeed() int64 {
+	return time.Now().UnixNano()
+}
+
 // intInBounds генерирует случайное число, которое лежит на [lower, higher].
 func intInBounds(random *rand.Rand, lower, higher int) int {
 	return random.Intn(higher - lower + 1) + lower
@@ -55,19 +70,4 @@ func ceilMultiplicationUINT(u uint, f float64) uint {
 
 func ceilDivision(i int, f float64) int {
 	return int(math.Ceil(float64(i) / f))
-}
-
-// NewRandom создает новый генератор случайных чисел с заданным seed значением.
-func NewRandom(seed int64) *rand.Rand {
-	return rand.New(rand.NewSource(seed).(rand.Source64))
-}
-
-// NewRandomSeeded создает новый генератор случайных чисел со seed значением,
-// зависящим от текущего времени.
-func NewRandomSeeded() *rand.Rand {
-	return NewRandom(TimeSeed())
-}
-
-func TimeSeed() int64 {
-	return time.Now().UnixNano()
 }

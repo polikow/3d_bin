@@ -40,9 +40,9 @@ func NewBCA(container Container, blocks []Block, np int, ni int, ci float64, ran
 	return &BCA{
 		searchState: newSearchState(container, blocks),
 
-		np: np,
-		ni: ni,
-		ci: ci,
+		np:     np,
+		ni:     ni,
+		ci:     ci,
 		random: random,
 
 		population:         make([]Antibody, np),
@@ -54,7 +54,7 @@ func NewBCA(container Container, blocks []Block, np int, ni int, ci float64, ran
 
 func (b *BCA) Run() SearchResult {
 	if b.Done() {
-		panic("error")
+		panic("bca: the algorithm is done searching")
 	} else {
 		b.runIteration()
 		return b.result()
@@ -100,7 +100,7 @@ func (b *BCA) cloneAndReplace() {
 	}
 }
 
-//findBestClone находит наилучшего клона и его аффинность.
+// findBestClone находит наилучшего клона и его аффинность.
 func (b *BCA) findBestClone() (Antibody, float64) {
 	var (
 		bestClone    = b.clones[0]
@@ -115,14 +115,14 @@ func (b *BCA) findBestClone() (Antibody, float64) {
 	return bestClone, bestAffinity
 }
 
-//mutateClones - мутирование клонов с помощью операции гипермутации.
+// mutateClones - мутирование клонов с помощью операции гипермутации.
 func (b *BCA) mutateClones(intensity float64) {
 	for _, clone := range b.clones {
 		clone.hypermutation(b.random, intensity)
 	}
 }
 
-//createNpClones - создание np клонов.
+// createNpClones - создание np клонов.
 func (b *BCA) createNpClones(antibody Antibody) {
 	if b.iterationsPassed == 0 {
 		for i := 0; i < b.np; i++ {
@@ -137,15 +137,15 @@ func (b *BCA) createNpClones(antibody Antibody) {
 	}
 }
 
-//initializeAntibodies - инициализация популяции антител.
+// initializeAntibodies - инициализация популяции антител.
 func (b *BCA) initializeAntibodies() {
 	for i := range b.population {
 		b.population[i] = newAntibody(b.random, b.n)
 	}
 }
 
-//findPopulationAffinity - поиск аффинности антител популяции.
-//(т.е. поиск значения целевой функции для каждого антитела)
+// findPopulationAffinity - поиск аффинности антител популяции.
+// (т.е. поиск значения целевой функции для каждого антитела)
 func (b *BCA) findPopulationAffinity() {
 	b.populationAffinity = b.populationAffinity[:0]
 	for _, antibody := range b.population {
@@ -154,8 +154,8 @@ func (b *BCA) findPopulationAffinity() {
 	}
 }
 
-//findPopulationAffinity - поиск аффинности клонов.
-//(т.е. поиск значения целевой функции для каждого клона)
+// findPopulationAffinity - поиск аффинности клонов.
+// (т.е. поиск значения целевой функции для каждого клона)
 func (b *BCA) findClonesAffinity() {
 	b.clonesAffinity = b.clonesAffinity[:0]
 	for _, antibody := range b.clones {
@@ -164,12 +164,12 @@ func (b *BCA) findClonesAffinity() {
 	}
 }
 
-//findAffinity - поиск значения BG-аффинности для заданного тела.
+// findAffinity - поиск значения BG-аффинности для заданного тела.
 func (b BCA) findAffinity(antibody Antibody) float64 {
 	return b.findFill(Solution(antibody))
 }
 
-//selectRandomClone возвращает случайное антитело из заданного набора антител.
+// selectRandomClone возвращает случайное антитело из заданного набора антител.
 func (b BCA) selectRandomClone() Antibody {
 	index := b.random.Intn(b.np)
 	return b.clones[index]
