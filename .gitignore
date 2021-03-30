@@ -1,3 +1,8 @@
 /build
 
 /.idea
+
+# результаты тестов
+/research/bca/*.json
+!/research/bca/bestResult.json
+

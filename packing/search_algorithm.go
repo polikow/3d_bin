@@ -26,7 +26,7 @@ type SearchResult struct {
 	Packed    []BlockPosition `json:"packed"`
 }
 
-func (s SearchResult) betterThan(another SearchResult) bool {
+func (s SearchResult) BetterThan(another SearchResult) bool {
 	return s.Value >= another.Value
 }
 
@@ -58,7 +58,7 @@ func StepByStepBetter(algorithm SearchAlgorithm) func() (SearchResult, bool) {
 				return bestResult, false
 			} else {
 				newResult = algorithm.Run()
-				if newResult.betterThan(bestResult) {
+				if newResult.BetterThan(bestResult) {
 					bestResult = newResult
 					return bestResult, true
 				} else {
