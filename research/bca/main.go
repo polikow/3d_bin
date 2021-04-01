@@ -87,18 +87,21 @@ func aggregator(resultsCh <-chan result, results *[]result) {
 
 func main() {
 	const (
-		n = 2 // количество запусков для одних и тех же параметров
+		n          = 150 // количество запусков для одних и тех же параметров
+		taskPath   = "/home/aleksey/3d_bin/saved/47blocks.json"
+		resultPath = "/home/aleksey/3d_bin/research/bca"
 
-		npStart, npStop, npStep = 5, 20, 5
-		niStart, niStop, niStep = 25, 25, 25
-		ciStart, ciStop, ciStep = 0.05, 2, 0.15
+		npStart, npStop, npStep = 10, 10, 10
+		niStart, niStop, niStep = 50, 400, 50
+		ciStart, ciStop, ciStep = 0.05, 5, 0.05
 	)
 
 	var (
 		jobs      = make(chan input, 100)
 		resultsCh = make(chan result, 100)
 		wg        = new(sync.WaitGroup)
-		results   = make([]result, 0, 1000)
+		results   []result
+		timeStart = time.Now()
 	)
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	for i := 0; i < runtime.NumCPU(); i++ {
@@ -107,15 +110,7 @@ func main() {
 	go aggregator(resultsCh, &results)
 
 	var (
-		container = packing.Container{
-			Width:  50,
-			Height: 50,
-			Length: 50,
-		}
-		blocks = packing.GenerateRandomBlocks(
-			packing.NewRandomSeeded(),
-			container,
-		)
+		container, blocks = loadTask(taskPath)
 
 		// исследуемые параметры
 		np int
@@ -143,6 +138,7 @@ func main() {
 	}
 	close(jobs)
 	wg.Wait()
+	time.Sleep(time.Second * 10) //todo пофиксить
 	close(resultsCh)
 
 	// сортировка результатов
@@ -188,10 +184,24 @@ func main() {
 		}
 	}
 
-	saveIntoJSON("/home/aleksey/3d_bin/research/bca/results.json", results)
-	saveIntoJSON("/home/aleksey/3d_bin/research/bca/average.json", average)
-	saveIntoJSON("/home/aleksey/3d_bin/research/bca/maximum.json", maximum)
-	saveIntoJSON("/home/aleksey/3d_bin/research/bca/bestResult.json", best)
+	saveIntoJSON(resultPath+"/results.json", results)
+	saveIntoJSON(resultPath+"/average.json", average)
+	saveIntoJSON(resultPath+"/maximum.json", maximum)
+	saveIntoJSON(resultPath+"/bestResult.json", best)
+	fmt.Printf("%v", time.Now().Sub(timeStart))
+}
+
+func loadTask(path string) (packing.Container, []packing.Block) {
+	cb := struct {
+		Container packing.Container `json:"container"`
+		Blocks    []packing.Block   `json:"blocks"`
+	}{}
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+	json.Unmarshal(data, &cb)
+	return cb.Container, cb.Blocks
 }
 
 func saveIntoJSON(path string, dataToSave interface{}) {

@@ -4,5 +4,9 @@
 
 # результаты тестов
 /research/bca/*.json
-!/research/bca/bestResult.json
+!/research/bca/47blocks_1try/bestResult.json
 
+# для генерации графов искользовать python скрипт
+/research/bca/**/*.html
+
+research/bca/__pycache__/

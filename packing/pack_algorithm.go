@@ -14,8 +14,6 @@ type PackAlgorithm struct {
 	isFree  []bool // флаг свободности для каждого места
 
 	shiftZ, shiftY, shiftX uint // смещение начальной точки по осям
-	layer                  uint // текущий слой заполнения(нижняя граница по Y)
-	layerFirstIndex        int  // индекс первого упакованного на этом уровне
 }
 
 func NewPackAlgorithm(container Container, blocks []Block) *PackAlgorithm {
@@ -25,18 +23,16 @@ func NewPackAlgorithm(container Container, blocks []Block) *PackAlgorithm {
 	}
 
 	return &PackAlgorithm{
-		container:       container,
-		blocks:          blocks,
-		solution:        nil,
-		step:            0,
-		packed:          make([]BlockPosition, 0, n),
-		borders:         make([]uint, 0, 2*n+2),
-		isFree:          make([]bool, 0, 2*n+1),
-		shiftZ:          0,
-		shiftY:          0,
-		shiftX:          0,
-		layer:           0,
-		layerFirstIndex: 0,
+		container: container,
+		blocks:    blocks,
+		solution:  nil,
+		step:      0,
+		packed:    make([]BlockPosition, 0, n),
+		borders:   make([]uint, 0, 2*n+2),
+		isFree:    make([]bool, 0, 2*n+1),
+		shiftZ:    0,
+		shiftY:    0,
+		shiftX:    0,
 	}
 }
 
@@ -66,8 +62,6 @@ func (a *PackAlgorithm) reset(solution Solution) {
 	a.shiftZ = 0
 	a.shiftY = 0
 	a.shiftX = 0
-	a.layer = 0
-	a.layerFirstIndex = 0
 }
 
 // checkSolution проверяет решение.
@@ -116,6 +110,10 @@ func (a *PackAlgorithm) packNextBlock() (isPackable bool) {
 		return false
 	}
 	isPackable = a.moveDownOnAxis(X, &blockPosition)
+	if !isPackable {
+		return false
+	}
+	isPackable = a.moveDownOnAxis(Y, &blockPosition)
 	if !isPackable {
 		return false
 	}
@@ -285,19 +283,19 @@ func (a *PackAlgorithm) findStartingPoint(block Block) Point {
 		}
 	}
 
-	position := a.packed[len(a.packed)-1] // последний упакованный груз
+	lastPosition := a.packed[len(a.packed)-1] // последний упакованный груз
 
 	// изменение смещения начальной точки для этого груза
-	if a.shiftX < position.P2.X {
-		a.shiftX = position.P2.X
+	if a.shiftX < lastPosition.P2.X {
+		a.shiftX = lastPosition.P2.X
 	}
 
-	if a.shiftZ < position.P2.Z {
-		a.shiftZ = position.P2.Z
+	if a.shiftZ < lastPosition.P2.Z {
+		a.shiftZ = lastPosition.P2.Z
 	}
 
-	if a.shiftY < position.P2.Y {
-		a.shiftY = position.P2.Y
+	if a.shiftY < lastPosition.P2.Y {
+		a.shiftY = lastPosition.P2.Y
 	}
 
 	widthLeft := a.container.Width - a.shiftX
@@ -306,11 +304,11 @@ func (a *PackAlgorithm) findStartingPoint(block Block) Point {
 	lengthLeft := a.container.Length - a.shiftZ
 	notEnoughLength := lengthLeft < block.Length
 
+	// Если недостаточно места одновременно по ширине и длине, то сместить
+	// в начало по осям X и Z.
 	if notEnoughWidth && notEnoughLength {
 		a.shiftX = 0
 		a.shiftZ = 0
-		a.layer = a.shiftY
-		a.layerFirstIndex = a.step
 
 		return Point{
 			a.shiftX,
@@ -319,34 +317,67 @@ func (a *PackAlgorithm) findStartingPoint(block Block) Point {
 		}
 	}
 
+	// Если недостаточно места по ширине, то сместить по X настолько,
+	// насколько это позволяют уже расположенные грузы.
+	//
+	// Для этого проверяются все блоки, которые находятся на уровне
+	// shiftY - block.Height, и которые задают сдвиг по оси Z на этом уровне.
 	if notEnoughWidth {
 		var newShiftX uint = 0
-		for i := a.layerFirstIndex; i < len(a.packed); i++ {
-			position := a.packed[i]
+		var blockP2 = a.shiftY
+		for _, position := range a.packed {
 
-			isInCurrentLayer := position.P1.Y >= a.layer
-			setsShiftZ := position.P2.Z == a.shiftZ
-			if isInCurrentLayer && setsShiftZ {
-				if newShiftX <= position.P1.X {
-					newShiftX = position.P1.X
-					break
+			onSameLevel := false
+			if blockP2 > position.P2.Y {
+				if blockP2-position.P2.Y < block.Height {
+					onSameLevel = true
+				}
+			} else {
+				if position.P2.Y-blockP2 < block.Height {
+					onSameLevel = true
+				}
+			}
+
+			if onSameLevel {
+				setsShiftZ := position.P2.Z == a.shiftZ
+				if setsShiftZ {
+					if newShiftX <= position.P1.X {
+						newShiftX = position.P1.X
+						break
+					}
 				}
 			}
 		}
 		a.shiftX = newShiftX
 	}
 
+	// Если недостаточно места по длине, то сместить по Z настолько,
+	// насколько это позволяют уже расположенные грузы.
+	//
+	// Для этого проверяются все блоки, которые находятся на уровне
+	// shiftY - block.Height, и которые задают сдвиг по оси X на этом уровне.
 	if notEnoughLength {
 		var newShiftZ uint = 0
-		for i := a.layerFirstIndex; i < len(a.packed); i++ {
-			position := a.packed[i]
+		var blockP2 = a.shiftY
+		for _, position := range a.packed {
 
-			isInCurrentLayer := position.P1.Y >= a.layer
-			setsShiftX := position.P2.X == a.shiftX
+			onSameLevel := false
+			if blockP2 > position.P2.Y {
+				if blockP2-position.P2.Y < block.Height {
+					onSameLevel = true
+				}
+			} else {
+				if position.P2.Y-blockP2 < block.Height {
+					onSameLevel = true
+				}
+			}
 
-			if isInCurrentLayer && setsShiftX {
-				if newShiftZ <= position.P1.Z {
-					newShiftZ = position.P1.Z
+			if onSameLevel {
+				setsShiftX := position.P2.X == a.shiftX
+				if setsShiftX {
+					if newShiftZ <= position.P1.Z {
+						newShiftZ = position.P1.Z
+					}
 				}
 			}
 		}
@@ -363,8 +394,6 @@ func (a *PackAlgorithm) findStartingPoint(block Block) Point {
 	if notEnoughWidth || notEnoughLength {
 		a.shiftX = 0
 		a.shiftZ = 0
-		a.layer = a.shiftY
-		a.layerFirstIndex = a.step
 	}
 
 	return Point{

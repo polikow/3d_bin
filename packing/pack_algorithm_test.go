@@ -125,6 +125,29 @@ func TestPackAlgorithm(t *testing.T) {
 			},
 			9,
 		},
+
+		{
+			Container{Width: 2, Height: 3, Length: 2},
+			[]Block{
+				{1, 3, 1},
+				{1, 1, 1},
+				{1, 1, 1},
+				{1, 1, 1},
+				{1, 1, 1},
+				{1, 1, 1},
+				{1, 1, 1},
+			},
+			Solution{
+				IndexRotation{Index: 0, Rotation: 0},
+				IndexRotation{Index: 1, Rotation: 0},
+				IndexRotation{Index: 2, Rotation: 0},
+				IndexRotation{Index: 3, Rotation: 0},
+				IndexRotation{Index: 4, Rotation: 0},
+				IndexRotation{Index: 5, Rotation: 0},
+				IndexRotation{Index: 6, Rotation: 0},
+			},
+			7,
+		},
 	}
 
 	for _, test := range suit {
