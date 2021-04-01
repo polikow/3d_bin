@@ -1,6 +1,7 @@
 package packing
 
 import (
+	"fmt"
 	"math/rand"
 	"sort"
 )
@@ -20,7 +21,7 @@ type GA struct {
 }
 
 func NewGA(container Container, blocks []Block, np int, mp float64, ni int, evolution Evolution, random *rand.Rand) *GA {
-	if np <= 0 || mp <= 0 || mp > 1 || ni <= 0 {
+	if np <= 0 || mp <= 0 || mp > 1 || ni <= 0 || evolution == nil {
 		panic("ga: wrong input values")
 	}
 
@@ -237,10 +238,13 @@ func mapped(originalP, otherP Chromosome, originalIndex int) IndexRotation {
 // заменяется новой.
 type Evolution interface {
 	runSelection(g *GA)
+	fmt.Stringer
 }
 
 // DarwinEvolution - модель эволюции по Дарвину.
 type DarwinEvolution struct{}
+
+func (DarwinEvolution) String() string { return "Darwin" }
 
 func (DarwinEvolution) runSelection(g *GA) {
 	const elite float64 = 0.05
@@ -334,6 +338,8 @@ func (p pairs) sort() {
 
 //DeVriesEvolution - модель эволюции по де Фризу.
 type DeVriesEvolution struct{}
+
+func (DeVriesEvolution) String() string { return "DeVries" }
 
 const (
 	// вероятности возникновения катастрофы

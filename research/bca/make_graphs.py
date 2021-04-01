@@ -1,6 +1,6 @@
 import os
 
-from research.bca.graphing_utils import make_graphs
+from research.graphing_utils import make_graphs
 
 # директория, в которой находятся результаты, которые надо визуализировать
 DIR = "47blocks_1try"
