@@ -66,8 +66,6 @@ export const [useStore] = create(set => ({
   setIsDebugMode: (isDebugMode) => set(() => ({isDebugMode})),
   onlyEdges: false,
   setOnlyEdges: (onlyEdges) => set(() => ({onlyEdges})),
-  hasGaps: false,
-  setHasGaps: (hasGaps) => set(() => ({hasGaps})),
   targetContainer: true,
   setTargetContainer: (targetContainer) => set(state => targetContainer
     ? {

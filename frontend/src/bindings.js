@@ -1,3 +1,5 @@
+import {blockToBlockObj} from "./utils";
+
 export function AppEvent(event: string, callback: function) {
   window.wails.Events.On(event, callback)
 }
@@ -13,7 +15,7 @@ export function AppSave(title: string, filter: string, data: any): Promise<any> 
   return window.backend.App.Save(
     title,
     filter,
-    JSON.stringify(data, jsonArrayReplacer, 2)
+    JSON.stringify(data, null, 2)
   )
 }
 
@@ -25,11 +27,7 @@ export async function AppLoad(title: string, filter: string): Promise<any> {
 export function AppRunAlgorithm(container, blocks, settings): Promise<any> {
   let data = JSON.stringify({
     container: container,
-    blocks: blocks.map(block => ({
-        w: block[0],
-        h: block[1],
-        l: block[2],
-      })),
+    blocks: blocks.map(blockToBlockObj),
     ...settings
   })
   console.log(data)

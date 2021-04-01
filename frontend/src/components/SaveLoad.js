@@ -4,6 +4,7 @@ import {Button, Typography} from "@material-ui/core";
 import React from "react";
 import {useStore} from "../store";
 import {AppLoad, AppSave} from "../bindings";
+import {blockObjToBlock, blockToBlockObj} from "../utils";
 
 const fileFilter = "*.json"
 
@@ -17,7 +18,8 @@ export default ({open, onClose}) => {
   }
 
   function saveTask() {
-    AppSave("Сохранить задачу в файл...", fileFilter, {container, blocks})
+    const data = {container, blocks: blocks.map(blockToBlockObj)}
+    AppSave("Сохранить задачу в файл...", fileFilter, data)
       .then(handleSuccess("saved!"))
       .catch(console.error)
   }
@@ -29,7 +31,7 @@ export default ({open, onClose}) => {
           throw new Error("wrong task file format!")
         }
         setContainer(container)
-        setBlocks(blocks)
+        setBlocks(blocks.map(blockObjToBlock))
         handleSuccess("loaded")()
       })
       .catch(console.error)

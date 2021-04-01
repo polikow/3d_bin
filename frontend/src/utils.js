@@ -87,3 +87,19 @@ export function objCenter(obj) {
     throw new Error("can't find position for the obj: " + obj)
   }
 }
+
+export function blockToBlockObj(block) {
+  return {
+    w: block[0],
+    h: block[1],
+    l: block[2],
+  }
+}
+
+export function blockObjToBlock(block) {
+  return [
+    block.w,
+    block.h,
+    block.l,
+  ]
+}

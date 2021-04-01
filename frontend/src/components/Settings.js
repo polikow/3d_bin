@@ -16,7 +16,6 @@ export default ({open, onClose}) => {
   const [opacity, setOpacity] = useStore(s => [s.opacity, s.setOpacity])
   const [isColorful, setIsColorful] = useStore(s => [s.isColorful, s.setIsColorful])
   const [onlyEdges, setOnlyEdges] = useStore(s => [s.onlyEdges, s.setOnlyEdges])
-  const [hasGaps, setHasGaps] = useStore(s => [s.hasGaps, s.setHasGaps])
 
   const [grid, setGrid] = useStore(s => [s.grid, s.setGrid])
   const [labelScale, setLabelScale] = useStore(s => [s.labelScale, s.setLabelScale])
@@ -50,7 +49,6 @@ export default ({open, onClose}) => {
   const toggleColorful = (event, newValue) => setIsColorful(newValue)
   const toggleDebugMode = (event) => setIsDebugMode(event.target.checked)
   const toggleOnlyEdges = (event) => setOnlyEdges(event.target.checked)
-  const toggleGaps = (event) => setHasGaps(event.target.checked)
 
   const toggleGrid = (event) => setGrid(event.target.checked)
   const handleLabelScale = (event, newValue) => setLabelScale(newValue)
@@ -76,8 +74,6 @@ export default ({open, onClose}) => {
                 onChange={toggleColorful}/>
         <Switch label="Отображать только ребра"
                 checked={onlyEdges} onChange={toggleOnlyEdges}/>
-        <Switch label="Отступы"
-                checked={hasGaps} onChange={toggleGaps}/>
       </MenuPaper>
 
       <MenuPaper title="Вид контейнера">

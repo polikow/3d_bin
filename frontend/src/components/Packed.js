@@ -6,11 +6,12 @@ import MenuTitle from "./ui/MenuTitle";
 import {Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow} from "@material-ui/core";
 
 const rowsPerPage = 10
-
+const rotations = ["XYZ", "ZYX", "XZY", "YZX", "ZXY", "YXZ"]
 
 export default ({open, onClose}) => {
 
   const packed = useStore(s => s.packed)
+  const solution = useStore(s => s.solution)
 
   const [page, setPage] = useState(0)
   const handleChangePage = (event, newPage) => setPage(newPage)
@@ -23,29 +24,27 @@ export default ({open, onClose}) => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>№</TableCell>
-                <TableCell>X1</TableCell>
-                <TableCell>Y1</TableCell>
-                <TableCell>Z1</TableCell>
-                <TableCell>X2</TableCell>
-                <TableCell>Y2</TableCell>
-                <TableCell>Z2</TableCell>
+                <TableCell>№ груза</TableCell>
+                <TableCell>X</TableCell>
+                <TableCell>Y</TableCell>
+                <TableCell>Z</TableCell>
+                <TableCell>Поворот</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {packed
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map(({p1, p2}, i) => {
-                  const index = i + page * rowsPerPage
+                  const index = solution[i].index
+                  const rotation = rotations[solution[i].rotation]
+
                   return (
                     <TableRow key={index.toString()}>
                       <TableCell align="center">{index + 1}</TableCell>
                       <TableCell align="center">{p1.x}</TableCell>
                       <TableCell align="center">{p1.y}</TableCell>
                       <TableCell align="center">{p1.z}</TableCell>
-                      <TableCell align="center">{p2.x}</TableCell>
-                      <TableCell align="center">{p2.y}</TableCell>
-                      <TableCell align="center">{p2.z}</TableCell>
+                      <TableCell align="center">{rotation}</TableCell>
                     </TableRow>
                   );
                 })}

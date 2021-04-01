@@ -6,16 +6,14 @@ import Label from "./Label";
 const colors =
   ["violet", "indigo", "blue", "green", "yellow", "orange", "red"].reverse()
 
-const blocksPerRow = 5
+const blocksPerRow = 10
 const gap = 2
 
 export default function () {
   useEffect(() => console.log("cargo ui render"))
 
-  const [blocks, opacity, isColorful, onlyEdges,
-    hasGaps, centerCameraAroundCargo] = useStore(
-    s => [s.blocks, s.opacity, s.isColorful, s.onlyEdges,
-      s.hasGaps, s.centerCameraAroundCargo])
+  const [blocks, opacity, isColorful, onlyEdges, centerCameraAroundCargo] = useStore(
+    s => [s.blocks, s.opacity, s.isColorful, s.onlyEdges, s.centerCameraAroundCargo])
 
   const space = spaceForOneBlock(blocks)
   const cargo = findBlocksPositions(blocks, space)
@@ -30,7 +28,7 @@ export default function () {
       <>
         <Label text={i + 1} position={[p2.x - (p2.x - p1.x) / 2, 0, p1.z - gap / 2]} scale={30}/>
         <Block key={i} p1={p1} p2={p2}
-               gap={hasGaps}
+               gap={onlyEdges}
                color={isColorful ? colors[i % colors.length] : "grey"}
                opacity={1 - opacity}
                onlyEdges={onlyEdges}/>
