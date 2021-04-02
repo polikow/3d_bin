@@ -110,7 +110,7 @@ func main() {
 	go aggregator(resultsCh, &results)
 
 	var (
-		container, blocks = loadTask(taskPath)
+		container, blocks = packing.LoadTaskFromJSON(taskPath)
 
 		// исследуемые параметры
 		np int
@@ -189,19 +189,6 @@ func main() {
 	saveIntoJSON(resultPath+"/maximum.json", maximum)
 	saveIntoJSON(resultPath+"/bestResult.json", best)
 	fmt.Printf("%v", time.Now().Sub(timeStart))
-}
-
-func loadTask(path string) (packing.Container, []packing.Block) {
-	cb := struct {
-		Container packing.Container `json:"container"`
-		Blocks    []packing.Block   `json:"blocks"`
-	}{}
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		panic(err)
-	}
-	json.Unmarshal(data, &cb)
-	return cb.Container, cb.Blocks
 }
 
 func saveIntoJSON(path string, dataToSave interface{}) {

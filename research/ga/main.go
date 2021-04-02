@@ -27,19 +27,19 @@ type result struct {
 
 	r packing.SearchResult
 
-	Np    int               `json:"np"`
-	Ni    int               `json:"ni"`
-	Mp    float64           `json:"mp"`
-	E     packing.Evolution `json:"evolution"`
-	Time  int64             `json:"time"` // время вычисления в миллисекундах
-	Value float64           `json:"value"`
+	Np    int     `json:"np"`
+	Ni    int     `json:"ni"`
+	Mp    float64 `json:"mp"`
+	e     packing.Evolution
+	Time  int64   `json:"time"` // время вычисления в миллисекундах
+	Value float64 `json:"value"`
 }
 
 func (r result) String() string {
 	seconds := float64(r.Time) / 1000
 	return fmt.Sprintf(
 		"%6.4g, %6.2g sec. (np=%2d, ni=%3d, mp=%5.3g) [%v]",
-		r.Value, seconds, r.Np, r.Ni, r.Mp, r.E)
+		r.Value, seconds, r.Np, r.Ni, r.Mp, r.e)
 }
 
 type resultArr []result
@@ -74,7 +74,7 @@ func worker(jobs <-chan input, results chan<- result, wg *sync.WaitGroup) {
 			Np:    np,
 			Ni:    ni,
 			Mp:    mp,
-			E:     evolution,
+			e:     evolution,
 			Time:  timeTook,
 			Value: value,
 		}
@@ -93,11 +93,11 @@ func main() {
 	const (
 		n          = 150 // количество запусков для одних и тех же параметров
 		taskPath   = "/home/aleksey/3d_bin/saved/47blocks.json"
-		resultPath = "/home/aleksey/3d_bin/research/ga"
+		resultPath = "/home/aleksey/3d_bin/research/ga/47blocks_2try"
 
-		npStart, npStop, npStep = 50, 50, 50
+		npStart, npStop, npStep = 150, 150, 150
 		niStart, niStop, niStep = 50, 400, 50
-		mpStart, mpStop, mpStep = 0.01, 0.25, 0.01
+		mpStart, mpStop, mpStep = 0.01, 0.50, 0.01
 	)
 	var evolution = new(packing.DarwinEvolution)
 
@@ -115,7 +115,7 @@ func main() {
 	go aggregator(resultsCh, &results)
 
 	var (
-		container, blocks = loadTask(taskPath)
+		container, blocks = packing.LoadTaskFromJSON(taskPath)
 
 		// исследуемые параметры
 		np int
@@ -195,19 +195,6 @@ func main() {
 	saveIntoJSON(resultPath+"/maximum.json", maximum)
 	saveIntoJSON(resultPath+"/bestResult.json", best)
 	fmt.Printf("%v", time.Now().Sub(timeStart))
-}
-
-func loadTask(path string) (packing.Container, []packing.Block) {
-	cb := struct {
-		Container packing.Container `json:"container"`
-		Blocks    []packing.Block   `json:"blocks"`
-	}{}
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		panic(err)
-	}
-	json.Unmarshal(data, &cb)
-	return cb.Container, cb.Blocks
 }
 
 func saveIntoJSON(path string, dataToSave interface{}) {

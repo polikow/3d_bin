@@ -1,5 +1,3 @@
-import os
-
 import pandas as pd
 import plotly.graph_objects as go
 
@@ -9,10 +7,10 @@ def unique(iterable):
     return sorted(set(iterable))
 
 
-def surface_figure(df, title, size=None, ratio=None):
-    x = df.ci.values
-    y = unique(df.ni.values)
-    z = df.value.values.reshape((len(unique(y)), len(unique(x))))
+def surface_figure(df, title, size, ratio, xyz, axis_title):
+    x = df[xyz['x']].values
+    y = unique(df[xyz['y']].values)
+    z = df[xyz['z']].values.reshape((len(unique(y)), len(unique(x))))
     surface = go.Surface(x=x, y=y, z=z)
     figure = go.Figure(data=[surface])
     figure.update_layout(
@@ -33,17 +31,17 @@ def surface_figure(df, title, size=None, ratio=None):
         },
         scene={
             'xaxis': {
-                'title': 'Ci (коэффициент интенсивности мутации)',
+                'title': axis_title['x'],
                 'tickmode': 'array',
                 'tickvals': x,
             },
             'yaxis': {
-                'title': 'Ni (количество итераций)',
+                'title': axis_title['y'],
                 'tickmode': 'array',
                 'tickvals': y,
             },
             'zaxis': {
-                'title': 'Значение ЦФ',
+                'title': axis_title['z'],
             },
         })
 
@@ -59,20 +57,33 @@ def figures_to_html(figs, filename="dashboard.html"):
     dashboard.write("</body></html>" + "\n")
 
 
-def make_graphs(runs_per_point=150, size=None, ratio=None):
+def make_graphs(dir, runs_per_point, size=None, ratio=None, xyz=None, axis_title=None):
     """
     defaults:
         size = {"width": 900, 'height': 900}\n
         ratio = {'x': 1, 'y': 1, 'z': 1}
+        xyz = {'x': "ci", 'y': "ni", 'z': "value"}\n
+        axis_title = {
+            'x': "Ci (коэффициент интенсивности мутации)",
+            'y': "Ni (количество итераций)",
+            'z': "Значение ЦФ"\n
+        }
     """
     if size is None:
         size = {"width": 900, 'height': 900}
     if ratio is None:
         ratio = {'x': 1, 'y': 1, 'z': 1}
+    if xyz is None:
+        xyz = {'x': "ci", 'y': "ni", 'z': "value"}
+    if axis_title is None:
+        axis_title = {
+            'x': "Ci (коэффициент интенсивности мутации)",
+            'y': "Ni (количество итераций)",
+            'z': "Значение ЦФ"
+        }
 
-    wd = os.getcwd()
-    average = pd.read_json(f"{wd}/average.json")
-    maximum = pd.read_json(f"{wd}/maximum.json")
+    average = pd.read_json(f"{dir}/average.json")
+    maximum = pd.read_json(f"{dir}/maximum.json")
     n = average.__len__()
     np_values = unique(average.np.values)
     np = len(np_values)  # количество тестов с разными размерами популяции
@@ -84,9 +95,12 @@ def make_graphs(runs_per_point=150, size=None, ratio=None):
         figure = surface_figure(
             average[i * np_shift:(i + 1) * np_shift],
             f"Среднее ЦФ (Размер популяции = {np_value}, количество запусков = {runs_per_point})",
-            size, ratio)
+            size, ratio,
+            xyz=xyz,
+            axis_title=axis_title
+        )
         figures.append(figure)
-    figures_to_html(figures, filename="graphs_average.html")
+    figures_to_html(figures, filename=f"{dir}/graphs_average.html")
 
     # максимальное цф
     figures = []
@@ -94,6 +108,9 @@ def make_graphs(runs_per_point=150, size=None, ratio=None):
         figure = surface_figure(
             maximum[i * np_shift:(i + 1) * np_shift],
             f"Максимальное ЦФ (Размер популяции = {np_value}, количество запусков = {runs_per_point})",
-            size, ratio)
+            size, ratio,
+            xyz=xyz,
+            axis_title=axis_title
+        )
         figures.append(figure)
-    figures_to_html(figures, filename="graphs_maximum.html")
+    figures_to_html(figures, filename=f"{dir}/graphs_maximum.html")

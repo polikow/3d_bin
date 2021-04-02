@@ -6,7 +6,9 @@
 /research/bca/*.json
 !/research/bca/47blocks_1try/bestResult.json
 
-# для генерации графов искользовать python скрипт
-/research/bca/**/*.html
+# для генерации графов использовать python скрипт
+/research/**/*.html
 
 research/bca/__pycache__/
+
+**/__pycache__

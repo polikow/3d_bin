@@ -1,6 +1,8 @@
 package packing
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"math"
 	"math/rand"
 	"time"
@@ -70,4 +72,23 @@ func ceilMultiplicationUINT(u uint, f float64) uint {
 
 func ceilDivision(i int, f float64) int {
 	return int(math.Ceil(float64(i) / f))
+}
+
+
+func LoadTaskFromJSON(path string) (Container, []Block) {
+	cb := struct {
+		Container Container `json:"container"`
+		Blocks    []Block   `json:"blocks"`
+	}{}
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+	json.Unmarshal(data, &cb)
+	if cb.Container.Width == 0 || cb.Container.Height == 0 ||
+		cb.Container.Length == 0 || len(cb.Blocks) == 0 {
+		panic("wrong task specified")
+	}
+
+	return cb.Container, cb.Blocks
 }
