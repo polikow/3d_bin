@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo} from "react";
+import React, {useMemo} from "react";
 import * as THREE from "three";
 import Block from "./Block";
 import Label from "./Label";
@@ -23,13 +23,26 @@ export default () => {
   );
 }
 
-function Labels({w, h, l}) {
-  const labelScale = useStore(s=> s.labelScale)
+const maxLabelsPerAxis = 10
 
+function labels(axisSize) {
+  if (axisSize <= maxLabelsPerAxis) {
+    return arrayN(axisSize)
+  } else {
+    const step = Math.floor(axisSize / maxLabelsPerAxis)
+    let res = arrayN(maxLabelsPerAxis).map(value => value * step)
+    if (res[maxLabelsPerAxis - 1] !== axisSize)
+      res.push(axisSize)
+    return res
+  }
+}
+
+function Labels({w, h, l}) {
+  const labelScale = useStore(s => s.labelScale)
   return <> <Label text={0} position={[s, 0, s]} scale={labelScale}/>
-    {arrayN(w).map(i => <Label key={i} text={i} position={[i, 0, s]}  scale={labelScale}/>)}
-    {arrayN(h).map(i => <Label key={i} text={i} position={[s, i, s]}  scale={labelScale}/>)}
-    {arrayN(l).map(i => <Label key={i} text={i} position={[s, 0, i]}  scale={labelScale}/>)}
+    {labels(w).map(i => <Label key={i} text={i} position={[i, 0, s]} scale={labelScale}/>)}
+    {labels(h).map(i => <Label key={i} text={i} position={[s, i, s]} scale={labelScale}/>)}
+    {labels(l).map(i => <Label key={i} text={i} position={[s, 0, i]} scale={labelScale}/>)}
   </>
 }
 

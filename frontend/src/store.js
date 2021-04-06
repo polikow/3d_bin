@@ -67,12 +67,6 @@ export const [useStore] = create(set => ({
   onlyEdges: false,
   setOnlyEdges: (onlyEdges) => set(() => ({onlyEdges})),
   targetContainer: true,
-  setTargetContainer: (targetContainer) => set(state => targetContainer
-    ? {
-      targetContainer,
-      camera: centeredCamera(state.container, state.camera.fov)
-    }
-    : {targetContainer}),
   grid: true,
   setGrid: (grid) => set(() => ({grid})),
   labelScale: 8,

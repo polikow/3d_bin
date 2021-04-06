@@ -20,19 +20,24 @@ export default function () {
   const bound = boundingRect(blocks, space)
 
   useEffect(() => {
-      centerCameraAroundCargo(bound)
-    }, [bound[0], bound[1], bound[2]]) // eslint-disable-line react-hooks/exhaustive-deps
+    centerCameraAroundCargo(bound)
+  }, [bound[0], bound[1], bound[2]]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const scale = 30 + Math.floor(30 * space[1] * 0.34)
   return (
     cargo.map(({p1, p2}, i) => (
-      <>
-        <Label text={i + 1} position={[p2.x - (p2.x - p1.x) / 2, 0, p1.z - gap / 2]} scale={30}/>
-        <Block key={i} p1={p1} p2={p2}
-               gap={onlyEdges}
-               color={isColorful ? colors[i % colors.length] : "grey"}
-               opacity={1 - opacity}
-               onlyEdges={onlyEdges}/>
-      </>
+        <React.Fragment key={i}>
+          <Label
+            text={i + 1}
+            position={[p2.x - (p2.x - p1.x) / 2, 0, p1.z - gap / 2]}
+            scale={scale}/>
+          <Block
+            p1={p1} p2={p2}
+            gap={onlyEdges}
+            color={isColorful ? colors[i % colors.length] : "grey"}
+            opacity={1 - opacity}
+            onlyEdges={onlyEdges}/>
+        </React.Fragment>
       )
     )
   )
@@ -100,6 +105,9 @@ function boundingRect(blocks, space) {
   let x = xSpace * blocksPerRow + gapsBetweenCols * gap
   let y = ySpace
   let z = zSpace * rows + gapsBetweenRows * gap
+
+  if (rows === 1)
+    x = Math.floor(x / (blocksPerRow / blocks.length))
 
   return [x, y, z]
 }

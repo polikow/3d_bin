@@ -199,3 +199,16 @@ div.stats {
 #add-generate-buttons > button:last-child svg {
     margin-left: 12px !important;
 }
+
+#show-packed-button {
+    margin: 10px 0 7px 0;
+}
+
+.packed {
+    /*font-weight: bolder;*/
+}
+
+.not-packed {
+    /*font-weight: bolder;*/
+    color: gray;
+}

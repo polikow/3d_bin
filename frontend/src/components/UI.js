@@ -19,7 +19,7 @@ export default () => {
   return (
     <>
       <Settings open={menu.settings} onClose={toggleMenuOption("settings")}/>
-      <Packed open={menu.packed} onClose={toggleMenuOption("packed")}/>
+      <Packed open={menu.packed} onClose={toggleMenuOption("algorithm")}/>
       <Container open={menu.container} onClose={toggleMenuOption("container")}/>
       <Blocks open={menu.blocks} onClose={toggleMenuOption("blocks")}/>
       <SaveLoad open={menu.saveLoad} onClose={toggleMenuOption("saveLoad")}/>
@@ -28,15 +28,13 @@ export default () => {
       <Floater open position="bottom-left" flow="row">
         <Option title="Настройки" active={menu.settings}
                 onClick={toggleMenuOption("settings")}/>
-        <Option title="Позиции" active={menu.packed}
-                onClick={toggleMenuOption("packed")}/>
         <Option title="Контейнер" active={menu.container}
                 onClick={toggleMenuOption("container")}/>
         <Option title="Грузы" active={menu.blocks}
                 onClick={toggleMenuOption("blocks")}/>
         <Option icon={<Save/>} active={menu.saveLoad}
                 onClick={toggleMenuOption("saveLoad")}/>
-        <Option icon={<PlayArrow/>} active={menu.algorithm}
+        <Option icon={<PlayArrow/>} active={menu.algorithm || menu.packed}
                 onClick={toggleMenuOption("algorithm")}/>
 
       </Floater>

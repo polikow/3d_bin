@@ -16,7 +16,7 @@ import {
 import Floater from "./ui/Floater";
 import SimplePaper from "./ui/SimplePaper";
 import MenuTitle from "./ui/MenuTitle";
-import {changeStateArray} from "../utils";
+import {integerFromTextField, keepInBounds} from "../utils";
 import ButtonAccept from "./ui/ButtonAccept";
 import ButtonAdd from "./ui/ButtonAdd";
 import ButtonCreate from "./ui/ButtonCreate";
@@ -185,13 +185,11 @@ function Row({index, size, onChange, onRemove, showChange = true}) {
 function ChangeableRow({index, size: initialSize, onChange}) {
 
   const [size, setSize] = useState(initialSize)
-  const onSizeChange = (dimension) => (event) => {
-    const value = event.target.value < 1
-      ? 1
-      : event.target.value
-
-    const [newSize, changed] = changeStateArray(size, dimension, value)
-    if (changed) {
+  const handleSizeChange = (dimension) => (event) => {
+    let newValue = keepInBounds(integerFromTextField(event, 1), 1, 1000000)
+    if (size[dimension] !== newValue) {
+      let newSize = [...size]
+      newSize[dimension] = newValue
       setSize(newSize)
     }
   }
@@ -203,15 +201,15 @@ function ChangeableRow({index, size: initialSize, onChange}) {
       <TableCell align="center">{index + 1}</TableCell>
       <TableCell align="center">
         <TextField type="number" className="blocks-table-changeable-cell"
-                   value={size[0]} onChange={onSizeChange(0)}/>
+                   value={size[0]} onChange={handleSizeChange(0)}/>
       </TableCell>
       <TableCell align="center">
         <TextField type="number" className="blocks-table-changeable-cell"
-                   value={size[1]} onChange={onSizeChange(1)}/>
+                   value={size[1]} onChange={handleSizeChange(1)}/>
       </TableCell>
       <TableCell align="center">
         <TextField type="number" className="blocks-table-changeable-cell"
-                   value={size[2]} onChange={onSizeChange(2)}/>
+                   value={size[2]} onChange={handleSizeChange(2)}/>
       </TableCell>
       <TableCell>
         <ButtonAccept onClick={handleAccept}/>

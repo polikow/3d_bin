@@ -9,7 +9,9 @@ export default () => {
     <>
       <PerspectiveCamera makeDefault
                          fov={camera.fov}
-                         position={camera.position}/>
+                         position={camera.position}
+                         far={1000000}
+      />
       <OrbitControls target={camera.target}/>
     </>
   )

@@ -33,7 +33,7 @@ export default ({open, onClose}) => {
 
   const [settings, setSettings] = useState(null)
   const handleSettingsChange = (newSettings) => {
-    console.log("change settings to:", newSettings)
+    // console.log("change settings to:", newSettings)
     setSettings(newSettings);
   }
 
@@ -73,36 +73,51 @@ export default ({open, onClose}) => {
   )
 }
 
-function ResultPaper() {
-  const [iteration, value, solution] = useStore(s => [s.iteration, s.value, s.solution])
-  const hidden = [iteration, value, solution].reduce(((a, b) => b === null), false)
-
-  const iterationEl = iteration === null
-    ? ""
-    : <p>Итерация: {iteration}</p>
-
-  const valueEl = value === null
-    ? ""
-    : <p>Значение ЦФ: {value}</p>
-
-  const solutionEl = solution === null
-    ? ""
-    : <p>Порядок упаковки:<br/>{solutionToString(solution)}</p>
-
-  return (
-    <MenuPaperHideable hidden={hidden}>
-      {iterationEl}
-      {valueEl}
-      {solutionEl}
-    </MenuPaperHideable>
-  )
+function postfix(i, nPacked, nSolution) {
+  if (i === nSolution - 1) {
+    if (i >= nPacked) {
+      return "]</b>"
+    } else {
+      return "]"
+    }
+  } else {
+    return ""
+  }
 }
 
-export function solutionToString(solution) {
-  let s = `[(${solution[0].index + 1}, ${solution[0].rotation})`
-  for (let i = 1; i < solution.length; i++) {
-    s += `,(${solution[i].index + 1},${solution[i].rotation})`
+function ResultPaper() {
+  const [iteration, value, solution, packed] = useStore(s => [s.iteration, s.value, s.solution, s.packed])
+  const toggleMenuOption = useStore(s => s.toggleMenuOption)
+  const hidden = iteration === null || value === null || solution === null
+
+  if (hidden) {
+    return <MenuPaperHideable hidden={hidden}/>
+
+  } else {
+    return (
+      <MenuPaperHideable hidden={hidden}>
+        {hidden
+          ? <></>
+          : <>
+            <p>Поиск завершен на итерации: {iteration}</p>
+            <p>Значение ЦФ: {value}</p>
+            <p>Порядок упаковки:<br/>
+              [
+              {solution.map(({index, rotation}, i) =>
+                (i <= packed.length - 1)
+                  ? <span key={i} className="packed">{`(${index + 1}, ${rotation})`}</span>
+                  : <span key={i} className="not-packed">{`(${index + 1}, ${rotation})`}</span>
+              )}
+              ]
+            </p>
+            <Button variant="contained" color="primary" id="show-packed-button"
+                    onClick={toggleMenuOption("packed")}
+            >
+              Показать упакованные грузы
+            </Button>
+          </>
+        }
+      </MenuPaperHideable>
+    )
   }
-  s += "]"
-  return s
 }

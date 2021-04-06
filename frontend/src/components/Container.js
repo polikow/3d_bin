@@ -3,32 +3,43 @@ import {useStore} from "../store";
 import MenuPaper from "./ui/MenuPaper";
 import {TextField} from "@material-ui/core";
 import Floater from "./ui/Floater";
-import {changeStateObj} from "../utils";
+import {integerFromTextField, keepInBounds} from "../utils";
 
 export default ({open, onClose}) => {
 
   const [container, setContainer] = useStore(s => [s.container, s.setContainer])
-  const onContainerChange = (parameter) => (event) => {
-    const value = event.target.value < 1
-      ? 1
-      : parseInt(event.target.value)
 
-    const [newContainer, changed] = changeStateObj(container, parameter, value)
-    if (changed) {
-      setContainer(newContainer)
-    }
+  function handleWidthChange(event) {
+    const value = keepInBounds(integerFromTextField(event, 1), 1, 1000000)
+    if (container.w !== value)
+      setContainer({...container, w: value})
   }
 
+  function handleHeightChange(event) {
+    const value = keepInBounds(integerFromTextField(event, 1), 1, 1000000)
+    if (container.h !== value)
+      setContainer({...container, h: value})
+  }
+
+  function handleLengthChange(event) {
+    const value = keepInBounds(integerFromTextField(event, 1), 1, 1000000)
+    if (container.l !== value)
+      setContainer({...container, l: value})
+  }
 
   return (
     <Floater open={open} onClose={onClose}>
       <MenuPaper title="Контейнер">
         <TextField type="number" label="Ширина" className="text-field"
-                   value={container.w} onChange={onContainerChange('w')}/>
+                   style={{width: "220px"}}
+                   InputProps={{inputProps: {min: 1, max: 1000000}}}
+                   value={container.w} onChange={handleWidthChange}/>
         <TextField type="number" label="Высота" className="text-field"
-                   value={container.h} onChange={onContainerChange('h')}/>
+                   InputProps={{inputProps: {min: 1, max: 1000000}}}
+                   value={container.h} onChange={handleHeightChange}/>
         <TextField type="number" label="Длина" className="text-field"
-                   value={container.l} onChange={onContainerChange('l')}/>
+                   InputProps={{inputProps: {min: 1, max: 1000000}}}
+                   value={container.l} onChange={handleLengthChange}/>
       </MenuPaper>
     </Floater>
   )

@@ -1,39 +1,3 @@
-export const changeStateObj = (stateObj, stateObjKey, newValue) => {
-  if (stateObj[stateObjKey] === undefined) {
-    throw new Error(`key "${stateObjKey}" is not declared`)
-  }
-
-  let stateChanged = false
-
-  const newStateObj = {}
-  for (const [key, value] of Object.entries(stateObj)) {
-    if (key === stateObjKey) {
-      if (value !== newValue) {
-        newStateObj[key] = newValue
-        stateChanged = true
-      }
-    } else {
-      newStateObj[key] = value
-    }
-  }
-
-  return [newStateObj, stateChanged]
-}
-
-export const changeStateArray = (stateArray, stateArrayIndex, newValue) => {
-  if (stateArray[stateArrayIndex] === undefined) {
-    throw new Error(`index "${stateArrayIndex}" is not declared`)
-  }
-
-  if (stateArray[stateArrayIndex] === newValue) {
-    return [null, false]
-  } else {
-    const newStateArray = stateArray.slice()
-    newStateArray[stateArrayIndex] = newValue
-    return [newStateArray, true]
-  }
-}
-
 export function roundFloat(f, decimals) {
   return parseFloat(parseFloat(f).toFixed(decimals))
 }
@@ -64,7 +28,7 @@ export function objPosition(obj) {
 
 export function objPositionForCargo(obj) {
   if (obj instanceof Array) {
-    return [obj[0] / 2, obj[1] * 15, obj[2]  / 2 + obj[2]]
+    return [obj[0] / 2, obj[1] * 15, obj[2] / 2 + obj[2]]
 
   } else if (obj instanceof Object) {
     const v = Object.values(obj)
@@ -102,4 +66,30 @@ export function blockObjToBlock(block) {
     block.h,
     block.l,
   ]
+}
+
+export function integerFromTextField(event, errorValue) {
+  if (typeof event.target.value === "string" && event.target.value !== "") {
+    return parseInt(event.target.value)
+  } else {
+    return errorValue
+  }
+}
+
+export function floatFromTextField(event, errorValue) {
+  if (typeof event.target.value === "string" && event.target.value !== "") {
+    return parseFloat(event.target.value)
+  } else {
+    return errorValue
+  }
+}
+
+export function keepInBounds(newValue, min, max) {
+  if (newValue < min) {
+    newValue = min
+  }
+  if (newValue > max) {
+    newValue = max
+  }
+  return newValue;
 }

@@ -1,45 +1,62 @@
 import React, {useEffect, useState} from "react";
-import {changeStateObj} from "../utils";
+import {floatFromTextField, integerFromTextField, keepInBounds} from "../utils";
 import {MenuItem, Select, TextField} from "@material-ui/core";
 
 export default React.memo(({algorithm, onChange}) => {
 
   const [bcaSettings, setBCASettings] = useState({
-    np: 5,
-    ci: 1,
-    ni: 250,
+    np: 10,
+    ci: 2.76,
+    ni: 500,
   })
-  const changeBCASettings = (option) => (event) => {
-    const value = typeof event.target.value === "string"
-      ? parseInt(event.target.value)
-      : event.target.value
-    const [newState, changed] = changeStateObj(bcaSettings, option, value)
-    if (changed) {
-      setBCASettings(newState)
-    }
+  useEffect(() => console.log(bcaSettings), [bcaSettings])
+
+  function handleBCAnpChange(event) {
+    let newValue = keepInBounds(integerFromTextField(event, 1), 1, 10000)
+    if (bcaSettings.np !== newValue)
+      setBCASettings({...bcaSettings, np: newValue})
   }
 
+  function handleBCAciChange(event) {
+    let newValue = keepInBounds(floatFromTextField(event, 0.01), 0.01, 100)
+    if (bcaSettings.ci !== newValue)
+      setBCASettings({...bcaSettings, ci: newValue})
+  }
+
+  function handleBCAniChange(event) {
+    let newValue = keepInBounds(integerFromTextField(event), 1, 10000)
+    if (bcaSettings.ni !== newValue)
+      setBCASettings({...bcaSettings, ni: newValue})
+  }
+
+  //***************************************************************************
   const [gaSettings, setGASettings] = useState({
     evolution: "Darwin",
     np: 100,
-    mp: 0.1,
-    ni: 200
+    mp: 0.21,
+    ni: 500
   })
-  const changeGASettings = (option) => (event) => {
-    const value = typeof event.target.value === "string"
-      ? parseInt(event.target.value)
-      : event.target.value
-    const [newState, changed] = changeStateObj(gaSettings, option, value)
-    if (changed) {
-      setGASettings(newState)
-    }
-  }
   const handleEvolutionChange = (event) => {
     const selectedEvolution = event.target.value
-    setGASettings(prevState => ({
-      ...prevState,
-      evolution: selectedEvolution
-    }))
+    setGASettings(prevState => ({...prevState, evolution: selectedEvolution}))
+  }
+
+  function handleGAnpChange(event) {
+    let newValue = keepInBounds(integerFromTextField(event, 1), 1, 10000)
+    if (gaSettings.np !== newValue)
+      setGASettings({...gaSettings, np: newValue})
+  }
+
+  function handleGAmpChange(event) {
+    let newValue = keepInBounds(floatFromTextField(event, 0.01), 0.01, 1)
+    if (gaSettings.mp !== newValue)
+      setGASettings({...gaSettings, mp: newValue})
+  }
+
+  function handleGAniChange(event) {
+    let newValue = keepInBounds(integerFromTextField(event, 1), 1, 10000)
+    if (gaSettings.ni !== newValue)
+      setGASettings({...gaSettings, ni: newValue})
   }
 
   const getAppropriateSettings = () => {
@@ -56,47 +73,50 @@ export default React.memo(({algorithm, onChange}) => {
     return onChange(getAppropriateSettings())
   }, [algorithm, bcaSettings, gaSettings]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  switch (algorithm) {
-    case "bca":
-      return (
-        <>
-          <TextField type="number" className="text-field"
-                     label="Количество антител в популяции"
-                     value={bcaSettings.np}
-                     onChange={changeBCASettings("np")}/>
-          <TextField type="number" className="text-field"
-                     label="Коэффициент интенсивности мутации"
-                     value={bcaSettings.ci}
-                     onChange={changeBCASettings("ci")}/>
-          <TextField type="number" className="text-field"
-                     label="Количество итераций без улучшений"
-                     value={bcaSettings.ni}
-                     onChange={changeBCASettings("ni")}/>
-        </>
-      )
-    case "ga":
-      return (
-        <>
-          <Select className="selector"
-            value={gaSettings.evolution} onChange={handleEvolutionChange}>
-            <MenuItem value="Darwin">Модель эволюции Дарвина</MenuItem>
-            <MenuItem value="deVries">Модель эволюции де Фриза</MenuItem>
-          </Select>
-          <TextField type="number" className="text-field"
-                     label="Количество хросом в популяции"
-                     value={gaSettings.np}
-                     onChange={changeGASettings("np")}/>
-          <TextField type="number" className="text-field"
-                     label="Вероятность мутации"
-                     value={gaSettings.mp}
-                     onChange={changeGASettings("mp")}/>
-          <TextField type="number" className="text-field"
-                     label="Количество итераций без улучшений"
-                     value={gaSettings.ni}
-                     onChange={changeGASettings("ni")}/>
-        </>
-      )
-    default:
-      throw new Error()
-  }
+  if (algorithm === "bca")
+    return (
+      <>
+        <TextField type="number" className="text-field"
+                   label="Количество антител в популяции"
+                   InputProps={{inputProps: {min: 1, max: 10000, step: 1}}}
+                   value={bcaSettings.np}
+                   onChange={handleBCAnpChange}/>
+        <TextField type="number" className="text-field"
+                   label="Коэффициент интенсивности мутации"
+                   InputProps={{inputProps: {min: 0.01, max: 100, step: 0.01}}}
+                   value={bcaSettings.ci}
+                   onChange={handleBCAciChange}/>
+        <TextField type="number" className="text-field"
+                   label="Количество итераций без улучшений"
+                   InputProps={{inputProps: {min: 1, max: 10000, step: 1}}}
+                   value={bcaSettings.ni}
+                   onChange={handleBCAniChange}/>
+      </>
+    )
+
+  if (algorithm === "ga")
+    return (
+      <>
+        <Select className="selector"
+                value={gaSettings.evolution} onChange={handleEvolutionChange}>
+          <MenuItem value="Darwin">Модель эволюции Дарвина</MenuItem>
+          <MenuItem value="deVries">Модель эволюции де Фриза</MenuItem>
+        </Select>
+        <TextField type="number" className="text-field"
+                   label="Количество хросом в популяции"
+                   InputProps={{inputProps: {min: 1, max: 10000, step: 1}}}
+                   value={gaSettings.np}
+                   onChange={handleGAnpChange}/>
+        <TextField type="number" className="text-field"
+                   label="Вероятность мутации"
+                   InputProps={{inputProps: {min: 0.01, max: 1, step: 0.01}}}
+                   value={gaSettings.mp}
+                   onChange={handleGAmpChange}/>
+        <TextField type="number" className="text-field"
+                   label="Количество итераций без улучшений"
+                   InputProps={{inputProps: {min: 1, max: 10000, step: 1}}}
+                   value={gaSettings.ni}
+                   onChange={handleGAniChange}/>
+      </>
+    )
 })

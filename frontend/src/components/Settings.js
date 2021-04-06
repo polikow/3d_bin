@@ -6,12 +6,10 @@ import ButtonGroup from "./ui/ButtonGroup";
 import {Button} from "@material-ui/core";
 import Slider from "./ui/Slider";
 import Switch from "./ui/Switch";
-import {changeStateObj} from "../utils";
 
 export default ({open, onClose}) => {
 
   const [camera, setCamera] = useStore(s => [s.camera, s.setCamera])
-  const [targetContainer, setTargetContainer] = useStore(s => [s.targetContainer, s.setTargetContainer])
 
   const [opacity, setOpacity] = useStore(s => [s.opacity, s.setOpacity])
   const [isColorful, setIsColorful] = useStore(s => [s.isColorful, s.setIsColorful])
@@ -23,20 +21,14 @@ export default ({open, onClose}) => {
   const [isDebugMode, setIsDebugMode] = useStore(s => [s.isDebugMode, s.setIsDebugMode])
 
 
-  const onCameraChange = (property) => (value) => {
-    const [newCamera, changed] = changeStateObj(camera, property, value)
-    if (changed) {
-      setCamera(newCamera)
-    }
-  }
-
   const handlePOVChange = (event) => {
     const newFOV = event.target.value !== undefined
       ? event.target.value
       : event.target.parentNode.value
 
     if (newFOV !== undefined) {
-      onCameraChange("fov")(parseInt(newFOV))
+      if (camera.fov !== parseInt(newFOV))
+        setCamera({...camera, fov: parseInt(newFOV)})
     }
   }
   const povButtonColor = (value) => {
@@ -44,7 +36,6 @@ export default ({open, onClose}) => {
   }
 
   const handleOpacityChange = (event, newOpacity) => setOpacity(newOpacity)
-  const toggleTargetContainer = (event) => setTargetContainer(event.target.checked)
 
   const toggleColorful = (event, newValue) => setIsColorful(newValue)
   const toggleDebugMode = (event) => setIsDebugMode(event.target.checked)
@@ -63,8 +54,6 @@ export default ({open, onClose}) => {
           <Button color={povButtonColor(90)} value={90}>90</Button>
           <Button color={povButtonColor(110)} value={110}>110</Button>
         </ButtonGroup>
-        <Switch label="Фиксировать на контейнере"
-                checked={targetContainer} onChange={toggleTargetContainer}/>
       </MenuPaper>
 
       <MenuPaper title="Вид грузов">
@@ -78,8 +67,8 @@ export default ({open, onClose}) => {
 
       <MenuPaper title="Вид контейнера">
         <Switch label="Сетка"
-              checked={grid} onChange={toggleGrid}/>
-        <Slider label="Размер меток" min={1} max={20} step={1}
+                checked={grid} onChange={toggleGrid}/>
+        <Slider label="Размер меток" min={1} max={100} step={1}
                 value={labelScale} onChange={handleLabelScale}/>
       </MenuPaper>
 

@@ -19,11 +19,12 @@ export default ({open, onClose}) => {
   return (
     <Floater open={open} onClose={onClose}>
       <SimplePaper>
-        <MenuTitle title="Позиции грузов"/>
+        <MenuTitle title="Позиции упакованных грузов"/>
         <TableContainer>
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell>№</TableCell>
                 <TableCell>№ груза</TableCell>
                 <TableCell>X</TableCell>
                 <TableCell>Y</TableCell>
@@ -40,6 +41,7 @@ export default ({open, onClose}) => {
 
                   return (
                     <TableRow key={index.toString()}>
+                      <TableCell align="center">{i + 1}</TableCell>
                       <TableCell align="center">{index + 1}</TableCell>
                       <TableCell align="center">{p1.x}</TableCell>
                       <TableCell align="center">{p1.y}</TableCell>
