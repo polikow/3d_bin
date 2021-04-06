@@ -68,7 +68,7 @@ export default ({open, onClose}) => {
       <MenuPaper title="Вид контейнера">
         <Switch label="Сетка"
                 checked={grid} onChange={toggleGrid}/>
-        <Slider label="Размер меток" min={1} max={100} step={1}
+        <Slider label="Размер меток" min={1} max={30} step={1}
                 value={labelScale} onChange={handleLabelScale}/>
       </MenuPaper>
 

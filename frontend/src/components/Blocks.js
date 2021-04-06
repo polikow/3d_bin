@@ -21,7 +21,7 @@ import ButtonAccept from "./ui/ButtonAccept";
 import ButtonAdd from "./ui/ButtonAdd";
 import ButtonCreate from "./ui/ButtonCreate";
 import {AppGenerateRandomBlocks} from "../bindings";
-
+import {Close} from "@material-ui/icons";
 
 const rowsPerPage = 10
 
@@ -29,7 +29,7 @@ const rowsPerPage = 10
 export default ({open, onClose}) => {
   const [blocks, setBlocks] = useStore(s => [s.blocks, s.setBlocks])
 
-  const onRemoveHandler = (index) => {
+  const handleRemoveHandler = (index) => {
     setBlocks(
       blocks.filter((_, i) => index !== i)
     )
@@ -37,11 +37,11 @@ export default ({open, onClose}) => {
 
   const [indexChanging, setIndexChanging] = useState(null)
   const isChanging = indexChanging !== null
-  const onChangeHandler = (index) => {
+  const handleChangeHandler = (index) => {
     setIndexChanging(index)
   }
 
-  const onApplyChange = (index, w, h, l) => {
+  const handleApplyChange = (index, w, h, l) => {
     setIndexChanging(null)
     setBlocks(
       blocks.map((block, i) => index === i
@@ -51,18 +51,20 @@ export default ({open, onClose}) => {
     )
   }
 
-  const onAddNewBlock = () => setBlocks([...blocks, [1, 1, 1]])
+  const handleAddNewBlock = () => setBlocks([...blocks, [1, 1, 1]])
 
   const [page, setPage] = useState(0)
   const handleChangePage = (event, newPage) => setPage(newPage)
 
   const container = useStore(s => s.container)
-  const onGenerateBlocks = () => {
+  const handleGenerateBlocks = () => {
     AppGenerateRandomBlocks(container)
       .then(blocksObjects =>
         setBlocks(blocksObjects.map(block => [block.w, block.h, block.l])))
       .catch(console.error)
   }
+
+  const handleRemoveAll = () => setBlocks([])
 
   return (
     <Floater open={open} onClose={onClose}>
@@ -88,18 +90,18 @@ export default ({open, onClose}) => {
                     if (indexChanging === null) {
                       return <Row key={index}
                                   index={index} size={size}
-                                  onChange={onChangeHandler}
-                                  onRemove={onRemoveHandler}/>
+                                  onChange={handleChangeHandler}
+                                  onRemove={handleRemoveHandler}/>
                     } else {
                       if (index === indexChanging) {
                         return <ChangeableRow key={index}
                                               index={index} size={size}
-                                              onChange={onApplyChange}/>
+                                              onChange={handleApplyChange}/>
                       } else {
                         return <Row key={index}
                                     index={index} size={size}
-                                    onChange={onChangeHandler}
-                                    onRemove={onRemoveHandler}
+                                    onChange={handleChangeHandler}
+                                    onRemove={handleRemoveHandler}
                                     showChange={false}/>
                       }
                     }
@@ -118,9 +120,13 @@ export default ({open, onClose}) => {
         />
 
         <div id="add-generate-buttons">
-          <ButtonAdd disabled={isChanging} title="Добавить новый груз" onClick={onAddNewBlock}/>
+          <ButtonAdd disabled={isChanging} title="Добавить новый груз" onClick={handleAddNewBlock}/>
 
-          <Button variant="contained" color="primary" onClick={onGenerateBlocks}>
+          <Button variant="contained" color="primary" onClick={handleRemoveAll}>
+            Удалить все грузы
+          </Button>
+
+          <Button variant="contained" color="primary" onClick={handleGenerateBlocks}>
             Сенерировать случайные грузы
           </Button>
         </div>

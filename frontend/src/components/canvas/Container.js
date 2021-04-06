@@ -2,7 +2,6 @@ import React, {useMemo} from "react";
 import * as THREE from "three";
 import Block from "./Block";
 import Label from "./Label";
-import XYZLabels from "./XYZLabels";
 import {arrayN} from "../../utils";
 import {useStore} from "../../store";
 
@@ -18,7 +17,7 @@ export default () => {
              p1={{x: 0, y: 0, z: 0}} p2={{x: w, y: h, z: l}}/>
       <Labels w={w} h={h} l={l}/>
       {grid && <XYZGrids w={w} h={h} l={l}/>}
-      <XYZLabels/>
+      <XYZLabels x={w} y={h} z={l}/>
     </>
   );
 }
@@ -39,11 +38,26 @@ function labels(axisSize) {
 
 function Labels({w, h, l}) {
   const labelScale = useStore(s => s.labelScale)
-  return <> <Label text={0} position={[s, 0, s]} scale={labelScale}/>
-    {labels(w).map(i => <Label key={i} text={i} position={[i, 0, s]} scale={labelScale}/>)}
-    {labels(h).map(i => <Label key={i} text={i} position={[s, i, s]} scale={labelScale}/>)}
-    {labels(l).map(i => <Label key={i} text={i} position={[s, 0, i]} scale={labelScale}/>)}
+  const scale = labelScale + Math.floor(labelScale * Math.max(w, h, l) * 0.2)
+
+  return <> <Label text={0} position={[s, 0, s]} scale={scale}/>
+    {labels(w).map(i => <Label key={i} text={i} position={[i, 0, s]} scale={scale}/>)}
+    {labels(h).map(i => <Label key={i} text={i} position={[s, i, s]} scale={scale}/>)}
+    {labels(l).map(i => <Label key={i} text={i} position={[s, 0, i]} scale={scale}/>)}
   </>
+}
+
+function XYZLabels({x, y, z}) {
+  const labelScale = useStore(s => s.labelScale)
+
+  const scale = labelScale + Math.floor(labelScale * Math.max(x, y, z) * 0.2) * 1.2
+  return (
+    <>
+      <Label text="X" color="blue" position={[x / 2, 0, -0.3]} scale={scale}/>
+      <Label text="Y" color="green" position={[-0.3, y / 2, -0.3]} scale={scale}/>
+      <Label text="Z" color="red" position={[-0.3, 0, z / 2]} scale={scale}/>
+    </>
+  );
 }
 
 function XYZGrids({w, h, l}) {

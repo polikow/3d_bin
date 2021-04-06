@@ -10,6 +10,7 @@ const fileFilter = "*.json"
 
 export default ({open, onClose}) => {
 
+  const toggleMenuOption = useStore(s => s.toggleMenuOption)
   const [container, setContainer, blocks, setBlocks] = useStore(
     s => [s.container, s.setContainer, s.blocks, s.setBlocks])
 
@@ -59,6 +60,7 @@ export default ({open, onClose}) => {
           throw new Error("wrong solution file format")
         }
         setResult({iteration, value, solution, packed})
+        toggleMenuOption("algorithm")
         handleSuccess("loaded")()
       })
       .catch(function (error) {

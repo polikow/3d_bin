@@ -181,19 +181,16 @@ div.stats {
     margin: 0 10px 10px 10px;
 }
 
-#add-generate-buttons > button:first-child {
+#add-generate-buttons > button {
     margin-bottom: 10px;
 }
 
-#add-generate-buttons > button:last-child {
-    align-self: center;
-    width: fit-content;
-    height: fit-content;
-    margin: 0 0 15px 0;
+#add-generate-buttons > button:nth-child(1) svg {
+    margin-left: 12px !important;
 }
 
-#add-generate-buttons > button:last-child svg {
-    margin-left: 12px !important;
+#add-generate-buttons > button:last-child {
+    margin-bottom: 7px;
 }
 
 #show-packed-button {
@@ -213,4 +210,8 @@ div.stats {
 .algorithm-result {
     max-height: 400px;
     overflow-y: auto;
+}
+
+.algorithm-result button {
+    min-height: 37px;
 }
