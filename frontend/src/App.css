@@ -140,10 +140,6 @@ div.stats {
     width: 360px;
 }
 
-.algorithm-result {
-
-}
-
 #start-button {
     margin: 10px 0 7px 0;
 }
@@ -211,4 +207,10 @@ div.stats {
 .not-packed {
     /*font-weight: bolder;*/
     color: gray;
+}
+
+
+.algorithm-result {
+    max-height: 400px;
+    overflow-y: auto;
 }

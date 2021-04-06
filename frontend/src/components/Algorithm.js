@@ -6,6 +6,7 @@ import {Button, MenuItem, Select} from "@material-ui/core";
 import MenuPaperHideable from "./ui/MenuPaperHideable";
 import AlgorithmSettings from "./AlgorithmSettings";
 import {AppEvent, AppRunAlgorithm} from "../bindings";
+import {rotations} from "../utils";
 
 const algorithms = ["bca", "ga"]
 
@@ -95,7 +96,7 @@ function ResultPaper() {
 
   } else {
     return (
-      <MenuPaperHideable hidden={hidden}>
+      <MenuPaperHideable hidden={hidden} className="algorithm-result">
         {hidden
           ? <></>
           : <>
@@ -105,8 +106,8 @@ function ResultPaper() {
               [
               {solution.map(({index, rotation}, i) =>
                 (i <= packed.length - 1)
-                  ? <span key={i} className="packed">{`(${index + 1}, ${rotation})`}</span>
-                  : <span key={i} className="not-packed">{`(${index + 1}, ${rotation})`}</span>
+                  ? <span key={i} className="packed">{`(${index + 1}, ${rotations[rotation]})`}</span>
+                  : <span key={i} className="not-packed">{`(${index + 1}, ${rotations[rotation]})`}</span>
               )}
               ]
             </p>

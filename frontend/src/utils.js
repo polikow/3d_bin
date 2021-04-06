@@ -93,3 +93,5 @@ export function keepInBounds(newValue, min, max) {
   }
   return newValue;
 }
+
+export const rotations = ["XYZ", "ZYX", "XZY", "YZX", "ZXY", "YXZ"]

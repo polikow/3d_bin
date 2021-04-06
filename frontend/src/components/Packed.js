@@ -4,9 +4,9 @@ import Floater from "./ui/Floater";
 import SimplePaper from "./ui/SimplePaper";
 import MenuTitle from "./ui/MenuTitle";
 import {Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow} from "@material-ui/core";
+import {rotations} from "../utils";
 
 const rowsPerPage = 10
-const rotations = ["XYZ", "ZYX", "XZY", "YZX", "ZXY", "YXZ"]
 
 export default ({open, onClose}) => {
 
@@ -36,12 +36,13 @@ export default ({open, onClose}) => {
               {packed
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map(({p1, p2}, i) => {
-                  const index = solution[i].index
-                  const rotation = rotations[solution[i].rotation]
+                  const j = i + page * rowsPerPage
+                  const index = solution[j].index
+                  const rotation = rotations[solution[j].rotation]
 
                   return (
                     <TableRow key={index.toString()}>
-                      <TableCell align="center">{i + 1}</TableCell>
+                      <TableCell align="center">{j + 1}</TableCell>
                       <TableCell align="center">{index + 1}</TableCell>
                       <TableCell align="center">{p1.x}</TableCell>
                       <TableCell align="center">{p1.y}</TableCell>
