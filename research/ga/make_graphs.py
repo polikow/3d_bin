@@ -1,4 +1,4 @@
-from research.graphing_utils import make_graphs
+from research.utils import make_graphs
 
 make_graphs(
     dir="/home/aleksey/3d_bin/research/ga/47blocks_1try",

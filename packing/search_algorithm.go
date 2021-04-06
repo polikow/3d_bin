@@ -1,6 +1,9 @@
 package packing
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 // SearchAlgorithm - базовый интерфейс для всех алгоритмов поиска.
 //
@@ -42,6 +45,36 @@ func Evaluate(algorithm SearchAlgorithm) SearchResult {
 		}
 	}
 	return result
+}
+
+// EvaluateTimed полностью выполняет заданный алгоритм. Возвращает конечный
+// результат этого алгоритма поиска и время, которое выполнялся этот алгоритм.
+// (время в миллисекундах)
+func EvaluateTimed(algorithm SearchAlgorithm) (SearchResult, int64) {
+	start := time.Now()
+	result := Evaluate(algorithm)
+	milliseconds := time.Now().Sub(start).Milliseconds()
+	return result, milliseconds
+}
+
+// EvaluateTimedLimited выполняет заданный алгоритм n раз.
+// Если алгоритм не может быть выполнен n раз, то вызывается panic.
+//
+// Возвращает конечный результат этого алгоритма поиска и время, которое
+// выполнялся этот алгоритм. (время в миллисекундах)
+func EvaluateTimedLimited(algorithm SearchAlgorithm, n int) (SearchResult, int64) {
+	start := time.Now()
+
+	var result SearchResult
+	for i:=0; i<n; i++ {
+		result = algorithm.Run()
+		if result.Value == 1 {
+			break
+		}
+	}
+
+	milliseconds := time.Now().Sub(start).Milliseconds()
+	return result, milliseconds
 }
 
 // StepByStepBetter возвращает функцию с состоянием, которая возвращает только

@@ -62,10 +62,9 @@ func worker(jobs <-chan input, results chan<- result, wg *sync.WaitGroup) {
 		index := j.index
 		random := packing.NewRandomSeeded()
 		ga := packing.NewGA(container, blocks, np, mp, ni, evolution, random)
-		start := time.Now()
-		searchResult := packing.Evaluate(ga)
-		timeTook := time.Now().Sub(start).Milliseconds()
-		value := searchResult.Value
+
+		searchResult, milliseconds := packing.EvaluateTimed(ga)
+
 		results <- result{
 			index: index,
 
@@ -75,8 +74,8 @@ func worker(jobs <-chan input, results chan<- result, wg *sync.WaitGroup) {
 			Ni:    ni,
 			Mp:    mp,
 			e:     evolution,
-			Time:  timeTook,
-			Value: value,
+			Time:  milliseconds,
+			Value: searchResult.Value,
 		}
 	}
 	wg.Done()

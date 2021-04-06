@@ -2,9 +2,9 @@ package packing
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"math"
 	"math/rand"
+	"os"
 	"time"
 )
 
@@ -80,7 +80,7 @@ func LoadTaskFromJSON(path string) (Container, []Block) {
 		Container Container `json:"container"`
 		Blocks    []Block   `json:"blocks"`
 	}{}
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		panic(err)
 	}

@@ -319,8 +319,8 @@ func GenerateRandomBlocks(random *rand.Rand, container Container) []Block {
 		hugeBlockProbability = 0.05
 		bigBlockProbability  = 0.15
 
-		hugeMin, hugeMax   = 0.3, 0.8
-		bigMin, bigMax     = 0.25, 0.4
+		hugeMin, hugeMax   = 0.24, 0.38
+		bigMin, bigMax     = 0.2, 0.3
 		smallMin, smallMax = 0.05, 0.18
 	)
 	var (

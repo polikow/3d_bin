@@ -7,6 +7,15 @@ def unique(iterable):
     return sorted(set(iterable))
 
 
+def average(iterable):
+    return sum(iterable) // len(iterable)
+
+
+def set_plotly_theme(theme="plotly_white"):
+    import plotly.io as pio
+    pio.templates.default = "plotly_white"
+
+
 def surface_figure(df, title, size, ratio, xyz, axis_title):
     x = df[xyz['x']].values
     y = unique(df[xyz['y']].values)
