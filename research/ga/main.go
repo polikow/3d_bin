@@ -189,7 +189,7 @@ func main() {
 		}
 	}
 
-	saveIntoJSON(resultPath+"/results.json", results)
+	saveIntoJSON(resultPath+"/results_old.json", results)
 	saveIntoJSON(resultPath+"/average.json", average)
 	saveIntoJSON(resultPath+"/maximum.json", maximum)
 	saveIntoJSON(resultPath+"/bestResult.json", best)

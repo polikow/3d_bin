@@ -7,8 +7,11 @@ def unique(iterable):
     return sorted(set(iterable))
 
 
-def average(iterable):
-    return sum(iterable) // len(iterable)
+def average(iterable, integer=True):
+    if integer:
+        return sum(iterable) // len(iterable)
+    else:
+        return sum(iterable) / len(iterable)
 
 
 def set_plotly_theme(theme="plotly_white"):

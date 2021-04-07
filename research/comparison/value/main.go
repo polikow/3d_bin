@@ -8,23 +8,23 @@ import (
 )
 
 type result struct {
-	Size int   `json:"size"`
-	Time int64 `json:"time"`
+	Size  int     `json:"size"`
+	Value float64 `json:"value"`
 }
 
 func main() {
 	const (
 		path     = "/home/aleksey/3d_bin/research/comparison/data"
-		savePath = "/home/aleksey/3d_bin/research/comparison/time"
-		runs     = 10 // запусков для каждой задачи
+		savePath = "/home/aleksey/3d_bin/research/comparison/value"
+		runs     = 100 // запусков для каждой задачи
 
-		bcaNp = 10
-		bcaNi = 2000
+		bcaNp = 15
+		bcaNi = 500
 		bcaCi = 2.7
 
 		gaNp = 100
-		gaNi = 2000
-		gaMp = 0.24
+		gaNi = 500
+		gaMp = 0.13
 	)
 	taskSizes := [...]int{10, 30, 40, 60, 80, 100, 150, 200}
 
@@ -48,10 +48,10 @@ func main() {
 			index := j + (i * runs)
 
 			bca := packing.NewBCA(container, blocks, bcaNp, bcaNi, bcaCi, random)
-			_, milliseconds := packing.EvaluateTimedLimited(bca, bcaNi)
+			searchResult := packing.Evaluate(bca)
 			results.BCA[index].Size = size
-			results.BCA[index].Time = milliseconds
-			fmt.Printf("%4d) size = %3d, time = %4d [BCA]\n", index, size, milliseconds)
+			results.BCA[index].Value = searchResult.Value
+			fmt.Printf("%4d) size = %3d, value = %.4g [BCA]\n", index, size, searchResult.Value)
 		}
 	}
 
@@ -63,12 +63,13 @@ func main() {
 		for j := 0; j < runs; j++ {
 			random := packing.NewRandomSeeded()
 			index := j + (i * runs)
+
 			darwin := new(packing.DarwinEvolution)
 			gaDarwin := packing.NewGA(container, blocks, gaNp, gaMp, gaNi, darwin, random)
-			_, milliseconds := packing.EvaluateTimedLimited(gaDarwin, gaNi)
+			searchResult := packing.Evaluate(gaDarwin)
 			results.GADarwin[index].Size = size
-			results.GADarwin[index].Time = milliseconds
-			fmt.Printf("%4d) size = %3d, time = %4d [Darwin]\n", index, size, milliseconds)
+			results.GADarwin[index].Value = searchResult.Value
+			fmt.Printf("%4d) size = %3d, value = %.4g [Darwin]\n", index, size, searchResult.Value)
 		}
 	}
 
@@ -80,12 +81,13 @@ func main() {
 		for j := 0; j < runs; j++ {
 			random := packing.NewRandomSeeded()
 			index := j + (i * runs)
+
 			deVries := new(packing.DeVriesEvolution)
 			gaDeVries := packing.NewGA(container, blocks, gaNp, gaMp, gaNi, deVries, random)
-			_, milliseconds := packing.EvaluateTimedLimited(gaDeVries, gaNi)
+			searchResult := packing.Evaluate(gaDeVries)
 			results.GADeVries[index].Size = size
-			results.GADeVries[index].Time = milliseconds
-			fmt.Printf("%4d) size = %3d, time = %4d [DeVries]\n", index, size, milliseconds)
+			results.GADeVries[index].Value = searchResult.Value
+			fmt.Printf("%4d) size = %3d, value = %.4g [DeVries]\n", index, size, searchResult.Value)
 		}
 	}
 
