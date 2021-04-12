@@ -25,7 +25,7 @@ func TimeSeed() int64 {
 
 // intInBounds генерирует случайное число, которое лежит на [lower, higher].
 func intInBounds(random *rand.Rand, lower, higher int) int {
-	return random.Intn(higher - lower + 1) + lower
+	return random.Intn(higher-lower+1) + lower
 }
 
 // intsInBounds генерирует пару случайных чисел a и b, которые:
@@ -47,8 +47,7 @@ func intsInBounds(random *rand.Rand, lower, higher int) (int, int) {
 
 // intsInBoundsOrdered генерирует пару случайных чисел a и b, которые:
 //  1) лежат на отрезке [lower, higher]
-//  2) a != b (отличны друг от друга)
-//  3) a < b
+//  2) a < b
 func intsInBoundsOrdered(random *rand.Rand, lower, higher int) (int, int) {
 	a, b := intsInBounds(random, lower, higher)
 	if a > b {
@@ -59,7 +58,7 @@ func intsInBoundsOrdered(random *rand.Rand, lower, higher int) (int, int) {
 
 // float64InBounds генерирует случайное вещественное число на [lower, higher).
 func float64InBounds(random *rand.Rand, lower, higher float64) float64 {
-	return lower + random.Float64() * (higher-lower)
+	return lower + random.Float64()*(higher-lower)
 }
 
 func ceilMultiplication(i int, f float64) int {
@@ -73,7 +72,6 @@ func ceilMultiplicationUINT(u uint, f float64) uint {
 func ceilDivision(i int, f float64) int {
 	return int(math.Ceil(float64(i) / f))
 }
-
 
 func LoadTaskFromJSON(path string) (Container, []Block) {
 	cb := struct {

@@ -82,8 +82,10 @@ func (g GA) findFitness(chromosome Chromosome) float64 {
 }
 
 func (g *GA) mutatePopulation() {
-	for _, chromosome := range g.population {
+	// хромосомы, у которых есть значение ЦФ не мутируют (элитные хромосомы)
+	for i := len(g.populationFitness); i < g.np; i++ {
 		if g.random.Float64() <= g.mp {
+			chromosome := g.population[i]
 			chromosome.mutate(g.random)
 		}
 	}
@@ -158,16 +160,13 @@ func (c Chromosome) crossover(c2 Chromosome, random *rand.Rand) (Chromosome, Chr
 	)
 
 	// (1)
-	start, end := intsInBounds(random, 0, n)
-	if start > end {
-		start, end = end, start
-	}
+	start, end := intsInBoundsOrdered(random, 0, n)
 
 	// (2)
 	copy(child1[start:end], parent2[start:end])
 	copy(child2[start:end], parent1[start:end])
 
-	// (3) заполнение тех, которых нет в [start, end]
+	// (3) заполнение тех генов, которых нет в [start, end]
 	fillWithNoConflict(child1, parent1, start, end, n)
 	fillWithNoConflict(child2, parent2, start, end, n)
 
@@ -249,11 +248,6 @@ func (DarwinEvolution) String() string { return "Darwin" }
 func (DarwinEvolution) runSelection(g *GA) {
 	const elite float64 = 0.05
 
-	type pair struct {
-		chromosome Chromosome
-		fitness    float64
-	}
-
 	var (
 		n  = len(g.population)            // хромосом в популяции
 		ne = ceilMultiplication(n, elite) // количество элитных хромосом
@@ -264,7 +258,6 @@ func (DarwinEvolution) runSelection(g *GA) {
 		newFitness    = make([]float64, 0, n)
 
 		parents = make([]Chromosome, 0, np)
-		rivals  = [3]pair{}
 	)
 
 	// сортировка хромосом популяции по значению приспособленности
@@ -282,22 +275,17 @@ func (DarwinEvolution) runSelection(g *GA) {
 
 	// выбор родителей происходит с помощью турнира размера 3.
 	for len(parents) != cap(parents) {
-		for i := range rivals {
-			j := g.random.Intn(n)
-			rivals[i] = pair{
-				chromosome: g.population[j],
-				fitness:    g.populationFitness[j],
+		bestRival := g.population[np-1]
+		bestRivalFitness := g.populationFitness[np-1]
+		for i := 0; i < 3; i++ {
+			rival := g.population[i]
+			rivalFitness := g.populationFitness[i]
+			if rivalFitness > bestRivalFitness {
+				bestRival = rival
+				bestRivalFitness = rivalFitness
 			}
 		}
-
-		// наиболее приспособленная особь становиться родительской
-		best := rivals[0]
-		for _, rival := range rivals {
-			if rival.fitness > best.fitness {
-				best = rival
-			}
-		}
-		parents = append(parents, best.chromosome)
+		parents = append(parents, bestRival)
 	}
 
 	// скрещивание
@@ -311,7 +299,7 @@ func (DarwinEvolution) runSelection(g *GA) {
 		if len(newPopulation) != cap(newPopulation) {
 			newPopulation = append(newPopulation, child2)
 		}
-		i++
+		i += 2
 	}
 
 	g.population = newPopulation

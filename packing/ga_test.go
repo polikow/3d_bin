@@ -58,10 +58,10 @@ func TestGA(t *testing.T) {
 	}
 
 	fmt.Printf("DarwinEvolution\n")
-	ga := NewGA(container, blocks, 100, 0.05, 500, DarwinEvolution{}, NewRandomSeeded())
+	ga := NewGA(container, blocks, 100, 0.2, 500, DarwinEvolution{}, NewRandomSeeded())
 	EvaluatePrintBetter(ga)
 
 	fmt.Printf("\nDeVriesEvolution\n")
-	ga = NewGA(container, blocks, 100, 0.05, 500, DeVriesEvolution{}, NewRandomSeeded())
+	ga = NewGA(container, blocks, 100, 0.2, 500, DeVriesEvolution{}, NewRandomSeeded())
 	EvaluatePrintBetter(ga)
 }
