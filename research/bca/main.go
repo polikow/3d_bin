@@ -11,6 +11,19 @@ import (
 	"time"
 )
 
+const (
+	n          = 300 // количество запусков для одних и тех же параметров
+	taskPath   = "/home/aleksey/3d_bin/saved/47blocks.json"
+	resultPath = "/home/aleksey/3d_bin/research/bca/47blocks_3try"
+
+	npStart, npStop, npStep = 7, 7, 7
+	niStart, niStop, niStep = 50, 400, 50
+	ciStart, ciStop, ciStep = 0.05, 3, 0.05
+
+	// всего запусков
+	total = n * ((ciStop-ciStart)/ciStep + 1) * ((niStop-niStart)/niStep + 1)
+)
+
 type input struct {
 	index int
 
@@ -53,7 +66,8 @@ func sortResults(results []result) {
 }
 
 func worker(jobs <-chan input, results chan<- result, wg *sync.WaitGroup) {
-	wg.Add(1)
+	defer wg.Done()
+
 	for j := range jobs {
 		container, blocks, np, ni, ci := j.container, j.blocks, j.np, j.ni, j.ci
 		index := j.index
@@ -74,40 +88,9 @@ func worker(jobs <-chan input, results chan<- result, wg *sync.WaitGroup) {
 			Value: searchResult.Value,
 		}
 	}
-	wg.Done()
 }
 
-func aggregator(resultsCh <-chan result, results *[]result) {
-	for r := range resultsCh {
-		fmt.Printf("%5d) %s\n", len(*results)+1, r)
-		*results = append(*results, r)
-	}
-}
-
-func main() {
-	const (
-		n          = 150 // количество запусков для одних и тех же параметров
-		taskPath   = "/home/aleksey/3d_bin/saved/47blocks.json"
-		resultPath = "/home/aleksey/3d_bin/research/bca"
-
-		npStart, npStop, npStep = 10, 10, 10
-		niStart, niStop, niStep = 50, 400, 50
-		ciStart, ciStop, ciStep = 3, 3, 3
-	)
-
-	var (
-		jobs      = make(chan input, 100)
-		resultsCh = make(chan result, 100)
-		wg        = new(sync.WaitGroup)
-		results   []result
-		timeStart = time.Now()
-	)
-	runtime.GOMAXPROCS(runtime.NumCPU())
-	for i := 0; i < runtime.NumCPU(); i++ {
-		go worker(jobs, resultsCh, wg)
-	}
-	go aggregator(resultsCh, &results)
-
+func jobProvider(wg *sync.WaitGroup) <-chan input {
 	var (
 		container, blocks = packing.LoadTaskFromJSON(taskPath)
 
@@ -115,39 +98,88 @@ func main() {
 		np int
 		ni int
 		ci float64
+
+		jobs = make(chan input, 100)
 	)
 
-	index := 0
-	for np = npStart; np <= npStop; np += npStep {
-		for ni = niStart; ni <= niStop; ni += niStep {
-			for ci = ciStart; ci <= ciStop; ci += ciStep {
-				for i := 0; i < n; i++ {
-					jobs <- input{
-						index:     index,
-						container: container,
-						blocks:    blocks,
-						np:        np,
-						ni:        ni,
-						ci:        ci,
+	go func() {
+		defer close(jobs)
+		defer wg.Done()
+
+		index := 0
+		for np = npStart; np <= npStop; np += npStep {
+			for ni = niStart; ni <= niStop; ni += niStep {
+				for ci = ciStart; ci <= ciStop; ci += ciStep {
+					for i := 0; i < n; i++ {
+						jobs <- input{
+							index:     index,
+							container: container,
+							blocks:    blocks,
+							np:        np,
+							ni:        ni,
+							ci:        ci,
+						}
+						index++
 					}
-					index++
 				}
 			}
 		}
+	}()
+
+	return jobs
+}
+
+func saveIntoJSON(path string, dataToSave interface{}) {
+	data, err := json.Marshal(dataToSave)
+	if err != nil {
+		panic(err)
+	} else {
+		err = ioutil.WriteFile(path, data, 0644)
+		if err != nil {
+			panic(err)
+		}
 	}
-	close(jobs)
-	wg.Wait()
-	time.Sleep(time.Second * 10) //todo пофиксить
-	close(resultsCh)
+}
+
+func main() {
+	var (
+		resultsCh = make(chan result, 100)
+		wg        = new(sync.WaitGroup)
+		results   = make([]result, 0, total)
+		timeStart = time.Now()
+		cpus      = runtime.NumCPU()
+	)
+	runtime.GOMAXPROCS(cpus)
+
+	// запуск провайдера и воркеров
+	wg.Add(cpus + 1)
+	jobs := jobProvider(wg)
+	for i := 0; i < cpus; i++ {
+		go worker(jobs, resultsCh, wg)
+	}
+
+	// дожидается пока провайдер и все воркеры не закончат свою работу,
+	// после чего закрывает канал результатов, чтобы основной поток
+	// продолжил исполнение
+	go func() {
+		wg.Wait()
+		close(resultsCh)
+	}()
+
+	// сбор результатов от воркеров
+	for r := range resultsCh {
+		fmt.Printf("%5d) %s\n", len(results)+1, r)
+		results = append(results, r)
+	}
 
 	// сортировка результатов
 	// (воркеры выполняли задачи с разной скоростью, поэтому порядок нарушен)
 	sortResults(results)
 
 	var (
-		average = make([]result, len(results)/n)
-		maximum = make([]result, len(results)/n)
-		best    packing.SearchResult // лучше результат среди всех
+		average = make([]result, total/n)
+		maximum = make([]result, total/n)
+		best    packing.SearchResult // лучший результат среди всех
 	)
 	for i := range average {
 		var (
@@ -183,21 +215,9 @@ func main() {
 		}
 	}
 
-	saveIntoJSON(resultPath+"/results_old.json", results)
+	saveIntoJSON(resultPath+"/results.json", results)
 	saveIntoJSON(resultPath+"/average.json", average)
 	saveIntoJSON(resultPath+"/maximum.json", maximum)
 	saveIntoJSON(resultPath+"/bestResult.json", best)
 	fmt.Printf("%v", time.Now().Sub(timeStart))
-}
-
-func saveIntoJSON(path string, dataToSave interface{}) {
-	data, err := json.Marshal(dataToSave)
-	if err != nil {
-		panic(err)
-	} else {
-		err = ioutil.WriteFile(path, data, 0644)
-		if err != nil {
-			panic(err)
-		}
-	}
 }
