@@ -12,13 +12,13 @@ import (
 )
 
 const (
-	n          = 300 // количество запусков для одних и тех же параметров
+	n          = 200 // количество запусков для одних и тех же параметров
 	taskPath   = "/home/aleksey/3d_bin/saved/47blocks.json"
-	resultPath = "/home/aleksey/3d_bin/research/bca/47blocks_3try"
+	resultPath = "/home/aleksey/3d_bin/research/bca/47blocks_4try"
 
-	npStart, npStop, npStep = 7, 7, 7
+	npStart, npStop, npStep = 9, 9, 9
 	niStart, niStop, niStep = 50, 400, 50
-	ciStart, ciStop, ciStep = 0.05, 3, 0.05
+	ciStart, ciStop, ciStep = 0.05, 5, 0.05
 
 	// всего запусков
 	total = n * ((ciStop-ciStart)/ciStep + 1) * ((niStop-niStart)/niStep + 1)

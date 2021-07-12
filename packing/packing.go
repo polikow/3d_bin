@@ -33,6 +33,8 @@ func newRandomSolution(random *rand.Rand, size int) Solution {
 	return s
 }
 
+// Rotation - вариант поворота груза.
+//
 // Груз является прямоугольным параллелепипедом, поэтому
 // существует всего 6 вариантов его поворота.
 //

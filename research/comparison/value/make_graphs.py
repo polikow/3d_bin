@@ -45,7 +45,7 @@ figure = go.Figure(data=[
            ),
     go.Bar(name="GA DeVries",
            x=sizes,
-           y=gaDarwin_average_value,
+           y=gaDeVries_average_value,
            marker_color="orange",
            )
 ])
