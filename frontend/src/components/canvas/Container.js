@@ -16,7 +16,8 @@ export default () => {
       <Block onlyEdges color="black"
              p1={{x: 0, y: 0, z: 0}} p2={{x: w, y: h, z: l}}/>
       <Labels w={w} h={h} l={l}/>
-      {grid && <XYZGrids w={w} h={h} l={l}/>}
+      {/*TODO fix XYZGrids*/}
+      {/*{grid && <XYZGrids w={w} h={h} l={l}/>}*/}
       <XYZLabels x={w} y={h} z={l}/>
     </>
   );
