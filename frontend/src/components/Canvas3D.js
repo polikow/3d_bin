@@ -1,11 +1,11 @@
 import React, {useEffect} from "react";
+import {useStore} from "../store";
 import {Canvas} from "react-three-fiber";
 import DebugTools from "./canvas/Debug";
 import Light from "./canvas/Light";
 import Camera from "./canvas/Camera";
 import Container from "./canvas/Container";
 import Blocks from "./canvas/Blocks";
-import {useStore} from "../store";
 import Cargo from "./canvas/Cargo";
 
 export default () => {
