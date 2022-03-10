@@ -1,15 +1,3 @@
-export function roundFloat(f, decimals) {
-  return parseFloat(parseFloat(f).toFixed(decimals))
-}
-
-export function arrayN(n) {
-  let a = new Array(n)
-  for (let i = 0; i < a.length; i++) {
-    a[i] = i + 1
-  }
-  return a
-}
-
 const yShift = 0.8
 const zShift = 0.8
 
