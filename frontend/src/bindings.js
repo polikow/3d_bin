@@ -1,17 +1,10 @@
 import {blockToBlockObj} from "./utils";
 
-export function AppEvent(event: string, callback: function) {
+export function AppEvent(event, callback) {
   window.wails.Events.On(event, callback)
 }
 
-function jsonArrayReplacer(k, v) {
-  if (v instanceof Array)
-    return JSON.stringify(v)
-  else
-    return v
-}
-
-export function AppSave(title: string, filter: string, data: any): Promise<any> {
+export function AppSave(title, filter, data) {
   return window.backend.App.Save(
     title,
     filter,
@@ -19,12 +12,12 @@ export function AppSave(title: string, filter: string, data: any): Promise<any> 
   )
 }
 
-export async function AppLoad(title: string, filter: string): Promise<any> {
+export async function AppLoad(title, filter) {
   const data = await window.backend.App.Load(title, filter)
   return JSON.parse(data)
 }
 
-export function AppRunAlgorithm(container, blocks, settings): Promise<any> {
+export function AppRunAlgorithm(container, blocks, settings) {
   let data = JSON.stringify({
     container: container,
     blocks: blocks.map(blockToBlockObj),
@@ -34,7 +27,7 @@ export function AppRunAlgorithm(container, blocks, settings): Promise<any> {
   return window.backend.App.RunAlgorithm(data)
 }
 
-export function AppGenerateRandomBlocks(container): Promise<any> {
+export function AppGenerateRandomBlocks(container) {
   let data = JSON.stringify(container)
   return window.backend.App.Generate(data)
 }

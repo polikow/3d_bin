@@ -21,7 +21,6 @@ import ButtonAccept from "./ui/ButtonAccept";
 import ButtonAdd from "./ui/ButtonAdd";
 import ButtonCreate from "./ui/ButtonCreate";
 import {AppGenerateRandomBlocks} from "../bindings";
-import {Close} from "@material-ui/icons";
 
 const rowsPerPage = 10
 

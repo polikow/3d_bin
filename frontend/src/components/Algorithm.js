@@ -74,18 +74,6 @@ export default ({open, onClose}) => {
   )
 }
 
-function postfix(i, nPacked, nSolution) {
-  if (i === nSolution - 1) {
-    if (i >= nPacked) {
-      return "]</b>"
-    } else {
-      return "]"
-    }
-  } else {
-    return ""
-  }
-}
-
 function ResultPaper() {
   const [iteration, value, solution, packed] = useStore(s => [s.iteration, s.value, s.solution, s.packed])
   const toggleMenuOption = useStore(s => s.toggleMenuOption)
