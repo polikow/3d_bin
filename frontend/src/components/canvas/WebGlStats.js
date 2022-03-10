@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react"
-import {addAfterEffect, addEffect} from "react-three-fiber"
+import {addAfterEffect, addEffect} from "@react-three/fiber"
 import StatsImpl from "stats.js"
 
 export function WebGlStats({showPanel = 0, className, parent}) {

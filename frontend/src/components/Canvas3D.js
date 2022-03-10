@@ -1,6 +1,6 @@
 import React, {useEffect} from "react";
 import {useStore} from "../store";
-import {Canvas} from "react-three-fiber";
+import {Canvas} from "@react-three/fiber";
 import DebugTools from "./canvas/Debug";
 import Light from "./canvas/Light";
 import Camera from "./canvas/Camera";
