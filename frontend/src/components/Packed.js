@@ -14,7 +14,7 @@ export default ({open, onClose}) => {
   const solution = useStore(s => s.solution)
 
   const [page, setPage] = useState(0)
-  const handleChangePage = (event, newPage) => setPage(newPage)
+  const handlePageChange = (event, newPage) => setPage(newPage)
 
   return (
     <Floater open={open} onClose={onClose}>
@@ -60,7 +60,7 @@ export default ({open, onClose}) => {
           rowsPerPage={rowsPerPage}
           page={page}
           count={packed.length}
-          onChangePage={handleChangePage}
+          onPageChange={handlePageChange}
         />
       </SimplePaper>
     </Floater>

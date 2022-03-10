@@ -53,7 +53,7 @@ export default ({open, onClose}) => {
   const handleAddNewBlock = () => setBlocks([...blocks, [1, 1, 1]])
 
   const [page, setPage] = useState(0)
-  const handleChangePage = (event, newPage) => setPage(newPage)
+  const handlePageChange = (event, newPage) => setPage(newPage)
 
   const container = useStore(s => s.container)
   const handleGenerateBlocks = () => {
@@ -115,7 +115,7 @@ export default ({open, onClose}) => {
           rowsPerPage={rowsPerPage}
           page={page}
           count={blocks.length}
-          onChangePage={handleChangePage}
+          onPageChange={handlePageChange}
         />
 
         <div id="add-generate-buttons">
