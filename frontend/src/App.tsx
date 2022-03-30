@@ -1,8 +1,7 @@
 import React from 'react';
 import './App.css';
-import 'fontsource-roboto';
-import UI from "./components/UI";
-import Canvas3D from "./components/Canvas3D";
+import UI from "./components/ui/UI";
+import Canvas3D from "./components/canvas/Canvas3D";
 
 export default () => (
   <div id="app" className="App">

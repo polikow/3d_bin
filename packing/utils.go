@@ -3,63 +3,8 @@ package packing
 import (
 	"encoding/json"
 	"math"
-	"math/rand"
 	"os"
-	"time"
 )
-
-// NewRandom создает новый генератор случайных чисел с заданным seed значением.
-func NewRandom(seed int64) *rand.Rand {
-	return rand.New(rand.NewSource(seed).(rand.Source64))
-}
-
-// NewRandomSeeded создает новый генератор случайных чисел со seed значением,
-// зависящим от текущего времени.
-func NewRandomSeeded() *rand.Rand {
-	return NewRandom(TimeSeed())
-}
-
-func TimeSeed() int64 {
-	return time.Now().UnixNano()
-}
-
-// intInBounds генерирует случайное число, которое лежит на [lower, higher].
-func intInBounds(random *rand.Rand, lower, higher int) int {
-	return random.Intn(higher-lower+1) + lower
-}
-
-// intsInBounds генерирует пару случайных чисел a и b, которые:
-//  1) лежат на отрезке [lower, higher]
-//  2) a != b (отличны друг от друга)
-func intsInBounds(random *rand.Rand, lower, higher int) (int, int) {
-	var x, y int
-	x = intInBounds(random, lower, higher)
-	y = intInBounds(random, lower, higher)
-	if x == y {
-		if x == higher {
-			y = lower
-		} else {
-			y++
-		}
-	}
-	return x, y
-}
-
-// intsInBoundsOrdered генерирует пару случайных чисел a и b, которые:
-//  1) лежат на отрезке [lower, higher]
-//  2) a < b
-func intsInBoundsOrdered(random *rand.Rand, lower, higher int) (int, int) {
-	a, b := intsInBounds(random, lower, higher)
-	if a > b {
-		a, b = b, a
-	}
-	return a, b
-}
-
-// float64InBounds генерирует случайное вещественное число на [lower, higher).
-func float64InBounds(random *rand.Rand, lower, higher float64) float64 {
-	return lower + random.Float64()*(higher-lower)
-}
 
 func ceilMultiplication(i int, f float64) int {
 	return int(math.Ceil(float64(i) * f))
@@ -73,20 +18,28 @@ func ceilDivision(i int, f float64) int {
 	return int(math.Ceil(float64(i) / f))
 }
 
-func LoadTaskFromJSON(path string) (Container, []Block) {
-	cb := struct {
-		Container Container `json:"container"`
-		Blocks    []Block   `json:"blocks"`
-	}{}
+func loadFromJSONFile[T any](path string) (t T, err error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		panic(err)
-	}
-	json.Unmarshal(data, &cb)
-	if cb.Container.Width == 0 || cb.Container.Height == 0 ||
-		cb.Container.Length == 0 || len(cb.Blocks) == 0 {
-		panic("wrong task specified")
+		return t, err
 	}
 
-	return cb.Container, cb.Blocks
+	err = json.Unmarshal(data, &t)
+	if err != nil {
+		return t, err
+	}
+	return t, nil
+}
+
+func saveAsJSONFile[T any](path string, t T) error {
+	bytes, err := json.Marshal(t)
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(path, bytes, 0666)
+	if err != nil {
+		return err
+	}
+	return nil
 }

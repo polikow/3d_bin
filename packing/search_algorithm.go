@@ -17,22 +17,6 @@ type SearchAlgorithm interface {
 	Done() bool
 }
 
-// SearchResult - результат работы одной итерации алгоритма, где:
-//  Iteration - итерация, на которой был найден,
-//  Value     - лучшее значение цф за все итерации,
-//  Solution  - найденное решение (порядок упаковки),
-//  Packed    - позиции упакованных грузов.
-type SearchResult struct {
-	Iteration int             `json:"iteration"`
-	Value     float64         `json:"value"`
-	Solution  Solution        `json:"solution"`
-	Packed    []BlockPosition `json:"packed"`
-}
-
-func (s SearchResult) BetterThan(another SearchResult) bool {
-	return s.Value >= another.Value
-}
-
 // Evaluate выполняет алгоритм до тех пор, пока это возможно.
 // Возвращает результат последней итерации алгоритма.
 func Evaluate(algorithm SearchAlgorithm) SearchResult {
@@ -66,7 +50,7 @@ func EvaluateTimedLimited(algorithm SearchAlgorithm, n int) (SearchResult, int64
 	start := time.Now()
 
 	var result SearchResult
-	for i:=0; i<n; i++ {
+	for i := 0; i < n; i++ {
 		result = algorithm.Run()
 		if result.Value == 1 {
 			break
@@ -133,74 +117,4 @@ func EvaluatePrintBetter(algorithm SearchAlgorithm) SearchResult {
 		}
 	}
 	return bestResult
-}
-
-// searchState - состояние алгоритма поиска.
-type searchState struct {
-	container Container // контейнер
-	blocks    []Block   // загружаемые в контейнер грузы
-
-	n               int            // размер задачи
-	containerVolume float64        // объем контейнера
-	packAlgorithm   *PackAlgorithm // алгоритм упаковки
-
-	currentValue            float64         // лучшее цф на данной итерации
-	bestValueFound          float64         // лучшее найденное значение цф
-	bestSolutionFound       Solution        // лучшее найденное решение
-	bestPackedFound         []BlockPosition // лучшая упаковка грузов
-	iterationsPassed        int             // итераций выполнено
-	iterationsNoImprovement int             // итераций выполнено без улучшений
-}
-
-func newSearchState(container Container, blocks []Block) searchState {
-	n := len(blocks)
-
-	return searchState{
-		container: container,
-		blocks:    blocks,
-
-		n:               n,
-		containerVolume: float64(container.Volume()),
-		packAlgorithm:   NewPackAlgorithm(container, blocks),
-
-		bestValueFound:          0,
-		bestSolutionFound:       make(Solution, n),
-		bestPackedFound:         make([]BlockPosition, n),
-		iterationsPassed:        0,
-		iterationsNoImprovement: 0,
-	}
-}
-
-// findFill - поиск заполненности контейнера.
-func (s searchState) findFill(solution Solution) float64 {
-	packed := s.packAlgorithm.Run(solution)
-	packedVolume := blockPositionsVolume(packed)
-	return float64(packedVolume) / s.containerVolume
-}
-
-// update обновление состояния поиска.
-func (s *searchState) update(solution Solution, value float64) {
-	if s.bestValueFound < value {
-		s.bestValueFound = value
-
-		copy(s.bestSolutionFound, solution)
-
-		packed := s.packAlgorithm.Run(s.bestSolutionFound)
-		s.bestPackedFound = append(s.bestPackedFound[:0], packed...)
-
-		s.iterationsNoImprovement = 0
-	} else {
-		s.iterationsNoImprovement++
-	}
-
-	s.iterationsPassed++
-}
-
-func (s searchState) result() SearchResult {
-	return SearchResult{
-		Iteration: s.iterationsPassed,
-		Value:     s.bestValueFound,
-		Solution:  s.bestSolutionFound,
-		Packed:    s.bestPackedFound,
-	}
 }

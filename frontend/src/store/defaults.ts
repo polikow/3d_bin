@@ -1,4 +1,3 @@
-import {Container, SearchResult} from "../types";
 import {
   BlocksState,
   CameraState,
@@ -10,14 +9,15 @@ import {
   Tab,
   UIState
 } from "./types";
-import {blockCenter, blockPosition} from "./utils";
+import {cargoAndSpace} from "./cargo";
+import {containerCamera} from "./camera";
+import {Container, SearchResult} from "../wailsjs/go/models"
 
-export const defaultContainer: Container = {w: 2, h: 2, l: 2}
+export const container: Container = {w: 2, h: 2, l: 2}
 
 export const cameraState: CameraState = {
   fov: 75,
-  position: blockPosition(defaultContainer),
-  target: blockCenter(defaultContainer),
+  ...containerCamera(container)
 }
 
 export const settingsState: SettingsState = {
@@ -31,16 +31,16 @@ export const settingsState: SettingsState = {
   isGridVisible: true,
 }
 
-export const searchResult: SearchResult = {
+export const searchResult = SearchResult.createFrom({
   iteration: 0,
   value: 0,
   solution: [],
   packed: [],
-}
+})
 
 export const searchState: SearchState = {
   isSearching: false,
-  ...searchResult
+  searchResult: searchResult
 }
 
 export const uiState: UIState = {
@@ -62,4 +62,17 @@ export const blocksState: BlocksState = {
 
 export const sceneState: SceneState = {
   scene: Scene.Container
+}
+
+export const cargoSceneState = cargoAndSpace(blocksState.blocks)
+
+export const state = {
+  ...cameraState,
+  ...sceneState,
+  ...containerState,
+  ...blocksState,
+  ...searchState,
+  ...uiState,
+  ...settingsState,
+  ...cargoSceneState
 }

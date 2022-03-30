@@ -1,147 +1,189 @@
 import create from "zustand"
 import {Scene, Store, Tab,} from "./types";
 import * as DEFAULT from "./defaults"
-import {generateRandomBlocks, load, runAlgorithm, save} from "../bindings";
-import {Block} from "../types";
-
-const fileFilter = "*.json"
-
-const success = (text: string) => () => console.log(text)
-const fail = (text: string) => (error?: Error) => console.error(text, error)
+import {blockPositionForBlockAtIndex, cargoAndSpace, doesBlockFitInside, spaceNeedsToBeShrunk} from "./cargo";
+import {cargoCamera, containerCamera} from "./camera";
+import {withoutLast, log, logError, replaced, withoutIndex} from "./utils";
+import {Task} from "../wailsjs/go/models";
 
 export const useStore = create<Store>((set, get) => ({
+  ...DEFAULT.state,
 
-  ...DEFAULT.cameraState,
-  setFOV: fov => set(() => ({fov})),
-  setPositionAndTarget: (position, target) => set(() => ({position, target})),
+  setFOV: fov => set({fov}),
+  setPositionAndTarget: (position, target) => set({position, target}),
 
-  ...DEFAULT.sceneState,
-  setScene: scene => set(() => ({scene})),
-
-  ...DEFAULT.containerState,
-  setContainer: container => set(() => ({container})),
-  ...DEFAULT.blocksState,
-  replaceBlocks: blocks => set(() => ({blocks})),
-  addNewBlock: block => set((state) => ({blocks: [...state.blocks, block]})),
-  removeBlockByIndex: index => set((state) => ({
-    blocks: [...state.blocks.slice(0, index), ...state.blocks.slice(index + 1)]
-  })),
-  changeBlockByIndex: (index, block) => set((state) => ({
-    blocks: state.blocks.map((b, i) => {
-      if (i != index) {
-        return b
-      } else {
-        return block
-      }
+  setContainer: container => set({container, ...containerCamera(container)}),
+  replaceBlocks: blocks => {
+    const {cargo, space} = cargoAndSpace(blocks)
+    const cameraSettings = (get().scene === Scene.Cargo)
+      ? cargoCamera(blocks, space)
+      : {}
+    set({
+      blocks, cargo, space,
+      searchResult: DEFAULT.searchResult,
+      ...cameraSettings
     })
-  })),
+  },
+  addNewBlock: block => {
+    const {blocks: oldBlocks, cargo: oldCargo, space: oldSpace} = get()
+    const blocks = [...oldBlocks, block]
+    const index = oldBlocks.length
+    if (doesBlockFitInside(block, oldSpace)) {
+      set({
+        blocks,
+        searchResult: DEFAULT.searchResult,
+        cargo: [...oldCargo, blockPositionForBlockAtIndex(block, index, oldSpace)]
+      })
+    } else {
+      const {cargo, space} = cargoAndSpace(blocks)
+      set({
+        blocks,
+        cargo, space,
+        searchResult: DEFAULT.searchResult,
+        ...cargoCamera(blocks, space)
+      })
+    }
+  },
+  removeBlockByIndex: index => {
+    const {blocks: oldBlocks, space: oldSpace, cargo: oldCargo} = get()
+    const blocks = withoutIndex(oldBlocks, index)
+    if (spaceNeedsToBeShrunk(oldBlocks, oldSpace)) {
+      const {cargo, space} = cargoAndSpace(blocks)
+      set({
+        blocks, cargo, space,
+        searchResult: DEFAULT.searchResult,
+        ...cargoCamera(blocks, space)
+      })
+    } else {
+      const cargo = withoutLast(oldCargo)
+      set({
+        blocks, cargo,
+        searchResult: DEFAULT.searchResult,
+        ...cargoCamera(blocks, oldSpace)
+      })
+    }
+  },
+  changeBlockByIndex: (i, b) => {
+    const {blocks: oldBlocks, cargo: oldCargo, space: oldSpace} = get()
+    const blocks = replaced(oldBlocks, b, i)
+    if (!doesBlockFitInside(b, oldSpace) || spaceNeedsToBeShrunk(blocks, oldSpace)) {
+      const {cargo, space} = cargoAndSpace(blocks)
+      set({
+        blocks,
+        cargo, space,
+        searchResult: DEFAULT.searchResult,
+        ...cargoCamera(blocks, space)
+      })
+    } else {
+      set({
+        blocks,
+        searchResult: DEFAULT.searchResult,
+        cargo: replaced(oldCargo, blockPositionForBlockAtIndex(b, i, oldSpace), i)
+      })
+    }
+  },
   generateRandomBlocks: () => {
-    generateRandomBlocks(get().container)
-      .then((blocks: Array<Block>) => set(() => ({blocks})))
-      .catch(fail("failed to generate new blocks!"))
+    window.go.main.App.Generate(get().container)
+      .then(result => {
+        if (result instanceof Error) return logError(result)
+        get().replaceBlocks(result)
+      })
+      .catch(logError)
   },
   saveTask: () => {
-    const data = {container: get().container, blocks: get().blocks}
-    save("Сохранить задачу в файл...", fileFilter, data)
-      .then(success("saved!"))
-      .catch(fail("failed to save"))
+    const {container, blocks} = get()
+    window.go.main.App.SaveTask({container, blocks} as Task)
+      .then(log)
+      .catch(logError)
   },
   loadTask: () => {
-    load("Загрузить задачу из файла...", fileFilter)
-      .then(({container, blocks}) => {
-        if (container === undefined || blocks === undefined) {
-          throw new Error("wrong task file format!")
-        }
-        set(() => ({container, blocks, ...DEFAULT.searchResult}))
+    window.go.main.App.LoadTask()
+      .then(result => {
+        if (result instanceof Error) return logError(result)
+        const {container, blocks} = result
+        const {cargo, space} = cargoAndSpace(blocks)
+        const cameraSettings = (get().scene === Scene.Cargo)
+          ? cargoCamera(blocks, space)
+          : containerCamera(container)
+        set({
+          blocks, container,
+          cargo, space,
+          ...cameraSettings,
+          ...DEFAULT.searchState,
+        })
       })
-      .catch(fail("failed to load from file"))
+      .catch(logError)
   },
 
-  ...DEFAULT.searchState,
-  startAlgorithm: (settings) => {
-    runAlgorithm(get().container, get().blocks, settings)
-      .then(() => {
-        success("started algorithm")
-        set(() => ({isSearching: true}))
-      })
-      .catch(() => {
-        fail("failed to start algorithm")
-        set(() => ({isSearching: false}))
-      })
+  startBCA: (settings) => {
+    log(settings)
+    const {container, blocks} = get()
+    const task = {container, blocks} as Task
+    window.go.main.App.RunBCA(task, settings)
+      .then(log)
+      .catch(logError)
   },
-  setResult: result => set(() => ({...result})),
-  setFinalResult: result => {
-  },  // TODO IMPLEMENT
+  startGA: (settings) => {
+    log(settings)
+    const {container, blocks} = get()
+    const task = {container, blocks} as Task
+    window.go.main.App.RunGA(task, settings)
+      .then(log)
+      .catch(logError)
+  },
+  setSearchResult: searchResult => set({searchResult}),
+  setFinalResult: searchResult => set({searchResult}),  // TODO implement
   saveSolution: () => {
-    const state = get()
-    const data = {
-      iteration: state.iteration,
-      value: state.value,
-      solution: state.solution,
-      packed: state.packed
-    }
-    save("Сохранить решение в файл...", fileFilter, data)
-      .then(success("saved!"))
-      .catch(fail("failed to save solution"))
+    window.go.main.App.SaveSearchResult(get().searchResult)
+      .then(log)
+      .catch(logError)
   },
   loadSolution: () => {
-    load("Загрузить решение из файла...", fileFilter)
-      .then(({iteration, value, solution, packed}) => {
-        if (iteration === undefined || value === undefined ||
-          solution === undefined || packed === undefined) {
-          throw new Error("wrong solution file format")
-        }
-        set(() => ({iteration, value, solution, packed, tab: Tab.Algorithm}))
+    window.go.main.App.LoadSearchResult()
+      .then(searchResult => {
+        if (searchResult instanceof Error) return logError(searchResult)
+        set({searchResult})
       })
-      .then(success("loaded"))
-      .catch(fail("failed to load solution"))
+      .catch(logError)
   },
 
-  ...DEFAULT.uiState,
   setTab: newTab => {
-    const state = get()
+    const {tab: oldTab, scene, container, blocks, space} = get()
     switch (true) {
       // Переключение на ту же самую вкладку закрывает ее
-      case state.tab === newTab:
-        return {tab: Tab.Nothing}
+      case newTab === oldTab:
+        return set({tab: Tab.Nothing})
 
       // Переключение на вкладку "Грузы" активирует соответствующую сцену, если
       // она не была уже активирована
-      case newTab === Tab.Blocks && state.scene !== Scene.Cargo:
-        return {
+      case newTab === Tab.Blocks && scene !== Scene.Cargo:
+        return set({
           tab: newTab,
           scene: Scene.Cargo,
-
-          // position: overviewOfBounds(bounds),
-          // target: centerOf(bounds)
-        }
+          ...cargoCamera(blocks, space)
+        })
 
       // Переключение на вкладку "Контейнер" активирует соответствующую сцену, если
       // она не была уже активирована
-      case newTab === Tab.Container || newTab === Tab.Algorithm && state.scene !== Scene.Container:
-        return {
+      case newTab === Tab.Container || newTab === Tab.Algorithm && scene !== Scene.Container:
+        return set({
           tab: newTab,
           scene: Scene.Container,
-
-          // position: overviewOfContainer(state.container),
-          // target: centerOf(state.container)
-        }
-
+          ...containerCamera(container)
+        })
       // Переключение на новую вкладку
       case (newTab in Tab):
-        return {currentTab: newTab}
+        return set({tab: newTab})
 
       default:
-        fail("wrong newTab specified")()
-        return {}
+        return logError("wrong newTab specified")
     }
   },
 
-  ...DEFAULT.settingsState,
-  setOpacity: opacity => set(() => ({opacity})),
-  setLabelScale: labelScale => set(() => ({labelScale})),
-  setColorful: isColorful => set(() => ({isColorful})),
-  setDebugMode: isDebugMode => set(() => ({isDebugMode})),
-  setOnlyEdges: onlyEdges => set(() => ({onlyEdges})),
-  setGridVisible: isGridVisible => set(() => ({isGridVisible})),
+  setOpacity: opacity => set({opacity}),
+  setLabelScale: labelScale => set({labelScale}),
+  setColorful: isColorful => set({isColorful}),
+  setDebugMode: isDebugMode => set({isDebugMode}),
+  setOnlyEdges: onlyEdges => set({onlyEdges}),
+  setGridVisible: isGridVisible => set({isGridVisible}),
 }))

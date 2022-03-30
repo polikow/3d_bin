@@ -1,30 +1,29 @@
 {
   "name": "3d_bin",
   "author": "Aleksey Polyakov<superpolikow@gmail.com>",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "dependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-modal": "^3.14.4",
+    "react-scripts": "^4.0.3",
+    "classnames": "^2.3.1",
+    "zustand": "^3.6.9",
     "@material-ui/core": "^4.12.3",
     "@material-ui/icons": "^4.11.2",
     "@react-three/drei": "^8.8.3",
     "@react-three/fiber": "^7.0.26",
-    "@wailsapp/runtime": "^1.1.1",
-    "core-js": "^3.21.0",
-    "fontsource-roboto": "^4.0.0",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-modal": "^3.14.4",
     "react-three-gui": "^0.4.2",
     "stats.js": "^0.17.0",
-    "three": "^0.137.5",
-    "wails-react-scripts": "^3.0.1-2",
-    "zustand": "^3.6.9"
+    "three": "^0.137.5"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "watch": "cra-build-watch"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -42,11 +41,11 @@
     ]
   },
   "devDependencies": {
-    "typescript": "^4.6.2",
     "@types/react": "^17.0.40",
     "@types/react-dom": "^17.0.13",
-    "@types/jest": "^27.4.1",
+    "@types/stats.js": "^0.17.0",
     "@types/three": "^0.138.0",
-    "@types/stats.js": "^0.17.0"
+    "cra-build-watch": "^3.4.0",
+    "typescript": "^4.6.2"
   }
 }

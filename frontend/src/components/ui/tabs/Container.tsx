@@ -1,8 +1,8 @@
 import React from "react";
-import {useStore} from "../store/store";
+import {useStore} from "../../../store/store";
 import {TextField} from "@material-ui/core";
-import {Event, integerInBounds} from "../utils";
-import Tab from "./ui/Tab";
+import {Event, integerInBounds} from "../../../utils";
+import Tab from "../Tab";
 
 interface ContainerProps {
   open: boolean

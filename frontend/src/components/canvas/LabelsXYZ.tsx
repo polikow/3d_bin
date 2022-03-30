@@ -1,7 +1,7 @@
 import React from "react";
 import {useStore} from "../../store/store";
-import {Point} from "../../types";
 import Label from "./Label";
+import {Point} from "../../wailsjs/go/models"
 
 export default ({x, y, z}: Point) => {
   const labelScale = useStore(s => s.labelScale)

@@ -1,7 +1,7 @@
 import React from "react";
-import {useStore} from "../store/store";
+import {useStore} from "../../../store/store";
 import {Button, Typography} from "@material-ui/core";
-import Tab from "./ui/Tab";
+import Tab from "../Tab";
 
 interface SaveLoadProps {
   open: boolean
@@ -14,7 +14,7 @@ export default ({open, onClose}: SaveLoadProps) => {
   const saveSolution = useStore(s => s.saveSolution)
   const loadSolution = useStore(s => s.loadSolution)
   return (
-    <Tab title="Сохранение/Загрузка" open={open} onClose={onClose}>
+    <Tab className="save-load" title="Сохранение/Загрузка" open={open} onClose={onClose}>
       <Button variant="contained" color="default" onClick={saveTask}>
         Сохранить задачу в файл...
       </Button>

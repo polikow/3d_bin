@@ -1,5 +1,6 @@
 import React from "react";
 import MenuPaper from "./MenuPaper";
+import classNames from "classnames";
 
 interface MenuHideableProps {
   hidden: boolean
@@ -8,7 +9,7 @@ interface MenuHideableProps {
 }
 
 export default ({hidden, className, children}: MenuHideableProps) => (
-  <MenuPaper classes={hidden ? ["hidden-left", className] : [className]}>
+  <MenuPaper className={classNames(className, {"hidden-left": hidden})}>
     {children}
   </MenuPaper>
 )

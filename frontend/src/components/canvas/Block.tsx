@@ -1,8 +1,8 @@
 import React from "react";
-import {Point} from "../../types";
 import BlockFilled from "./BlockFilled";
 import BlockEdges from "./BlockEdges";
 import {Vector3} from "@react-three/fiber";
+import {Point} from "../../wailsjs/go/models"
 
 const sShift = 0.015
 const pShift = sShift / 2

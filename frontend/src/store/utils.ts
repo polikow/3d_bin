@@ -1,17 +1,11 @@
-import {Block} from "../types";
-import {Vector3} from "@react-three/fiber";
+export const replaced = <T>(a: Array<T>, newValue: T, index: number) =>
+  a.map((v, i) => i != index ? v : newValue)
 
-const yShift = 0.8
-const zShift = 0.8
+export const withoutLast = <T>(a: Array<T>) =>
+  a.filter((_, i) => i < a.length - 1)
 
-export function blockPosition(b: Block): Vector3 {
-  return [b.w * 2, b.h * 2 * yShift, b.l * 2 * zShift]
-}
+export const withoutIndex = <T>(a: Array<T>, i: number) =>
+  [...a.slice(0, i), ...a.slice(i + 1)]
 
-export function blockCenter(b: Block): Vector3 {
-  return [b.w / 2, b.h / 2, b.l / 2]
-}
-
-export function blocksOverviewPosition(b: Block): Vector3 {
-  return [b.w / 2, b.h * 15, b.l / 2 + b.l]
-}
+export const log = (text: any) => console.log(text)
+export const logError = (text: any) => console.error(text)

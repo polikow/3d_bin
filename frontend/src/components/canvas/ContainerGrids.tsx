@@ -1,6 +1,6 @@
 import React, {useMemo} from "react";
 import * as THREE from "three";
-import {Block} from "../../types";
+import {Block} from "../../wailsjs/go/models"
 
 const material = new THREE.LineBasicMaterial(  );
 

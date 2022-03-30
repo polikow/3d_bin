@@ -2,6 +2,7 @@ package packing
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"math"
 	"math/rand"
 )
@@ -19,36 +20,75 @@ const clonalgIntensityCoefficient = 3
 type BCA struct {
 	searchState
 
-	//параметры алгоритма
-	np     int        // количество антител в популяции
-	ni     int        // максимальное число итераций без улучшений
-	ci     float64    // коэффициент интенсивности мутации
-	random *rand.Rand // генератор случайных чисел
-
+	settings           BCASettings
 	population         []Antibody
 	populationAffinity []float64
 	clones             []Antibody
 	clonesAffinity     []float64
 }
 
-func NewBCA(container Container, blocks []Block, np int, ni int, ci float64, random *rand.Rand) *BCA {
-	n := len(blocks)
-	if np <= 0 || ni <= 0 || ci <= 0 || n == 0 {
-		panic("bca: wrong input values")
+// BCASettings - параметры алгоритма
+type BCASettings struct {
+	Np     int        `json:"np"` // количество антител в популяции
+	Ni     int        `json:"ni"` // максимальное число итераций без улучшений
+	Ci     float64    `json:"ci"` // коэффициент интенсивности мутаци
+	Random *rand.Rand `json:"-"`  // генератор случайных чисел
+}
+
+// replaceWithDefaults создает новый экземпляр, который содержит все параметры
+// текущего, за исключением тех, которые не заданы - такие задаются значениями
+// по умолчанию.
+func (s BCASettings) replaceWithDefaults() BCASettings {
+	settings := s
+	if s.Np == 0 {
+		settings.Np = 10
 	}
+	if s.Ni == 0 {
+		settings.Ni = 400
+	}
+	if s.Ci == 0 {
+		settings.Ci = 2.76
+	}
+	if s.Random == nil {
+		settings.Random = NewRandomSeeded()
+	}
+	return settings
+}
+
+func (s BCASettings) isSane() (bool, error) {
+	if s.Np <= 0 {
+		return false, errors.Errorf("bca can not have population of negative size \"%v\"", s.Np)
+	}
+	if s.Ni <= 0 {
+		return false, errors.Errorf("bca can not have \"%v\" max iterations", s.Np)
+	}
+	if s.Ci <= 0 || s.Ci > 5 {
+		return false, errors.Errorf("bca can not have mutation intensity of \"%v\"", s.Ci)
+	}
+	if s.Random == nil {
+		return false, errors.Errorf("bca has to have a setup random generator")
+	}
+	return true, nil
+}
+
+func (s BCASettings) mustBeSane() {
+	if _, err := s.isSane(); err != nil {
+		panic(err)
+	}
+}
+
+func NewBCA(task Task, settings BCASettings) *BCA {
+	settings = settings.replaceWithDefaults()
+	settings.mustBeSane()
 
 	return &BCA{
-		searchState: newSearchState(container, blocks),
+		searchState: newSearchState(task),
 
-		np:     np,
-		ni:     ni,
-		ci:     ci,
-		random: random,
-
-		population:         make([]Antibody, np),
-		populationAffinity: make([]float64, np),
-		clones:             make([]Antibody, np),
-		clonesAffinity:     make([]float64, np),
+		settings:           settings,
+		population:         make([]Antibody, settings.Np),
+		populationAffinity: make([]float64, settings.Np),
+		clones:             make([]Antibody, settings.Np),
+		clonesAffinity:     make([]float64, settings.Np),
 	}
 }
 
@@ -62,7 +102,7 @@ func (b *BCA) Run() SearchResult {
 }
 
 func (b *BCA) Done() bool {
-	return b.iterationsNoImprovement >= b.ni || b.bestValueFound == 1
+	return b.iterationsNoImprovement >= b.settings.Ni || b.bestValueFound == 1
 }
 
 func (b *BCA) runIteration() {
@@ -84,10 +124,10 @@ func (b *BCA) cloneAndReplace() {
 		// (4) мутирования случайного по схеме clonalg
 		clone := b.selectRandomClone()
 		intensity := math.Exp(-clonalgIntensityCoefficient * affinity)
-		clone.mutate(b.random, intensity)
+		clone.mutate(b.settings.Random, intensity)
 
 		// (5)
-		intensity = (float64(b.iterationsNoImprovement)/float64(b.ni) + 0.01) * b.ci
+		intensity = (float64(b.iterationsNoImprovement)/float64(b.settings.Ni) + 0.01) * b.settings.Ci
 		b.mutateClones(intensity)
 
 		// (6)
@@ -118,19 +158,19 @@ func (b *BCA) findBestClone() (Antibody, float64) {
 // mutateClones - мутирование клонов с помощью операции гипермутации.
 func (b *BCA) mutateClones(intensity float64) {
 	for _, clone := range b.clones {
-		clone.hypermutation(b.random, intensity)
+		clone.hypermutation(b.settings.Random, intensity)
 	}
 }
 
 // createNpClones - создание np клонов.
 func (b *BCA) createNpClones(antibody Antibody) {
 	if b.iterationsPassed == 0 {
-		for i := 0; i < b.np; i++ {
+		for i := 0; i < b.settings.Np; i++ {
 			clone := antibody.makeClone()
 			b.clones[i] = clone
 		}
 	} else {
-		for i := 0; i < b.np; i++ {
+		for i := 0; i < b.settings.Np; i++ {
 			dst := b.clones[i]
 			antibody.makeCloneInDestination(dst)
 		}
@@ -140,7 +180,7 @@ func (b *BCA) createNpClones(antibody Antibody) {
 // initializeAntibodies - инициализация популяции антител.
 func (b *BCA) initializeAntibodies() {
 	for i := range b.population {
-		b.population[i] = newAntibody(b.random, b.n)
+		b.population[i] = newAntibody(b.settings.Random, b.n)
 	}
 }
 
@@ -165,23 +205,23 @@ func (b *BCA) findClonesAffinity() {
 }
 
 // findAffinity - поиск значения BG-аффинности для заданного тела.
-func (b BCA) findAffinity(antibody Antibody) float64 {
+func (b *BCA) findAffinity(antibody Antibody) float64 {
 	return b.findFill(Solution(antibody))
 }
 
 // selectRandomClone возвращает случайное антитело из заданного набора антител.
-func (b BCA) selectRandomClone() Antibody {
-	index := b.random.Intn(b.np)
+func (b *BCA) selectRandomClone() Antibody {
+	index := b.settings.Random.Intn(b.settings.Np)
 	return b.clones[index]
 }
 
 // currentBest - лучшее решение и цф на данной итерации.
-func (b BCA) currentBest() (Solution, float64) {
+func (b *BCA) currentBest() (Solution, float64) {
 	var (
 		bestAntibody = b.population[0]
 		bestAffinity = b.populationAffinity[0]
 	)
-	for i := 0; i < b.np; i++ {
+	for i := 0; i < b.settings.Np; i++ {
 		affinity := b.populationAffinity[i]
 		antibody := b.population[i]
 		if affinity > bestAffinity {

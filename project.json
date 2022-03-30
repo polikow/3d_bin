@@ -1,25 +1,32 @@
 {
  "name": "3d_bin",
- "description": "3D bin packing problem solver",
- "author": {
+ "assetdir": "frontend/build",
+ "frontend:build": "npm run build",
+ "frontend:install": "npm install",
+ "frontend:dev": "cat",
+ "frontend:dev:watcher": "npm run watch",
+ "wailsjsdir": "./frontend",
+ "version": "2",
+ "Path": "",
+ "BuildDir": "",
+ "outputfilename": "3d_bin",
+ "OutputType": "",
+ "Platform": "",
+ "runNonNativeBuildHooks": false,
+ "postBuildHooks": null,
+ "Author": {
   "name": "Aleksey Polyakov",
   "email": "superpolikow@gmail.com"
  },
- "version": "0.1.0",
- "binaryname": "3d_bin",
- "frontend": {
-  "dir": "frontend",
-  "install": "npm install",
-  "build": "npm run build",
-  "bridge": "src",
-  "serve": "npm run start"
+ "Info": {
+  "companyName": "3d_bin",
+  "productName": "3d_bin",
+  "productVersion": "0.2.0",
+  "copyright": "Copyright.........",
+  "comments": "Built using Wails (https://wails.app)"
  },
- "tags": "",
- "WailsVersion": "",
- "CrossCompile": false,
- "Platform": "",
- "Architecture": "",
- "LdFlags": "",
- "GoPath": "",
- "UseFirebug": false
+ "debounceMS": 100,
+ "devserverurl": "http://localhost:34115",
+ "appargs": "",
+ "nsisType": ""
 }

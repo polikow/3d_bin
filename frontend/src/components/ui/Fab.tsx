@@ -11,7 +11,8 @@ interface OptionProps {
 export default ({active, onClick, title, icon}: OptionProps) => (
   <Fab className="fab" variant="extended"
        color={active ? "primary" : "default"}
-       onClick={onClick}>
+       onClick={onClick}
+  >
     {icon}
     {title}
   </Fab>

@@ -1,10 +1,10 @@
 import React, {useState} from "react";
-import {useStore} from "../store/store";
-import Floater from "./ui/Floater";
-import SimplePaper from "./ui/SimplePaper";
-import MenuTitle from "./ui/MenuTitle";
+import {useStore} from "../../../store/store";
+import Floater from "../Floater";
+import SimplePaper from "../SimplePaper";
+import MenuTitle from "../MenuTitle";
 import {Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow} from "@material-ui/core";
-import {Rotation} from "../types";
+import {Rotation} from "../../../store/types";
 
 const rowsPerPage = 10
 
@@ -14,7 +14,7 @@ interface PackedProps {
 }
 
 export default ({open, onClose}: PackedProps) => {
-  const [packed, solution] = useStore(s => [s.packed, s.solution])
+  const [packed, solution] = useStore(s => [s.searchResult.packed, s.searchResult.solution])
 
   const [page, setPage] = useState(0)
   const handlePageChange = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => setPage(newPage)

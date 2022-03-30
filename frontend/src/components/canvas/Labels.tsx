@@ -1,6 +1,6 @@
 import React from "react";
 import {useStore} from "../../store/store";
-import {Block} from "../../types";
+import {Block} from "../../wailsjs/go/models"
 import Label from "./Label";
 
 const maxLabelsPerAxis = 10

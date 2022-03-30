@@ -1,5 +1,5 @@
 import {Vector3} from "@react-three/fiber";
-import {AlgorithmSettings, Block, Container, SearchResult} from "../types";
+import {BCASettings, Block, BlockPosition, Container, GASettings, SearchResult} from "../wailsjs/go/models"
 
 export type Store =
   CameraState & CameraActions &
@@ -7,7 +7,8 @@ export type Store =
   SearchState & SearchActions &
   UIState & UIActions &
   TaskState & TaskActions &
-  SceneState & SceneActions
+  SceneState & SceneActions &
+  CargoSceneState
 
 export type CameraState = {
   fov: number
@@ -43,12 +44,15 @@ export type SettingsActions = {
 
 export type SearchState = {
   isSearching: boolean
-} & SearchResult
+  searchResult: SearchResult
+}
 
 export type SearchActions = {
-  startAlgorithm: (settings: AlgorithmSettings) => void
-  setResult: (result: SearchResult) => void
-  setFinalResult: (result: SearchResult) => void
+  startBCA: (settings: BCASettings) => void
+  startGA: (settings: GASettings) => void
+
+  setSearchResult: (searchResult: SearchResult) => void
+  setFinalResult: (searchResult: SearchResult) => void
 
   saveSolution: () => void
   loadSolution: () => void
@@ -108,5 +112,19 @@ export type SceneState = {
 }
 
 export type SceneActions = {
-  setScene: (scene: Scene) => void
+  // setScene: (scene: Scene) => void
+}
+
+export type CargoSceneState = {
+  cargo: Array<BlockPosition> // положение грузов в режиме их отображения
+  space: [number, number, number] // место, необходимое для одного груза
+}
+
+export enum Rotation {
+  XYZ,
+  ZYX,
+  XZY,
+  YZX,
+  ZXY,
+  YXZ,
 }

@@ -1,11 +1,11 @@
-import React from "react";
-import {useStore} from "../store/store";
+import React, {useEffect} from "react";
+import {useStore} from "../../../store/store";
 import {Button} from "@material-ui/core";
-import Floater from "./ui/Floater";
-import MenuPaper from "./ui/MenuPaper";
-import ButtonGroup from "./ui/ButtonGroup";
-import Slider from "./ui/Slider";
-import Switch from "./ui/Switch";
+import Floater from "../Floater";
+import MenuPaper from "../MenuPaper";
+import ButtonGroup from "../ButtonGroup";
+import Slider from "../Slider";
+import Switch from "../Switch";
 
 interface SettingsProps {
   open: boolean

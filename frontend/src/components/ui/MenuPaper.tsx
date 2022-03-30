@@ -6,12 +6,12 @@ import MenuTitle from "./MenuTitle";
 interface MenuPaperProps {
   title?: string
   elevation?: number
-  classes?: string[]
+  className?: string
   children: React.ReactNode
 }
 
-export default ({title = "", elevation = 3, classes, children}: MenuPaperProps) => (
-  <SimplePaper classes={classes} elevation={elevation}>
+export default ({title = "", elevation = 3, className, children}: MenuPaperProps) => (
+  <SimplePaper className={className} elevation={elevation}>
     {title !== "" &&
       <MenuTitle title={title}/>
     }

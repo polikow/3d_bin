@@ -14,7 +14,7 @@ export default ({label, onClick, children}: ButtonGroupProps) => (
       variant="contained"
       color="default"
       aria-label="contained button group"
-      className={"button-group"}
+      className="button-group"
       onClick={onClick}
     >
       {children}

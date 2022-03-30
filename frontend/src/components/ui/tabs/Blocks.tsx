@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {useStore} from "../store/store";
+import {useStore} from "../../../store/store";
 import {
   Button,
   Menu,
@@ -13,14 +13,14 @@ import {
   TableRow,
   TextField
 } from "@material-ui/core";
-import Floater from "./ui/Floater";
-import SimplePaper from "./ui/SimplePaper";
-import MenuTitle from "./ui/MenuTitle";
-import {integerInBounds, Event} from "../utils";
-import ButtonAccept from "./ui/ButtonAccept";
-import ButtonAdd from "./ui/ButtonAdd";
-import ButtonCreate from "./ui/ButtonCreate";
-import {Block} from "../types";
+import Floater from "../Floater";
+import SimplePaper from "../SimplePaper";
+import MenuTitle from "../MenuTitle";
+import {integerInBounds, Event} from "../../../utils";
+import ButtonAccept from "../ButtonAccept";
+import ButtonAdd from "../ButtonAdd";
+import ButtonCreate from "../ButtonCreate";
+import {Block} from "../../../wailsjs/go/models"
 
 const rowsPerPage = 10
 
@@ -45,7 +45,7 @@ export default ({open, onClose}: BlocksProps) => {
 
   return (
     <Floater open={open} onClose={onClose}>
-      <SimplePaper classes={["blocks-table-paper"]}>
+      <SimplePaper className="blocks-table-paper">
         <MenuTitle title="Размеры грузов"/>
         <TableContainer>
           <Table stickyHeader className="blocks-table">
