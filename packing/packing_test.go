@@ -17,7 +17,7 @@ func TestShape3D(t *testing.T) {
 	}
 
 	for _, test := range suite {
-		assert.Equal(t, test.expected, test.shape.Volume(), "Wrong interface implementation")
+		assert.Equal(t, test.expected, VolumeOf(test.shape), "Wrong interface implementation")
 	}
 }
 

@@ -25,25 +25,17 @@ const (
 )
 
 type input struct {
-	index int
+	packing.Task
+	packing.GASettings
 
-	container packing.Container
-	blocks    []packing.Block
-	np        int
-	ni        int
-	mp        float64
-	e         packing.Evolution
+	index int
 }
 
 type result struct {
+	packing.GASettings
+	packing.SearchResult
+
 	index int
-
-	r packing.SearchResult
-
-	Np    int     `json:"np"`
-	Ni    int     `json:"ni"`
-	Mp    float64 `json:"mp"`
-	e     packing.Evolution
 	Time  int64   `json:"time"` // время вычисления в миллисекундах
 	Value float64 `json:"value"`
 }
@@ -52,7 +44,7 @@ func (r result) String() string {
 	seconds := float64(r.Time) / 1000
 	return fmt.Sprintf(
 		"%6.4g, %6.2g sec. (np=%2d, ni=%3d, mp=%5.3g) [%v]",
-		r.Value, seconds, r.Np, r.Ni, r.Mp, r.e)
+		r.Value, seconds, r.Np, r.Ni, r.Mp, r.Evolution)
 }
 
 type resultArr []result
@@ -70,24 +62,15 @@ func sortResults(results []result) {
 func worker(jobs <-chan input, results chan<- result, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	for j := range jobs {
-		container, blocks := j.container, j.blocks
-		np, ni, mp, evolution := j.np, j.ni, j.mp, j.e
-		index := j.index
-		random := packing.NewRandomSeeded()
-		ga := packing.NewGA(container, blocks, np, mp, ni, evolution, random)
-
+	for job := range jobs {
+		ga := packing.NewGA(job.Task, job.GASettings)
 		searchResult, milliseconds := packing.EvaluateTimed(ga)
 
 		results <- result{
-			index: index,
+			GASettings:   job.GASettings,
+			SearchResult: searchResult,
 
-			r: searchResult,
-
-			Np:    np,
-			Ni:    ni,
-			Mp:    mp,
-			e:     evolution,
+			index: job.index,
 			Time:  milliseconds,
 			Value: searchResult.Value,
 		}
@@ -96,8 +79,6 @@ func worker(jobs <-chan input, results chan<- result, wg *sync.WaitGroup) {
 
 func jobProvider(wg *sync.WaitGroup) <-chan input {
 	var (
-		container, blocks = packing.LoadTaskFromJSON(taskPath)
-
 		// исследуемые параметры
 		np int
 		ni int
@@ -107,6 +88,11 @@ func jobProvider(wg *sync.WaitGroup) <-chan input {
 
 		jobs = make(chan input, 100)
 	)
+
+	task, err := packing.LoadTaskFromJSONFile(taskPath)
+	if err != nil {
+		panic(err)
+	}
 
 	go func() {
 		defer close(jobs)
@@ -118,13 +104,16 @@ func jobProvider(wg *sync.WaitGroup) <-chan input {
 				for mp = mpStart; mp <= mpStop; mp += mpStep {
 					for i := 0; i < n; i++ {
 						jobs <- input{
-							index:     index,
-							container: container,
-							blocks:    blocks,
-							np:        np,
-							ni:        ni,
-							mp:        mp,
-							e:         evolution,
+							Task: task,
+							GASettings: packing.GASettings{
+								Np:        np,
+								Mp:        mp,
+								Ni:        ni,
+								Evolution: evolution,
+								Random:    nil,
+							},
+
+							index: index,
 						}
 						index++
 					}
@@ -201,22 +190,26 @@ func main() {
 			if maxValue < result.Value {
 				maxValue = result.Value
 			}
-			if result.r.BetterThan(best) {
-				best = result.r
+			if result.BetterThan(best) {
+				best = result.SearchResult
 			}
 		}
 
 		average[i] = result{
-			Np:    results[i*n].Np,
-			Ni:    results[i*n].Ni,
-			Mp:    results[i*n].Mp,
+			GASettings: packing.GASettings{
+				Np: results[i*n].Np,
+				Ni: results[i*n].Ni,
+				Mp: results[i*n].Mp,
+			},
 			Time:  timeSum / n,
 			Value: valueSum / n,
 		}
 		maximum[i] = result{
-			Np:    results[i*n].Np,
-			Ni:    results[i*n].Ni,
-			Mp:    results[i*n].Mp,
+			GASettings: packing.GASettings{
+				Np: results[i*n].Np,
+				Ni: results[i*n].Ni,
+				Mp: results[i*n].Mp,
+			},
 			Time:  timeSum / n,
 			Value: maxValue,
 		}

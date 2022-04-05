@@ -39,29 +39,41 @@ func TestChromosomeCrossover(t *testing.T) {
 }
 
 func TestGA(t *testing.T) {
-	container := Container{Width: 3, Height: 4, Length: 3}
-	blocks := []Block{
-		{Width: 1, Height: 2, Length: 3},
-		{Width: 1, Height: 1, Length: 1},
-		{Width: 1, Height: 1, Length: 1},
-		{Width: 1, Height: 1, Length: 1},
-		{Width: 1, Height: 2, Length: 1},
+	task := newTask(
+		Container{Width: 3, Height: 4, Length: 3},
+		[]Block{
+			{Width: 1, Height: 2, Length: 3},
+			{Width: 1, Height: 1, Length: 1},
+			{Width: 1, Height: 1, Length: 1},
+			{Width: 1, Height: 1, Length: 1},
+			{Width: 1, Height: 2, Length: 1},
 
-		{Width: 2, Height: 2, Length: 1},
-		{Width: 2, Height: 2, Length: 2},
-		{Width: 1, Height: 1, Length: 1},
-		{Width: 1, Height: 1, Length: 1},
-		{Width: 1, Height: 2, Length: 1},
+			{Width: 2, Height: 2, Length: 1},
+			{Width: 2, Height: 2, Length: 2},
+			{Width: 1, Height: 1, Length: 1},
+			{Width: 1, Height: 1, Length: 1},
+			{Width: 1, Height: 2, Length: 1},
 
-		{Width: 2, Height: 2, Length: 1},
-		{Width: 2, Height: 2, Length: 2},
-	}
+			{Width: 2, Height: 2, Length: 1},
+			{Width: 2, Height: 2, Length: 2},
+		},
+	)
 
 	fmt.Printf("DarwinEvolution\n")
-	ga := NewGA(container, blocks, 100, 0.2, 500, DarwinEvolution{}, NewRandomSeeded())
+	ga := NewGA(task, GASettings{
+		Np:        100,
+		Mp:        0.2,
+		Ni:        500,
+		Evolution: new(DarwinEvolution),
+	})
 	EvaluatePrintBetter(ga)
 
 	fmt.Printf("\nDeVriesEvolution\n")
-	ga = NewGA(container, blocks, 100, 0.2, 500, DeVriesEvolution{}, NewRandomSeeded())
+	ga = NewGA(task, GASettings{
+		Np:        100,
+		Mp:        0.2,
+		Ni:        500,
+		Evolution: new(DeVriesEvolution),
+	})
 	EvaluatePrintBetter(ga)
 }

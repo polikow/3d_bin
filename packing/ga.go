@@ -2,6 +2,7 @@ package packing
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"math/rand"
 	"sort"
 )
@@ -9,33 +10,89 @@ import (
 type GA struct {
 	searchState
 
-	// входные параметры
-	np        int        // размер популяции
-	mp        float64    // вероятность мутации
-	ni        int        // количество итераций без улучшений
-	evolution Evolution  // модель эволюции
-	random    *rand.Rand // генератор случайных чисел
-
+	settings          GASettings
 	population        []Chromosome // популяция хромосом
 	populationFitness []float64    // приспособленность популяции
 }
 
-func NewGA(container Container, blocks []Block, np int, mp float64, ni int, evolution Evolution, random *rand.Rand) *GA {
-	if np <= 0 || mp <= 0 || mp > 1 || ni <= 0 || evolution == nil {
-		panic("ga: wrong input values")
+// GASettings - входные параметры
+type GASettings struct {
+	Np              int        `json:"np"`        // размер популяции
+	Mp              float64    `json:"mp"`        // вероятность мутации
+	Ni              int        `json:"ni"`        // количество итераций без улучшений
+	EvolutionString string     `json:"evolution"` // модель эволюции в виде строки
+	Evolution       Evolution  `json:"-"`         // модель эволюции
+	Random          *rand.Rand `json:"-"`         // генератор случайных чисел
+}
+
+// replaceWithDefaults создает новый экземпляр, который содержит все параметры
+// текущего, за исключением тех, которые не заданы - такие задаются значениями
+// по умолчанию.
+func (s GASettings) replaceWithDefaults() GASettings {
+	settings := s
+	if s.Np == 0 {
+		settings.Np = 10
 	}
+	if s.Ni == 0 {
+		settings.Ni = 400
+	}
+	if s.Mp == 0 {
+		settings.Mp = 0.27
+	}
+	if s.EvolutionString == "" {
+		settings.EvolutionString = "Darwin"
+	}
+	if s.Random == nil {
+		settings.Random = NewRandomSeeded()
+	}
+	if s.Evolution == nil {
+		switch s.EvolutionString {
+		case "Darwin":
+			s.Evolution = new(DarwinEvolution)
+		case "deVries":
+			s.Evolution = new(DeVriesEvolution)
+		default:
+			panic(errors.Errorf("%q is not an available evolution to use", s.EvolutionString))
+		}
+	}
+	return settings
+}
+
+func (s GASettings) isSane() (bool, error) {
+	if s.Np <= 0 {
+		return false, errors.Errorf("ga can not have population of negative size \"%v\"", s.Np)
+	}
+	if s.Ni <= 0 {
+		return false, errors.Errorf("ga can not have \"%v\" max iterations", s.Np)
+	}
+	if s.Mp <= 0 || s.Mp > 1 {
+		return false, errors.Errorf("bca can not have mutation probability of \"%v\"", s.Mp)
+	}
+	if s.Random == nil {
+		return false, errors.Errorf("ga has to have a setup random generator")
+	}
+	if s.Evolution == nil {
+		return false, errors.Errorf("ga has to have a setup evolution")
+	}
+	return true, nil
+}
+
+func (s GASettings) mustBeSane() {
+	if _, err := s.isSane(); err != nil {
+		panic(err)
+	}
+}
+
+func NewGA(task Task, settings GASettings) *GA {
+	settings = settings.replaceWithDefaults()
+	settings.mustBeSane()
 
 	return &GA{
-		searchState: newSearchState(container, blocks),
+		searchState: newSearchState(task),
 
-		np:        np,
-		mp:        mp,
-		ni:        ni,
-		evolution: evolution,
-		random:    random,
-
-		population:        make([]Chromosome, np),
-		populationFitness: make([]float64, 0, np),
+		settings:          settings,
+		population:        make([]Chromosome, settings.Np),
+		populationFitness: make([]float64, 0, settings.Np),
 	}
 }
 
@@ -49,7 +106,7 @@ func (g *GA) Run() SearchResult {
 }
 
 func (g *GA) Done() bool {
-	return g.iterationsNoImprovement >= g.ni || g.bestValueFound == 1
+	return g.iterationsNoImprovement >= g.settings.Ni || g.bestValueFound == 1
 }
 
 func (g *GA) runIteration() {
@@ -57,7 +114,7 @@ func (g *GA) runIteration() {
 		g.initializePopulation()
 		g.findPopulationFitness()
 	}
-	g.evolution.runSelection(g)
+	g.settings.Evolution.runSelection(g)
 	g.mutatePopulation()
 	g.findPopulationFitness()
 	g.searchState.update(g.currentBest())
@@ -65,7 +122,7 @@ func (g *GA) runIteration() {
 
 func (g *GA) initializePopulation() {
 	for i := range g.population {
-		g.population[i] = newChromosome(g.random, g.n)
+		g.population[i] = newChromosome(g.settings.Random, g.n)
 	}
 }
 
@@ -83,10 +140,10 @@ func (g GA) findFitness(chromosome Chromosome) float64 {
 
 func (g *GA) mutatePopulation() {
 	// хромосомы, у которых есть значение ЦФ не мутируют (элитные хромосомы)
-	for i := len(g.populationFitness); i < g.np; i++ {
-		if g.random.Float64() <= g.mp {
+	for i := len(g.populationFitness); i < g.settings.Np; i++ {
+		if g.settings.Random.Float64() <= g.settings.Mp {
 			chromosome := g.population[i]
-			chromosome.mutate(g.random)
+			chromosome.mutate(g.settings.Random)
 		}
 	}
 }
@@ -96,7 +153,7 @@ func (g GA) currentBest() (Solution, float64) {
 		bestChromosome = g.population[0]
 		bestFitness    = g.populationFitness[0]
 	)
-	for i := 0; i < g.np; i++ {
+	for i := 0; i < g.settings.Np; i++ {
 		fitness := g.populationFitness[i]
 		chromosome := g.population[i]
 		if fitness > bestFitness {
@@ -293,7 +350,7 @@ func (DarwinEvolution) runSelection(g *GA) {
 	for len(newPopulation) != cap(newPopulation) {
 		parent1 := parents[i]
 		parent2 := parents[i+1]
-		child1, child2 := Chromosome.crossover(parent1, parent2, g.random)
+		child1, child2 := Chromosome.crossover(parent1, parent2, g.settings.Random)
 
 		newPopulation = append(newPopulation, child1)
 		if len(newPopulation) != cap(newPopulation) {
@@ -340,7 +397,7 @@ const (
 )
 
 func (DeVriesEvolution) catastrophe(g *GA, probability float64) {
-	random := g.random
+	random := g.settings.Random
 	if random.Float64() <= probability {
 		var (
 			n             = len(g.population)
@@ -350,7 +407,7 @@ func (DeVriesEvolution) catastrophe(g *GA, probability float64) {
 		//fmt.Printf("catastrophe at %d! deaths: %.2g (%d)\n", g.iterationsPassed, deathsPercent, deaths)
 
 		for i := 0; i < deaths; i++ {
-			j := random.Intn(g.np)
+			j := random.Intn(g.settings.Np)
 			chromosome := newChromosome(random, g.n)
 			g.population[j] = chromosome
 			// если у изначальной хромосомы было известно цф, то пересчитываем

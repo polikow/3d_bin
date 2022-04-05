@@ -25,23 +25,17 @@ const (
 )
 
 type input struct {
-	index int
+	packing.Task
+	packing.BCASettings
 
-	container packing.Container
-	blocks    []packing.Block
-	np        int
-	ni        int
-	ci        float64
+	index int
 }
 
 type result struct {
+	packing.SearchResult
+	packing.BCASettings
+
 	index int
-
-	r packing.SearchResult
-
-	Np    int     `json:"np"`
-	Ni    int     `json:"ni"`
-	Ci    float64 `json:"ci"`
 	Time  int64   `json:"time"` // время вычисления в миллисекундах
 	Value float64 `json:"value"`
 }
@@ -68,22 +62,15 @@ func sortResults(results []result) {
 func worker(jobs <-chan input, results chan<- result, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	for j := range jobs {
-		container, blocks, np, ni, ci := j.container, j.blocks, j.np, j.ni, j.ci
-		index := j.index
-		random := packing.NewRandomSeeded()
-		bca := packing.NewBCA(container, blocks, np, ni, ci, random)
-
+	for job := range jobs {
+		bca := packing.NewBCA(job.Task, job.BCASettings)
 		searchResult, milliseconds := packing.EvaluateTimed(bca)
 
 		results <- result{
-			index: index,
+			SearchResult: searchResult,
+			BCASettings:  job.BCASettings,
 
-			r: searchResult,
-
-			Np:    np,
-			Ni:    ni,
-			Ci:    ci,
+			index: job.index,
 			Time:  milliseconds,
 			Value: searchResult.Value,
 		}
@@ -92,8 +79,6 @@ func worker(jobs <-chan input, results chan<- result, wg *sync.WaitGroup) {
 
 func jobProvider(wg *sync.WaitGroup) <-chan input {
 	var (
-		container, blocks = packing.LoadTaskFromJSON(taskPath)
-
 		// исследуемые параметры
 		np int
 		ni int
@@ -101,6 +86,10 @@ func jobProvider(wg *sync.WaitGroup) <-chan input {
 
 		jobs = make(chan input, 100)
 	)
+	task, err := packing.LoadTaskFromJSONFile(taskPath)
+	if err != nil {
+		panic(err)
+	}
 
 	go func() {
 		defer close(jobs)
@@ -112,12 +101,13 @@ func jobProvider(wg *sync.WaitGroup) <-chan input {
 				for ci = ciStart; ci <= ciStop; ci += ciStep {
 					for i := 0; i < n; i++ {
 						jobs <- input{
-							index:     index,
-							container: container,
-							blocks:    blocks,
-							np:        np,
-							ni:        ni,
-							ci:        ci,
+							Task: task,
+							BCASettings: packing.BCASettings{
+								Np: np,
+								Ni: ni,
+								Ci: ci,
+							},
+							index: index,
 						}
 						index++
 					}
@@ -194,22 +184,26 @@ func main() {
 			if maxValue < result.Value {
 				maxValue = result.Value
 			}
-			if result.r.BetterThan(best) {
-				best = result.r
+			if result.SearchResult.BetterThan(best) {
+				best = result.SearchResult
 			}
 		}
 
 		average[i] = result{
-			Np:    results[i*n].Np,
-			Ni:    results[i*n].Ni,
-			Ci:    results[i*n].Ci,
+			BCASettings: packing.BCASettings{
+				Np: results[i*n].Np,
+				Ni: results[i*n].Ni,
+				Ci: results[i*n].Ci,
+			},
 			Time:  timeSum / n,
 			Value: valueSum / n,
 		}
 		maximum[i] = result{
-			Np:    results[i*n].Np,
-			Ni:    results[i*n].Ni,
-			Ci:    results[i*n].Ci,
+			BCASettings: packing.BCASettings{
+				Np: results[i*n].Np,
+				Ni: results[i*n].Ni,
+				Ci: results[i*n].Ci,
+			},
 			Time:  timeSum / n,
 			Value: maxValue,
 		}

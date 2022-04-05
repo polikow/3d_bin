@@ -49,7 +49,7 @@ func (a *PackAlgorithm) Run(solution Solution) []BlockPosition {
 	return a.packed
 }
 
-func (a PackAlgorithm) isThereBlockToPack() bool {
+func (a *PackAlgorithm) isThereBlockToPack() bool {
 	return a.step < len(a.blocks)
 }
 
@@ -65,7 +65,7 @@ func (a *PackAlgorithm) reset(solution Solution) {
 }
 
 // checkSolution проверяет решение.
-func (a PackAlgorithm) checkSolution(solution Solution) {
+func (a *PackAlgorithm) checkSolution(solution Solution) {
 	if len(solution) != len(a.blocks) {
 		panic("Wrong packed specified")
 	}

@@ -41,13 +41,20 @@ func main() {
 	// bca
 	for i, size := range taskSizes {
 		taskPath := fmt.Sprintf("%s/%d.json", path, size)
-		container, blocks := packing.LoadTaskFromJSON(taskPath)
+		task, err := packing.LoadTaskFromJSONFile(taskPath)
+		if err != nil {
+			panic(err)
+		}
 
 		for j := 0; j < runs; j++ {
-			random := packing.NewRandomSeeded()
 			index := j + (i * runs)
 
-			bca := packing.NewBCA(container, blocks, bcaNp, bcaNi, bcaCi, random)
+			bca := packing.NewBCA(task, packing.BCASettings{
+				Np:     bcaNp,
+				Ni:     bcaNi,
+				Ci:     bcaCi,
+				Random: packing.NewRandomSeeded(),
+			})
 			searchResult := packing.Evaluate(bca)
 			results.BCA[index].Size = size
 			results.BCA[index].Value = searchResult.Value
@@ -58,14 +65,21 @@ func main() {
 	// gaDarwin
 	for i, size := range taskSizes {
 		taskPath := fmt.Sprintf("%s/%d.json", path, size)
-		container, blocks := packing.LoadTaskFromJSON(taskPath)
+		task, err := packing.LoadTaskFromJSONFile(taskPath)
+		if err != nil {
+			panic(err)
+		}
 
 		for j := 0; j < runs; j++ {
-			random := packing.NewRandomSeeded()
 			index := j + (i * runs)
 
-			darwin := new(packing.DarwinEvolution)
-			gaDarwin := packing.NewGA(container, blocks, gaNp, gaMp, gaNi, darwin, random)
+			gaDarwin := packing.NewGA(task, packing.GASettings{
+				Np:        gaNp,
+				Mp:        gaMp,
+				Ni:        gaNi,
+				Evolution: new(packing.DarwinEvolution),
+				Random:    packing.NewRandomSeeded(),
+			})
 			searchResult := packing.Evaluate(gaDarwin)
 			results.GADarwin[index].Size = size
 			results.GADarwin[index].Value = searchResult.Value
@@ -76,14 +90,21 @@ func main() {
 	// gaDeVries
 	for i, size := range taskSizes {
 		taskPath := fmt.Sprintf("%s/%d.json", path, size)
-		container, blocks := packing.LoadTaskFromJSON(taskPath)
+		task, err := packing.LoadTaskFromJSONFile(taskPath)
+		if err != nil {
+			panic(err)
+		}
 
 		for j := 0; j < runs; j++ {
-			random := packing.NewRandomSeeded()
 			index := j + (i * runs)
 
-			deVries := new(packing.DeVriesEvolution)
-			gaDeVries := packing.NewGA(container, blocks, gaNp, gaMp, gaNi, deVries, random)
+			gaDeVries := packing.NewGA(task, packing.GASettings{
+				Np:        gaNp,
+				Mp:        gaMp,
+				Ni:        gaNi,
+				Evolution: new(packing.DeVriesEvolution),
+				Random:    packing.NewRandomSeeded(),
+			})
 			searchResult := packing.Evaluate(gaDeVries)
 			results.GADeVries[index].Size = size
 			results.GADeVries[index].Value = searchResult.Value
