@@ -2,12 +2,13 @@ import React from "react";
 import {useStore} from "../../store/store";
 import {Block} from "../../wailsjs/go/models"
 import Label from "./Label";
+import {compareState} from "../../store/compare";
 
 const maxLabelsPerAxis = 10
 const s = -0.1  // shift from the axis
 
 export default ({w, h, l}: Block) => {
-  const labelScale = useStore((s: { labelScale: any; }) => s.labelScale)
+  const labelScale = useStore(s => s.labelScale, compareState)
   const scale = labelScale + Math.floor(labelScale * Math.max(w, h, l) * 0.2)
 
   return (

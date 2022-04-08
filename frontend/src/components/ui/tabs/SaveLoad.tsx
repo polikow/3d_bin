@@ -8,11 +8,13 @@ interface SaveLoadProps {
   onClose: () => void
 }
 
-export default ({open, onClose}: SaveLoadProps) => {
-  const saveTask     = useStore(s => s.saveTask)
-  const loadTask     = useStore(s => s.loadTask)
-  const saveSolution = useStore(s => s.saveSolution)
-  const loadSolution = useStore(s => s.loadSolution)
+const alwaysTrue = () => true
+
+export default React.memo(({open, onClose}: SaveLoadProps) => {
+  const [saveTask, loadTask, saveSolution, loadSolution] = useStore(
+    s => [s.saveTask, s.loadTask, s.saveSolution, s.loadSolution],
+    alwaysTrue
+  )
   return (
     <Tab className="save-load" title="Сохранение/Загрузка" open={open} onClose={onClose}>
       <Button variant="contained" color="default" onClick={saveTask}>
@@ -36,4 +38,4 @@ export default ({open, onClose}: SaveLoadProps) => {
       </Typography>
     </Tab>
   )
-}
+})

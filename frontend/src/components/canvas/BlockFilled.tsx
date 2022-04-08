@@ -12,7 +12,7 @@ interface BlockFilledProps {
 export default ({position, color, size, opacity}: BlockFilledProps) => (
   <mesh
     position={position}
-    onClick={() => console.log("clicked")}
+    onClick={console.log}
   >
     <boxBufferGeometry
       attach="geometry"

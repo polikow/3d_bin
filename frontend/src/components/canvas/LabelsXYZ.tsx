@@ -2,9 +2,10 @@ import React from "react";
 import {useStore} from "../../store/store";
 import Label from "./Label";
 import {Point} from "../../wailsjs/go/models"
+import {compareState} from "../../store/compare";
 
 export default ({x, y, z}: Point) => {
-  const labelScale = useStore(s => s.labelScale)
+  const labelScale = useStore(s => s.labelScale, compareState)
 
   const scale = labelScale + Math.floor(labelScale * Math.max(x, y, z) * 0.2) * 1.2
   return (

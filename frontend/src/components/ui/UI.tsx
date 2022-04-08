@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect} from "react";
+import React, {useCallback} from "react";
 import {useStore} from "../../store/store";
 import Settings from "./tabs/Settings";
 import Packed from "./tabs/Packed";
@@ -10,11 +10,10 @@ import Floater from "./Floater";
 import SaveLoad from "./tabs/SaveLoad";
 import {Tab} from "../../store/types";
 import Fab from "./Fab";
+import {compareStateSlices} from "../../store/compare";
 
 export default () => {
-  const [tab, setTab] = useStore(s => [s.tab, s.setTab])
-
-  useEffect(() => console.log("UI render"))
+  const [tab, setTab] = useStore(s => [s.tab, s.setTab], compareStateSlices)
 
   // да, здесь можно было бы использовать одну каррированную функцию, но ее
   // значение всегда будет разным -> будут лишние рендеры компонентов

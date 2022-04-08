@@ -10,17 +10,19 @@ interface LabelProps {
   scale: number
 }
 
-export default ({text, position, color = "black", scale=12}: LabelProps) => (
-  <Html
+const zIndexRange = [1, 0]
+
+export default ({text, position, color = "black", scale=12}: LabelProps) => {
+  return <Html
     className="ns"
     center
     style={{color}}
-      // @ts-ignore
+    // @ts-ignore
     position={position}
     prepend={false} // Project content behind the canvas
-      // @ts-ignore
+    // @ts-ignore
     scaleFactor={scale} // If set (default: undefined), children will be scaled by this factor, and also by distance to a PerspectiveCamera.
-    zIndexRange={[1, 0]}>
+    zIndexRange={zIndexRange}>
     {text}
-  </Html>
-)
+  </Html>;
+}

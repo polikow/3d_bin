@@ -2,10 +2,12 @@ import React from "react";
 import {useStore} from "../../store/store";
 import Block from "./Block";
 import {colors} from "../../consts";
+import {compareStateSlices} from "../../store/compare";
 
 export default () => {
-  const [packed, opacity, isColorful, onlyEdges] = useStore(s =>
-    [s.searchResult.packed, s.opacity, s.isColorful, s.onlyEdges]
+  const [packed, opacity, isColorful, onlyEdges] = useStore(
+    s => [s.searchResult.packed, s.opacity, s.isColorful, s.onlyEdges],
+    compareStateSlices
   )
 
   return (

@@ -8,6 +8,7 @@ import Container from "./Container";
 import Blocks from "./Blocks";
 import Cargo from "./Cargo";
 import {Scene} from "../../store/types";
+import {compareState} from "../../store/compare";
 
 export default () => {
   useEffect(() => console.log("Canvas render"))
@@ -28,7 +29,7 @@ export default () => {
 }
 
 function MainScene() {
-  const scene = useStore(s => s.scene)
+  const scene = useStore(s => s.scene, compareState)
 
   return scene == Scene.Container
     ? <> <Blocks/> <Container/> </>
@@ -36,7 +37,7 @@ function MainScene() {
 }
 
 function CargoScene() {
-  const scene = useStore(s => s.scene)
+  const scene = useStore(s => s.scene, compareState)
 
   return scene == Scene.Cargo
     ? <Cargo/>

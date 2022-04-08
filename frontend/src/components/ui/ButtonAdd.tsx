@@ -3,19 +3,19 @@ import {Button} from "@material-ui/core";
 import {Add} from "@material-ui/icons";
 
 interface ButtonAddProps {
-  title: string
   disabled: boolean
   onClick?: React.MouseEventHandler
+  children?: React.ReactNode
 }
 
-export default ({title, onClick, disabled}: ButtonAddProps) => (
+export default ({disabled, onClick, children}: ButtonAddProps) => (
   <Button
     variant="contained"
     color="primary"
     disabled={disabled}
     onClick={onClick}
   >
-    {title}
+    {children}
     <Add/>
   </Button>
 )

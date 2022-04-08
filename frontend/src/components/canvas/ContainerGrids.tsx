@@ -6,8 +6,10 @@ const material = new THREE.LineBasicMaterial(  );
 
 
 export default ({w, h, l}: Block) => {
-  const geometry = useMemo(() => calculate_line_segments_points({w, h, l}), [w, h, l])
-
+  const geometry = useMemo(
+    () => calculate_line_segments_points({w, h, l}),
+    [w, h, l]
+  )
   return <lineSegments geometry={geometry} material={material}  />
 }
 
