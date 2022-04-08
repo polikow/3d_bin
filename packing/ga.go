@@ -30,29 +30,29 @@ type GASettings struct {
 // по умолчанию.
 func (s GASettings) replaceWithDefaults() GASettings {
 	settings := s
-	if s.Np == 0 {
+	if settings.Np == 0 {
 		settings.Np = 10
 	}
-	if s.Ni == 0 {
+	if settings.Ni == 0 {
 		settings.Ni = 400
 	}
-	if s.Mp == 0 {
+	if settings.Mp == 0 {
 		settings.Mp = 0.27
 	}
-	if s.EvolutionString == "" {
+	if settings.EvolutionString == "" {
 		settings.EvolutionString = "Darwin"
 	}
-	if s.Random == nil {
+	if settings.Random == nil {
 		settings.Random = NewRandomSeeded()
 	}
-	if s.Evolution == nil {
-		switch s.EvolutionString {
+	if settings.Evolution == nil {
+		switch settings.EvolutionString {
 		case "Darwin":
-			s.Evolution = new(DarwinEvolution)
+			settings.Evolution = new(DarwinEvolution)
 		case "deVries":
-			s.Evolution = new(DeVriesEvolution)
+			settings.Evolution = new(DeVriesEvolution)
 		default:
-			panic(errors.Errorf("%q is not an available evolution to use", s.EvolutionString))
+			panic(errors.Errorf("%q is not an available evolution to use", settings.EvolutionString))
 		}
 	}
 	return settings

@@ -40,16 +40,16 @@ type BCASettings struct {
 // по умолчанию.
 func (s BCASettings) replaceWithDefaults() BCASettings {
 	settings := s
-	if s.Np == 0 {
+	if settings.Np == 0 {
 		settings.Np = 10
 	}
-	if s.Ni == 0 {
+	if settings.Ni == 0 {
 		settings.Ni = 400
 	}
-	if s.Ci == 0 {
+	if settings.Ci == 0 {
 		settings.Ci = 2.76
 	}
-	if s.Random == nil {
+	if settings.Random == nil {
 		settings.Random = NewRandomSeeded()
 	}
 	return settings
