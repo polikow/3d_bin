@@ -68,7 +68,7 @@ function OpacitySlider() {
   return (
     <Slider
       label="Прозрачность"
-      min={0} max={1} step={0.05}
+      min={0} max={1} step={0.01}
       value={opacity}
       onChange={(_, value) => setOpacity(value)}
     />
