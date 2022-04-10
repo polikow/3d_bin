@@ -12,7 +12,15 @@ export const useStore = create<Store>((set, get) => ({
   setFOV: fov => set({fov}),
   setPositionAndTarget: (position, target) => set({position, target}),
 
-  setContainer: container => set({container, ...containerCamera(container)}),
+  setContainerSide: (side, value) => {
+    const {container: oldContainer} = get()
+    if (oldContainer[side] === value) return
+    const container = {...oldContainer, [side]: value}
+    set({
+      container,
+      ...containerCamera(container)
+    })
+  },
   replaceBlocks: blocks => {
     const {cargo, space} = cargoAndSpace(blocks)
     const cameraSettings = (get().scene === Scene.Cargo)

@@ -2,9 +2,9 @@ import React, {useCallback} from "react";
 import {useStore} from "../../../store/store";
 import {TextField} from "@material-ui/core";
 import Tab from "../Tab";
-import {Event, integerInBounds} from "../../../utils";
-import {min, max} from "../../../consts";
-import {compareStateSlices} from "../../../store/compare";
+import {integerInBounds} from "../../../utils";
+import {max, min} from "../../../consts";
+import {compareAlwaysTrue, compareState} from "../../../store/compare";
 
 const textFieldStyle = {width: "220px"}
 const textInputProps = {inputProps: {min, max}}
@@ -22,68 +22,56 @@ export default React.memo(({open, onClose}: ContainerProps) => (
   </Tab>
 ))
 
-function useContainer() {
-  const [container, setContainer] = useStore(
-    s => [s.container, s.setContainer],
-    compareStateSlices
-  )
-  const setSide = useCallback(
-    (side: "w" | "h" | "l") => (event: Event) => {
-      const value = integerInBounds(event, min, min, max)
-      if (container[side] === value) return
-      setContainer({...container, [side]: value})
-    },
-    [container]
-  )
-  const setWidthFromEvent = useCallback(setSide("w"), [setSide])
-  const setHeightFromEvent = useCallback(setSide("h"), [setSide])
-  const setLengthFromEvent = useCallback(setSide("l"), [setSide])
-
-  return {
-    width: container.w,
-    height: container.h,
-    length: container.l,
-    setWidthFromEvent,
-    setHeightFromEvent,
-    setLengthFromEvent
-  }
-}
-
 function WidthTextField() {
-  const {width, setWidthFromEvent} = useContainer()
+  const width = useStore(s => s.container.w, compareState)
+  const setContainerSide = useStore(s => s.setContainerSide, compareAlwaysTrue)
+  const setContainerWidth = useCallback(
+    event => setContainerSide("w", integerInBounds(event, min, min, max)),
+    []
+  )
   return (
     <TextField
       type="number" label="Ширина" className="text-field"
       style={textFieldStyle}
       InputProps={textInputProps}
       value={width}
-      onChange={setWidthFromEvent}
+      onChange={setContainerWidth}
     />
   )
 }
 
 function HeightTextField() {
-  const {height, setHeightFromEvent} = useContainer()
+  const height = useStore(s => s.container.h, compareState)
+  const setContainerSide = useStore(s => s.setContainerSide, compareAlwaysTrue)
+  const setContainerHeight = useCallback(
+    event => setContainerSide("h", integerInBounds(event, min, min, max)),
+    []
+  )
   return (
     <TextField
       type="number" label="Ширина" className="text-field"
       style={textFieldStyle}
       InputProps={textInputProps}
       value={height}
-      onChange={setHeightFromEvent}
+      onChange={setContainerHeight}
     />
   )
 }
 
 function LengthTextField() {
-  const {length, setLengthFromEvent} = useContainer()
+  const length = useStore(s => s.container.l, compareState)
+  const setContainerSide = useStore(s => s.setContainerSide, compareAlwaysTrue)
+  const setContainerLength = useCallback(
+    event => setContainerSide("l", integerInBounds(event, min, min, max)),
+    []
+  )
   return (
     <TextField
       type="number" label="Длина" className="text-field"
       style={textFieldStyle}
       InputProps={textInputProps}
       value={length}
-      onChange={setLengthFromEvent}
+      onChange={setContainerLength}
     />
   )
 }

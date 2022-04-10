@@ -81,7 +81,7 @@ export type ContainerState = {
 }
 
 export type ContainerActions = {
-  setContainer: (container: Container) => void
+  setContainerSide: (side: "w" | "h" | "l", value: number) => void
 }
 
 export type BlocksState = {
