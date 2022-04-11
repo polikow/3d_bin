@@ -34,7 +34,7 @@ function blockCenter(b: Block): Vector3 {
 }
 
 function positionForCargo({w, h, l}: Block): Vector3 {
-  return [w / 2, h * 10, l / 2]
+  return [w / 2, h * 15, l / 2 + l]
 }
 
 function boundingBlock(blocks: Array<Block>, space: Space): Block {
