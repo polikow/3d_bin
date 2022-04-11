@@ -18,7 +18,8 @@ export const useStore = create<Store>((set, get) => ({
     const container = {...oldContainer, [side]: value}
     set({
       container,
-      ...containerCamera(container)
+      searchResult: DEFAULT.searchResult,
+      ...containerCamera(container),
     })
   },
   replaceBlocks: blocks => {
