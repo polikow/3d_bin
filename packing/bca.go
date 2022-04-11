@@ -55,6 +55,7 @@ func (s BCASettings) replaceWithDefaults() BCASettings {
 	return settings
 }
 
+// isSane проверяет корректность параметров алгоритма.
 func (s BCASettings) isSane() (bool, error) {
 	if s.Np <= 0 {
 		return false, errors.Errorf("bca can not have population of negative size \"%v\"", s.Np)
@@ -71,12 +72,15 @@ func (s BCASettings) isSane() (bool, error) {
 	return true, nil
 }
 
+// mustBeSane проверяет корректность параметров алгоритма. Если они некорректны,
+// то вызывает panic.
 func (s BCASettings) mustBeSane() {
 	if _, err := s.isSane(); err != nil {
 		panic(err)
 	}
 }
 
+// NewBCA создает новый экземпляр иммунного алгоритма.
 func NewBCA(task Task, settings BCASettings) *BCA {
 	settings = settings.replaceWithDefaults()
 	settings.mustBeSane()
@@ -105,6 +109,7 @@ func (b *BCA) Done() bool {
 	return b.iterationsNoImprovement >= b.settings.Ni || b.bestValueFound == 1
 }
 
+// runIteration выполняет одну итерацию алгоритма.
 func (b *BCA) runIteration() {
 	if b.iterationsPassed == 0 {
 		b.initializeAntibodies()   // (1)
@@ -114,6 +119,7 @@ func (b *BCA) runIteration() {
 	b.searchState.update(b.currentBest())
 }
 
+// cloneAndReplace выполняет клонирование и замену антител.
 func (b *BCA) cloneAndReplace() {
 	for i := range b.population {
 		antibody := b.population[i]
@@ -155,14 +161,14 @@ func (b *BCA) findBestClone() (Antibody, float64) {
 	return bestClone, bestAffinity
 }
 
-// mutateClones - мутирование клонов с помощью операции гипермутации.
+// mutateClones мутирует клоны с помощью операции гипермутации.
 func (b *BCA) mutateClones(intensity float64) {
 	for _, clone := range b.clones {
 		clone.hypermutation(b.settings.Random, intensity)
 	}
 }
 
-// createNpClones - создание np клонов.
+// createNpClones создает np клонов этого антитела.
 func (b *BCA) createNpClones(antibody Antibody) {
 	if b.iterationsPassed == 0 {
 		for i := 0; i < b.settings.Np; i++ {
@@ -177,14 +183,14 @@ func (b *BCA) createNpClones(antibody Antibody) {
 	}
 }
 
-// initializeAntibodies - инициализация популяции антител.
+// initializeAntibodies инициализирует популяцию антител.
 func (b *BCA) initializeAntibodies() {
 	for i := range b.population {
 		b.population[i] = newAntibody(b.settings.Random, b.n)
 	}
 }
 
-// findPopulationAffinity - поиск аффинности антител популяции.
+// findPopulationAffinity выполняет поиск аффинности антител популяции.
 // (т.е. поиск значения целевой функции для каждого антитела)
 func (b *BCA) findPopulationAffinity() {
 	b.populationAffinity = b.populationAffinity[:0]
@@ -194,7 +200,7 @@ func (b *BCA) findPopulationAffinity() {
 	}
 }
 
-// findPopulationAffinity - поиск аффинности клонов.
+// findPopulationAffinity выполняет поиск аффинности клонов.
 // (т.е. поиск значения целевой функции для каждого клона)
 func (b *BCA) findClonesAffinity() {
 	b.clonesAffinity = b.clonesAffinity[:0]
@@ -204,7 +210,7 @@ func (b *BCA) findClonesAffinity() {
 	}
 }
 
-// findAffinity - поиск значения BG-аффинности для заданного тела.
+// findAffinity выполняет поиск значения BG-аффинности для заданного тела.
 func (b *BCA) findAffinity(antibody Antibody) float64 {
 	return b.findFill(Solution(antibody))
 }
@@ -215,7 +221,7 @@ func (b *BCA) selectRandomClone() Antibody {
 	return b.clones[index]
 }
 
-// currentBest - лучшее решение и цф на данной итерации.
+// currentBest находит лучшее решение и цф на данной итерации.
 func (b *BCA) currentBest() (Solution, float64) {
 	var (
 		bestAntibody = b.population[0]
@@ -233,8 +239,8 @@ func (b *BCA) currentBest() (Solution, float64) {
 }
 
 // Antibody - антитело (решение задачи), в котором каждый ген состоит из:
-//  index    - индекс размещаемого блока
-//  rotation - вариант поворота блока
+//  index    - индекс размещаемого груза
+//  rotation - вариант поворота груза
 type Antibody Solution
 
 // newAntibody создает новое случайное антитело.

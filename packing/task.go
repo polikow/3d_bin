@@ -17,6 +17,7 @@ func newTask(container Container, blocks []Block) Task {
 // Size возвращает размер задачи (количество загружаемых грузов)
 func (t Task) Size() int { return len(t.Blocks) }
 
+// isSane проверяет корректность задачи.
 func (t Task) isSane() (bool, error) {
 	if VolumeOf(t.Container) == 0 {
 		return false, errors.New("container is not sane")
@@ -35,10 +36,12 @@ func (t Task) mustBeSane() {
 	}
 }
 
+// SaveTaskIntoJSONFile сохраняет задачу в файл по заданному пути.
 func SaveTaskIntoJSONFile(path string, task Task) error {
 	return saveAsJSONFile(path, task)
 }
 
+// LoadTaskFromJSONFile загружает задачу из файла по заданному пути.
 func LoadTaskFromJSONFile(path string) (task Task, err error) {
 	task, err = loadFromJSONFile[Task](path)
 	if err != nil {

@@ -7,10 +7,6 @@ type Block struct {
 	Length uint `json:"l"`
 }
 
-func (b Block) isSane() bool {
-	return b.Width > 0 && b.Height > 0 && b.Length > 0
-}
-
 // Volume вычисляет объем груза.
 func (b Block) Volume() uint {
 	return b.Width * b.Height * b.Length
@@ -29,6 +25,7 @@ func (b Block) findPosition(point Point) BlockPosition {
 	}
 }
 
+// rotatedBlock находит повернутую версию этого груза.
 func (b Block) rotatedBlock(rotation Rotation) Block {
 	xShift, yShift, zShift := b.findShift(rotation)
 	return Block{
@@ -38,6 +35,7 @@ func (b Block) rotatedBlock(rotation Rotation) Block {
 	}
 }
 
+// findShift используется для нахождения повернутой версии этого груза.
 func (b Block) findShift(rotation Rotation) (x, y, z uint) {
 	switch rotation {
 	case XYZ:

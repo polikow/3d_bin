@@ -32,14 +32,14 @@ func newSearchState(task Task) searchState {
 	}
 }
 
-// findFill - поиск заполненности контейнера.
+// findFill выполняет поиск заполненности контейнера для этого решения.
 func (s searchState) findFill(solution Solution) float64 {
 	packed := s.packAlgorithm.Run(solution)
 	packedVolume := VolumeOf(packed...)
 	return float64(packedVolume) / s.containerVolume
 }
 
-// update обновление состояния поиска.
+// update обновляет состояние поиска.
 func (s *searchState) update(solution Solution, value float64) {
 	if s.bestValueFound < value {
 		s.bestValueFound = value
@@ -57,6 +57,7 @@ func (s *searchState) update(solution Solution, value float64) {
 	s.iterationsPassed++
 }
 
+// result возвращает результат поиска.
 func (s searchState) result() SearchResult {
 	return SearchResult{
 		Iteration: s.iterationsPassed,

@@ -7,6 +7,7 @@ type Point struct {
 	Z uint `json:"z"`
 }
 
+// isInside вычисляет, находится ли эта точка внутри заданного груза.
 func (p Point) isInside(b Block) bool {
 	return p.X <= b.Width && p.Y <= b.Height && p.Z <= b.Length
 }

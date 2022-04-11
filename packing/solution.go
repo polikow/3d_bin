@@ -10,7 +10,7 @@ type IndexRotation struct {
 	Rotation Rotation `json:"rotation"` // вариант поворота груза
 }
 
-// newRandomSolution - создание случайного решения.
+// newRandomSolution создает случайное решение.
 // Для создания случайных перестановок используется алгоритм Фишера-Йетса.
 func newRandomSolution(random *rand.Rand, size int) Solution {
 	s := make(Solution, size)

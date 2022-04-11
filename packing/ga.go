@@ -7,6 +7,7 @@ import (
 	"sort"
 )
 
+// GA - генетический алгоритм.
 type GA struct {
 	searchState
 
@@ -15,7 +16,7 @@ type GA struct {
 	populationFitness []float64    // приспособленность популяции
 }
 
-// GASettings - входные параметры
+// GASettings - параметры алгоритма.
 type GASettings struct {
 	Np              int        `json:"np"`        // размер популяции
 	Mp              float64    `json:"mp"`        // вероятность мутации
@@ -58,6 +59,7 @@ func (s GASettings) replaceWithDefaults() GASettings {
 	return settings
 }
 
+// isSane проверяет корректность параметров алгоритма.
 func (s GASettings) isSane() (bool, error) {
 	if s.Np <= 0 {
 		return false, errors.Errorf("ga can not have population of negative size \"%v\"", s.Np)
@@ -66,7 +68,7 @@ func (s GASettings) isSane() (bool, error) {
 		return false, errors.Errorf("ga can not have \"%v\" max iterations", s.Np)
 	}
 	if s.Mp <= 0 || s.Mp > 1 {
-		return false, errors.Errorf("bca can not have mutation probability of \"%v\"", s.Mp)
+		return false, errors.Errorf("ga can not have mutation probability of \"%v\"", s.Mp)
 	}
 	if s.Random == nil {
 		return false, errors.Errorf("ga has to have a setup random generator")
@@ -77,12 +79,15 @@ func (s GASettings) isSane() (bool, error) {
 	return true, nil
 }
 
+// mustBeSane проверяет корректность параметров алгоритма. Если они некорректны,
+// то вызывает panic.
 func (s GASettings) mustBeSane() {
 	if _, err := s.isSane(); err != nil {
 		panic(err)
 	}
 }
 
+// NewGA создает новый экземпляр генетического алгоритма.
 func NewGA(task Task, settings GASettings) *GA {
 	settings = settings.replaceWithDefaults()
 	settings.mustBeSane()
@@ -109,6 +114,7 @@ func (g *GA) Done() bool {
 	return g.iterationsNoImprovement >= g.settings.Ni || g.bestValueFound == 1
 }
 
+// runIteration выполняет одну итерацию алгоритма.
 func (g *GA) runIteration() {
 	if g.iterationsPassed == 0 {
 		g.initializePopulation()
@@ -120,12 +126,15 @@ func (g *GA) runIteration() {
 	g.searchState.update(g.currentBest())
 }
 
+// initializeAntibodies выполняет инициализацию популяции.
 func (g *GA) initializePopulation() {
 	for i := range g.population {
 		g.population[i] = newChromosome(g.settings.Random, g.n)
 	}
 }
 
+// findPopulationFitness выполняет поиск приспособленности хромосом.
+// (т.е. поиск значения целевой функции для каждой хромосомы)
 func (g *GA) findPopulationFitness() {
 	for i := len(g.populationFitness); i < cap(g.populationFitness); i++ {
 		chromosome := g.population[i]
@@ -134,10 +143,13 @@ func (g *GA) findPopulationFitness() {
 	}
 }
 
+// findFitness выполняет поиск приспособленности хромосомы.
+// (т.е. поиск значение целевой функции)
 func (g GA) findFitness(chromosome Chromosome) float64 {
 	return g.findFill(Solution(chromosome))
 }
 
+// mutatePopulation выполняет мутацию популяции.
 func (g *GA) mutatePopulation() {
 	// хромосомы, у которых есть значение ЦФ не мутируют (элитные хромосомы)
 	for i := len(g.populationFitness); i < g.settings.Np; i++ {
@@ -148,6 +160,7 @@ func (g *GA) mutatePopulation() {
 	}
 }
 
+// currentBest находит лучшее решение и цф на данной итерации.
 func (g GA) currentBest() (Solution, float64) {
 	var (
 		bestChromosome = g.population[0]
@@ -164,6 +177,9 @@ func (g GA) currentBest() (Solution, float64) {
 	return Solution(bestChromosome), bestFitness
 }
 
+// Chromosome - хромосома (решение задачи), в которой каждый ген состоит из:
+//  index    - индекс размещаемого груза
+//  rotation - вариант поворота груза
 type Chromosome Solution
 
 // newChromosome создает новую случайную хромосому.
@@ -173,6 +189,7 @@ func newChromosome(random *rand.Rand, size int) Chromosome {
 
 var emptyIndexRotation = IndexRotation{-1, 0}
 
+// newEmptyChromosome создает хромосому с незаданными генами.
 func newEmptyChromosome(size int) Chromosome {
 	chromosome := make(Chromosome, size)
 	for i := range chromosome {
@@ -205,7 +222,7 @@ func (c *Chromosome) mutate(random *rand.Rand) {
 	}
 }
 
-// crossover - операция кроссинговера хромосом.(двойной кроссинговер)(PMX)
+// crossover выполняет операцию кроссинговера хромосом.(двойной кроссинговер)(PMX)
 func (c Chromosome) crossover(c2 Chromosome, random *rand.Rand) (Chromosome, Chromosome) {
 	var (
 		parent1 = c
@@ -234,6 +251,8 @@ func (c Chromosome) crossover(c2 Chromosome, random *rand.Rand) (Chromosome, Chr
 	return child1, child2
 }
 
+// fillWithNoConflict заполняет часть генов дочерней хромосомы, используя для
+// этого родительские.
 func fillWithNoConflict(child, parent Chromosome, start, end, n int) {
 	for i := 0; i < start; i++ {
 		value := parent[i]
@@ -253,6 +272,7 @@ func fillWithNoConflict(child, parent Chromosome, start, end, n int) {
 	}
 }
 
+// contains проверяет, находится ли слайсе это значение.
 func contains(s []IndexRotation, value IndexRotation) bool {
 	for _, v := range s {
 		if v.Index == value.Index {
@@ -262,6 +282,7 @@ func contains(s []IndexRotation, value IndexRotation) bool {
 	return false
 }
 
+// fillConflicted заполняет те гены, которые не удалось заполнить ранее.
 func fillConflicted(child, originalP, otherP Chromosome, start, end int) {
 	for i, indexRotation := range child {
 		if indexRotation == emptyIndexRotation {
@@ -271,7 +292,7 @@ func fillConflicted(child, originalP, otherP Chromosome, start, end int) {
 	}
 }
 
-// mapped - подходящее значение для конфликтной позиции.
+// mapped вычисляет подходящее значение для конфликтной позиции.
 //  originalP - 1й родитель для этой хромосомы,
 //  otherP    - 2й родитель.
 func mapped(originalP, otherP Chromosome, originalIndex int) IndexRotation {
@@ -289,11 +310,11 @@ func mapped(originalP, otherP Chromosome, originalIndex int) IndexRotation {
 }
 
 // Evolution - модель эволюции.
-//
-// runSelection - селекция, в результате которой исходная популяция
-// заменяется новой.
 type Evolution interface {
+	// runSelection - селекция, в результате которой исходная популяция
+	// заменяется новой.
 	runSelection(g *GA)
+
 	fmt.Stringer
 }
 
@@ -302,6 +323,7 @@ type DarwinEvolution struct{}
 
 func (DarwinEvolution) String() string { return "Darwin" }
 
+// runSelection выполняет селекцию популяции.
 func (DarwinEvolution) runSelection(g *GA) {
 	const elite float64 = 0.05
 
@@ -363,6 +385,8 @@ func (DarwinEvolution) runSelection(g *GA) {
 	g.populationFitness = newFitness
 }
 
+// pairs - обертка над хромосомами и их значениями присобленности.
+// Используется для сортировки хромосом по их приспособленности.
 type pairs struct {
 	c []Chromosome
 	f []float64
@@ -396,6 +420,8 @@ const (
 	maxDeaths = 0.8
 )
 
+// catastrophe с некоторой вероятностью уничтожает часть популяции.
+// Уничтоженные хромосомы заменяются случайными хромосомами.
 func (DeVriesEvolution) catastrophe(g *GA, probability float64) {
 	random := g.settings.Random
 	if random.Float64() <= probability {
@@ -418,6 +444,7 @@ func (DeVriesEvolution) catastrophe(g *GA, probability float64) {
 	}
 }
 
+// runSelection выполняет селекцию популяции.
 func (d DeVriesEvolution) runSelection(g *GA) {
 	d.catastrophe(g, beforeProbability)
 	DarwinEvolution{}.runSelection(g)

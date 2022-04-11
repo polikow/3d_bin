@@ -88,6 +88,7 @@ func (b BlockPosition) axisSize(axis Axis) uint {
 	}
 }
 
+// areOverlapping проверяет, пересекаются ли эти грузы.
 func areOverlapping(blocks ...BlockPosition) bool {
 	for i := range blocks {
 		for j := range blocks {

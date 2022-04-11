@@ -123,13 +123,13 @@ func (a *PackAlgorithm) packNextBlock() (isPackable bool) {
 	return true
 }
 
-// addToPacked - сохранение груза как успешно упакованного.
+// addToPacked сохраняет груз как успешно упакованный.
 func (a *PackAlgorithm) addToPacked(position BlockPosition) {
 	a.packed = append(a.packed, position)
 	a.step++
 }
 
-// moveDownOnAxis выполняет спуск вдоль заданной оси.
+// moveDownOnAxis выполняет спуск груза вдоль заданной оси.
 func (a *PackAlgorithm) moveDownOnAxis(axis Axis, position *BlockPosition) bool {
 	a.findEmptyAreasOnAxis(axis, position)
 	size := position.axisSize(axis)
@@ -182,7 +182,7 @@ func (a *PackAlgorithm) prepareBordersAndAreas(searchAxis Axis) {
 	a.isFree = a.isFree[:0]
 
 	// изначально всего есть 1 свободная область, которая ограничена
-	// 2 точками - начало и конец контейнера
+	// 2мя точками - начало и конец контейнера
 	a.borders = append(a.borders, 0)
 	switch searchAxis {
 	case X:
@@ -320,7 +320,7 @@ func (a *PackAlgorithm) findStartingPoint(block Block) Point {
 	// Если недостаточно места по ширине, то сместить по X настолько,
 	// насколько это позволяют уже расположенные грузы.
 	//
-	// Для этого проверяются все блоки, которые находятся на уровне
+	// Для этого проверяются все грузы, которые находятся на уровне
 	// shiftY - block.Height, и которые задают сдвиг по оси Z на этом уровне.
 	if notEnoughWidth {
 		var newShiftX uint = 0
@@ -354,7 +354,7 @@ func (a *PackAlgorithm) findStartingPoint(block Block) Point {
 	// Если недостаточно места по длине, то сместить по Z настолько,
 	// насколько это позволяют уже расположенные грузы.
 	//
-	// Для этого проверяются все блоки, которые находятся на уровне
+	// Для этого проверяются все грузы, которые находятся на уровне
 	// shiftY - block.Height, и которые задают сдвиг по оси X на этом уровне.
 	if notEnoughLength {
 		var newShiftZ uint = 0
