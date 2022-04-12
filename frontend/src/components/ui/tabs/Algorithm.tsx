@@ -1,4 +1,4 @@
-import React, {CSSProperties, useCallback, useEffect, useMemo, useState} from "react";
+import React, {CSSProperties, useCallback, useMemo, useState} from "react";
 import {useStore} from "../../../store/store";
 import {Button, MenuItem, Select, TextField} from "@material-ui/core";
 import Floater from "../Floater";
@@ -7,8 +7,7 @@ import MenuPaperHideable from "../MenuPaperHideable";
 import {Rotation, Tab} from "../../../store/types";
 import {floatInBounds, integerInBounds} from "../../../utils";
 import {BCASettings, GASettings} from "../../../wailsjs/go/models";
-import classNames from "classnames";
-import {compareStateSlices} from "../../../store/compare";
+import {compareAlwaysTrue, compareState, compareStateSlices} from "../../../store/compare";
 
 type Algorithm = "bca" | "ga"
 
@@ -48,17 +47,13 @@ const formStyle = {
 } as CSSProperties
 
 export default React.memo(({open, onClose}: AlgorithmProps) => {
-  const [isSearching, setFinalResult, startBCA, startGA] = useStore(
-    s => [s.isSearching, s.setFinalResult, s.startBCA, s.startGA],
-    compareStateSlices
+  const [startBCA, startGA, setTab] = useStore(
+    s => [s.startBCA, s.startGA, s.setTab],
+    compareAlwaysTrue
   )
+  const isSearching = useStore(s => s.isSearching, compareState)
+  const hidden = useStore(s => s.searchResult.iteration === 0, compareState)
   const [algorithm, setAlgorithm] = useState(initialAlgorithm)
-
-  useEffect(() => {
-    window.runtime.EventsOn("result", setFinalResult)
-    // @ts-ignore TODO fix wails runtime: add EventsOff method
-    return () => window.runtime.EventsOff("result")
-  }, [])
 
   const handleAlgorithmChange = useCallback(
     value => setAlgorithm(value as Algorithm),
@@ -89,6 +84,7 @@ export default React.memo(({open, onClose}: AlgorithmProps) => {
     },
     []
   )
+  const handleOpenPackedButtonClick = useCallback(() => setTab(Tab.Packed), [])
   return (
     <Floater className="algorithm-menu" open={open} onClose={onClose}>
       <MenuPaper title="Поиск упаковки">
@@ -149,7 +145,19 @@ export default React.memo(({open, onClose}: AlgorithmProps) => {
         </form>
       </MenuPaper>
 
-      <ResultPaper/>
+      <MenuPaperHideable hidden={hidden} className={hidden ? "" : "algorithm-result"}>
+        <>
+          <Iteration/>
+          <Value/>
+          <PackingOrder/>
+          <Button
+            variant="contained" color="primary" id="show-packed-button"
+            onClick={handleOpenPackedButtonClick}
+          >
+            Показать упакованные грузы
+          </Button>
+        </>
+      </MenuPaperHideable>
 
     </Floater>
   )
@@ -216,39 +224,35 @@ function SelectField({defaultValue, valuesLabels, onChange}: SelectFieldProps) {
   )
 }
 
-function ResultPaper() {
-  const [{iteration, value, solution, packed}, setTab] = useStore(
-    s => [s.searchResult, s.setTab],
-    (prev, next) => (
-      // незачем проверять все остальные части объекта решения
-      prev[0].iteration === next[0].iteration && prev[0].value === next[0].value
-    )
+function Iteration() {
+  const [isSearching, iteration] = useStore(
+    s => [s.isSearching, s.searchResult.iteration],
+    compareStateSlices
   )
-  const handleOpenPackedButtonClick = useCallback(() => setTab(Tab.Packed), [])
-  const hidden = iteration === 0 || value === 0
-  const className = classNames({"algorithm-result": !hidden})
+  return isSearching
+    ? <p>Текущая итерация: {iteration}</p>
+    : <p>Поиск завершен на итерации: {iteration}</p>
+}
+
+function Value() {
+  const value = useStore(s => s.searchResult.value, compareState)
+  return <p>Значение ЦФ: {value}</p>
+}
+
+function PackingOrder() {
+  const [solution, packed,] = useStore(s =>
+      [s.searchResult.solution, s.searchResult.packed, s.searchResult.value],
+    ([, , prevValue], [, , nextValue]) => prevValue === nextValue
+  )
   return (
-    <MenuPaperHideable hidden={hidden} className={className}>
-      {!hidden &&
-        <>
-          <p>Значение ЦФ: {value}</p>
-          <p>Порядок упаковки:<br/>
-            [
-            {solution.map((
-              {index, rotation}, i) => (i <= packed.length - 1)
-                ? <span key={i} className="packed">{`(${index + 1}, ${Rotation[rotation]})`}</span>
-                : <span key={i} className="not-packed">{`(${index + 1}, ${Rotation[rotation]})`}</span>
-            )}
-            ]
-          </p>
-          <Button
-            variant="contained" color="primary" id="show-packed-button"
-            onClick={handleOpenPackedButtonClick}
-          >
-            Показать упакованные грузы
-          </Button>
-        </>
-      }
-    </MenuPaperHideable>
+    <p>Порядок упаковки:<br/>
+      [
+      {solution.map((
+        {index, rotation}, i) => (i <= packed.length - 1)
+        ? <span key={i} className="packed">{`(${index + 1}, ${Rotation[rotation]})`}</span>
+        : <span key={i} className="not-packed">{`(${index + 1}, ${Rotation[rotation]})`}</span>
+      )}
+      ]
+    </p>
   )
 }

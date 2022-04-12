@@ -51,6 +51,9 @@ export type SearchActions = {
   startBCA: (settings: BCASettings) => void
   startGA: (settings: GASettings) => void
 
+  searchStarted: () => void
+  searchFailedToStart: (reason: any) => void
+
   setSearchResult: (searchResult: SearchResult) => void
   setFinalResult: (searchResult: SearchResult) => void
 

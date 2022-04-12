@@ -3,7 +3,7 @@ import {Scene, Store, Tab,} from "./types";
 import * as DEFAULT from "./defaults"
 import {blockPositionForBlockAtIndex, cargoAndSpace, doesBlockFitInside, spaceNeedsToBeShrunk} from "./cargo";
 import {cargoCamera, containerCamera} from "./camera";
-import {withoutLast, log, logError, replaced, withoutIndex} from "./utils";
+import {log, logError, replaced, withoutIndex, withoutLast} from "./utils";
 import {Task} from "../wailsjs/go/models";
 
 export const useStore = create<Store>((set, get) => ({
@@ -126,19 +126,27 @@ export const useStore = create<Store>((set, get) => ({
 
   startBCA: (settings) => {
     log(settings)
-    const {container, blocks} = get()
+    const {container, blocks, searchStarted, searchFailedToStart} = get()
     const task = {container, blocks} as Task
     window.go.main.App.RunBCA(task, settings)
-      .then(log)
-      .catch(logError)
+      .then(searchStarted)
+      .catch(searchFailedToStart)
   },
   startGA: (settings) => {
     log(settings)
-    const {container, blocks} = get()
+    const {container, blocks, searchStarted, searchFailedToStart} = get()
     const task = {container, blocks} as Task
     window.go.main.App.RunGA(task, settings)
-      .then(log)
-      .catch(logError)
+      .then(searchStarted)
+      .catch(searchFailedToStart)
+  },
+  searchStarted: () => {
+    log("searchStarted")
+    set({isSearching: true})
+  },
+  searchFailedToStart: (reason: any) => {
+    logError(reason)
+    set({isSearching: false})
   },
   setSearchResult: searchResult => set({searchResult}),
   setFinalResult: searchResult => set({searchResult}),  // TODO implement
@@ -196,3 +204,12 @@ export const useStore = create<Store>((set, get) => ({
   setOnlyEdges: onlyEdges => set({onlyEdges}),
   setGridVisible: isGridVisible => set({isGridVisible}),
 }))
+
+const handleResult = (data: any) => {
+  useStore.getState().setSearchResult(data)
+}
+const handleDoneSearching = () => {
+  useStore.setState({isSearching: false})
+}
+window.runtime.EventsOn("result", handleResult)
+window.runtime.EventsOn("doneSearching", handleDoneSearching)
