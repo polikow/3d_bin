@@ -30,23 +30,47 @@ func (a App) domReady(ctx context.Context) {}
 // shutdown is called at application termination
 func (a *App) shutdown(ctx context.Context) {}
 
-func (a *App) RunBCA(task packing.Task, settings packing.BCASettings) error {
+// recover
+func (a *App) recover() error {
+	if r := recover(); r != nil {
+		err, ok := r.(error)
+		if !ok {
+			err = errors.Errorf("unknown reason: %v", r)
+			runtime.LogError(a.ctx, errors.Wrap(err, "recovered from").Error())
+		} else {
+			runtime.LogError(a.ctx, err.Error())
+		}
+		return err
+	}
+	return nil
+}
+
+// RunBCA инициализирует работу иммунного алгоритма для этой задачи.
+func (a *App) RunBCA(task packing.Task, settings packing.BCASettings) (err error) {
+	defer func() { err = a.recover() }()
 	algorithm := packing.NewBCA(task, settings)
-	a.evaluate(algorithm)
-	return nil
+	go a.evaluate(algorithm)
+	return err
 }
 
-func (a *App) RunGA(task packing.Task, settings packing.GASettings) error {
+// RunGA инициализирует работу генетического алгоритма для этой задачи.
+func (a *App) RunGA(task packing.Task, settings packing.GASettings) (err error) {
+	defer func() { err = a.recover() }()
 	algorithm := packing.NewGA(task, settings)
-	a.evaluate(algorithm)
-	return nil
+	go a.evaluate(algorithm)
+	return err
 }
 
-// evaluate полностью выполняет алгоритм и возвращает результат через
-// событие "result"
+// evaluate отсылает результаты работы алгоритма.
 func (a *App) evaluate(algorithm packing.SearchAlgorithm) {
-	result := packing.Evaluate(algorithm)
-	runtime.EventsEmit(a.ctx, "result", result)
+	for !algorithm.Done() {
+		result := algorithm.Run()
+		runtime.EventsEmit(a.ctx, "result", result)
+		runtime.LogInfo(a.ctx, fmt.Sprintf("iteration %d = %g", result.Iteration, result.Value))
+		//time.Sleep(time.Millisecond * 10)
+	}
+	runtime.EventsEmit(a.ctx, "doneSearching")
+	runtime.LogInfo(a.ctx, "doneSearching")
 }
 
 // selectFileToSaveInto отображает диалоговое окно, в котором пользователь
