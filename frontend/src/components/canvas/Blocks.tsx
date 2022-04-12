@@ -5,9 +5,13 @@ import {colors} from "../../consts";
 import {compareStateSlices} from "../../store/compare";
 
 export default () => {
-  const [packed, opacity, isColorful, onlyEdges] = useStore(
-    s => [s.searchResult.packed, s.opacity, s.isColorful, s.onlyEdges],
+  const [opacity, isColorful, onlyEdges] = useStore(
+    s => [s.opacity, s.isColorful, s.onlyEdges],
     compareStateSlices
+  )
+  const [packed,] = useStore(
+    s => [s.searchResult.packed, s.searchResult.value],
+    ([, prevValue], [, nextValue]) => prevValue === nextValue
   )
 
   return (

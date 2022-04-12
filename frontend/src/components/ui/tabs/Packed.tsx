@@ -6,7 +6,6 @@ import MenuTitle from "../MenuTitle";
 import {Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow} from "@material-ui/core";
 import {Rotation} from "../../../store/types";
 import {rowsPerPage} from "../../../consts";
-import {compareStateSlices} from "../../../store/compare";
 
 interface PackedProps {
   open: boolean
@@ -14,9 +13,9 @@ interface PackedProps {
 }
 
 export default ({open, onClose}: PackedProps) => {
-  const [packed, solution] = useStore(
-    s => [s.searchResult.packed, s.searchResult.solution],
-    compareStateSlices
+  const [packed, solution,] = useStore(
+    s => [s.searchResult.packed, s.searchResult.solution, s.searchResult.value],
+    ([, , prevValue], [, , nextValue]) => prevValue === nextValue
   )
   const [page, setPage] = useState(0)
   const handlePageChange = useCallback(
