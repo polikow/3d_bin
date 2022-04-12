@@ -8,6 +8,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 type App struct {
@@ -63,14 +64,23 @@ func (a *App) RunGA(task packing.Task, settings packing.GASettings) (err error) 
 
 // evaluate отсылает результаты работы алгоритма.
 func (a *App) evaluate(algorithm packing.SearchAlgorithm) {
+	const maxEventsPerSecond = 60
+	const minTimeBetweenEvents = time.Second / maxEventsPerSecond
+
+	// время, после которого можно вызывать следующее событие с результатом
+	nextAllowedEventTime := time.Now()
+	result := packing.SearchResult{}
+
 	for !algorithm.Done() {
-		result := algorithm.Run()
-		runtime.EventsEmit(a.ctx, "result", result)
-		runtime.LogInfo(a.ctx, fmt.Sprintf("iteration %d = %g", result.Iteration, result.Value))
-		//time.Sleep(time.Millisecond * 10)
+		result = algorithm.Run()
+		if time.Now().After(nextAllowedEventTime) {
+			nextAllowedEventTime = time.Now().Add(minTimeBetweenEvents)
+			runtime.EventsEmit(a.ctx, "result", result)
+			runtime.LogInfo(a.ctx, fmt.Sprintf("iteration %d = %g", result.Iteration, result.Value))
+		}
 	}
+	runtime.EventsEmit(a.ctx, "result", result)
 	runtime.EventsEmit(a.ctx, "doneSearching")
-	runtime.LogInfo(a.ctx, "doneSearching")
 }
 
 // selectFileToSaveInto отображает диалоговое окно, в котором пользователь
