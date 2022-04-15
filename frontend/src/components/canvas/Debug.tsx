@@ -14,7 +14,7 @@ export default () => {
   return isDebugMode
     ? (
       <>
-        <WebGlStats className="stats" parent={undefined}/>
+        <WebGlStats parent={undefined}/>
 
         <gridHelper
           position={gridPosition}

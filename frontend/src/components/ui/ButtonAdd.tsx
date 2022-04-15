@@ -1,6 +1,6 @@
 import React from "react";
-import {Button} from "@material-ui/core";
-import {Add} from "@material-ui/icons";
+import {Button} from "@mui/material";
+import {Add} from "@mui/icons-material";
 
 interface ButtonAddProps {
   disabled: boolean
@@ -8,7 +8,7 @@ interface ButtonAddProps {
   children?: React.ReactNode
 }
 
-export default ({disabled, onClick, children}: ButtonAddProps) => (
+const ButtonAdd = ({disabled, onClick, children}: ButtonAddProps) => (
   <Button
     variant="contained"
     color="primary"
@@ -19,3 +19,5 @@ export default ({disabled, onClick, children}: ButtonAddProps) => (
     <Add/>
   </Button>
 )
+
+export default ButtonAdd

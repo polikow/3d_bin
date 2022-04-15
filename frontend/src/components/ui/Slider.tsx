@@ -1,5 +1,5 @@
 import React from "react";
-import {Slider, Typography} from "@material-ui/core";
+import {Slider as MuiSlider, Typography} from "@mui/material";
 
 interface SliderProps {
   label: string
@@ -10,10 +10,11 @@ interface SliderProps {
   onChange?: (event: Event, value: number) => void
 }
 
-export default ({label, value, onChange, min, max, step}: SliderProps) => (
+const Slider = ({label, value, onChange, min, max, step}: SliderProps) => (
   <>
     <Typography>{label}</Typography>
-    <Slider
+    <MuiSlider
+      size="small"
       value={value}
       min={min}
       max={max}
@@ -23,3 +24,5 @@ export default ({label, value, onChange, min, max, step}: SliderProps) => (
     />
   </>
 )
+
+export default Slider

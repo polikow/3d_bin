@@ -1,5 +1,5 @@
 import React from "react";
-import {ButtonGroup, Typography} from "@material-ui/core";
+import {ButtonGroup, styled, Typography} from "@mui/material";
 
 interface ButtonGroupProps {
   label: string
@@ -7,17 +7,28 @@ interface ButtonGroupProps {
   children: React.ReactNode
 }
 
+const CustomTypography = styled(Typography)`
+  margin-bottom: 3px;
+`
+
+const CustomButtonGroup = styled(ButtonGroup)`
+  margin: 0 0 8px 0;
+
+  > button {
+    flex: 1;
+  }
+`
+
 export default ({label, onClick, children}: ButtonGroupProps) => (
   <>
-    <Typography>{label}</Typography>
-    <ButtonGroup
+    <CustomTypography>{label}</CustomTypography>
+    <CustomButtonGroup
       variant="contained"
-      color="default"
+      color="inherit"
       aria-label="contained button group"
-      className="button-group"
       onClick={onClick}
     >
       {children}
-    </ButtonGroup>
+    </CustomButtonGroup>
   </>
 )

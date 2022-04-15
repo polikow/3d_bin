@@ -1,12 +1,14 @@
 import React, {useCallback} from "react";
 import {useStore} from "../../../store/store";
-import {Button} from "@material-ui/core";
+import {Button} from "@mui/material";
 import Floater from "../Floater";
-import MenuPaper from "../MenuPaper";
 import ButtonGroup from "../ButtonGroup";
 import Slider from "../Slider";
-import Switch from "../Switch";
+import SwitchWithLabel from "../SwitchWithLabel";
 import {compareStateSlices} from "../../../store/compare";
+import Title from "../Title";
+import OuterPaper from "../OuterPaper";
+import InnerPaper from "../InnerPaper";
 
 interface SettingsProps {
   open: boolean
@@ -16,24 +18,35 @@ interface SettingsProps {
 export default React.memo(({open, onClose}: SettingsProps) => (
   <Floater open={open} onClose={onClose}>
 
-    <MenuPaper title="Камера">
-      <CameraFOVButtonGroup/>
-    </MenuPaper>
+    <OuterPaper elevation={3}>
+      <Title>Камера</Title>
+      <InnerPaper elevation={0}>
+        <CameraFOVButtonGroup/>
+      </InnerPaper>
+    </OuterPaper>
 
-    <MenuPaper title="Вид грузов">
-      <OpacitySlider/>
-      <ColorSwitch/>
-      <EdgesSwitch/>
-    </MenuPaper>
+    <OuterPaper elevation={3}>
+      <Title>Вид грузов</Title>
+      <InnerPaper elevation={0}>
+        <OpacitySlider/>
+        <ColorSwitch/>
+        <EdgesSwitch/>
+      </InnerPaper>
+    </OuterPaper>
 
-    <MenuPaper title="Вид контейнера">
-      <GridSwitch/>
-      <LabelSizeSlider/>
-    </MenuPaper>
+    <OuterPaper elevation={3}>
+      <Title>Вид контейнера</Title>
+      <InnerPaper elevation={0}>
+        <GridSwitch/>
+        <LabelSizeSlider/>
+      </InnerPaper>
+    </OuterPaper>
 
-    <MenuPaper>
-      <DebugModeSwitch/>
-    </MenuPaper>
+    <OuterPaper elevation={3}>
+      <InnerPaper elevation={0}>
+        <DebugModeSwitch/>
+      </InnerPaper>
+    </OuterPaper>
 
   </Floater>
 ))
@@ -58,7 +71,7 @@ function CameraFOVButtonGroup() {
     (value: string | number) =>
       parseInt(value as string) === fov
         ? "primary"
-        : "default",
+        : "inherit",
     [fov]
   )
 
@@ -97,7 +110,7 @@ function ColorSwitch() {
   )
   const onChange = useCallback((_, value) => setColorful(value), [])
   return (
-    <Switch
+    <SwitchWithLabel
       label="Разные цвета"
       checked={isColorful}
       onChange={onChange}
@@ -112,7 +125,7 @@ function EdgesSwitch() {
     compareStateSlices
   )
   return (
-    <Switch
+    <SwitchWithLabel
       label="Отображать только ребра"
       checked={onlyEdges}
       onChange={event => setOnlyEdges(event.target.checked)}
@@ -127,7 +140,7 @@ function GridSwitch() {
   )
   const onGridChange = useCallback(event => setGridVisible(event.target.checked), [])
   return (
-    <Switch
+    <SwitchWithLabel
       label="Сетка"
       checked={isGridVisible}
       onChange={onGridChange}
@@ -158,7 +171,7 @@ function DebugModeSwitch() {
   )
   const onChange = useCallback(event => setDebugMode(event.target.checked), [])
   return (
-    <Switch
+    <SwitchWithLabel
       label="Режим отладки"
       color="secondary"
       checked={isDebugMode}

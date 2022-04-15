@@ -4,11 +4,10 @@ import StatsImpl from "stats.js"
 
 interface WebGlStatsProps {
   parent?: any // TODO fix
-  className?: string
   showPanel?: number
 }
 
-export function WebGlStats({parent, className, showPanel = 0}: WebGlStatsProps) {
+export function WebGlStats({parent, showPanel = 0}: WebGlStatsProps) {
   const [stats] = useState(() => new StatsImpl())
   useEffect(() => {
     const node = (parent && parent.current) || document.body
@@ -16,7 +15,8 @@ export function WebGlStats({parent, className, showPanel = 0}: WebGlStatsProps) 
     stats.showPanel(showPanel)
     node.appendChild(stats.dom)
 
-    if (className) stats.dom.classList.add(className)
+    stats.dom.style.right = "0px"
+    stats.dom.style.left = "initial"
 
     const begin = addEffect(() => stats.begin())
     const end = addAfterEffect(() => stats.end())
@@ -26,6 +26,6 @@ export function WebGlStats({parent, className, showPanel = 0}: WebGlStatsProps) 
       begin()
       end()
     }
-  }, [parent]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [parent])
   return null
 }

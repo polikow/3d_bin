@@ -1,13 +1,13 @@
 import React, {useCallback} from "react";
 import {useStore} from "../../../store/store";
-import {TextField} from "@material-ui/core";
-import Tab from "../Tab";
-import {integerInBounds} from "../../../utils";
+import {styled, TextField} from "@mui/material";
+import {Event, integerInBounds} from "../../../utils";
 import {max, min} from "../../../consts";
 import {compareAlwaysTrue, compareState} from "../../../store/compare";
-
-const textFieldStyle = {width: "220px"}
-const textInputProps = {inputProps: {min, max}}
+import OuterPaper from "../OuterPaper";
+import InnerPaper from "../InnerPaper";
+import Title from "../Title";
+import Floater from "../Floater";
 
 interface ContainerProps {
   open: boolean
@@ -15,27 +15,37 @@ interface ContainerProps {
 }
 
 export default React.memo(({open, onClose}: ContainerProps) => (
-  <Tab title="Контейнер" open={open} onClose={onClose}>
-    <WidthTextField/>
-    <HeightTextField/>
-    <LengthTextField/>
-  </Tab>
+  <Floater open={open} onClose={onClose}>
+    <OuterPaper elevation={3}>
+      <Title>Контейнер</Title>
+      <InnerPaper elevation={0}>
+        <WidthTextField/>
+        <HeightTextField/>
+        <LengthTextField/>
+      </InnerPaper>
+    </OuterPaper>
+  </Floater>
 ))
+
+const CustomTextField = styled(TextField)`
+  width: 220px;
+  margin: 10px 0 !important;
+`
+
+const bounds = (event: Event) => integerInBounds(event, min, min, max)
+
+const textInputProps = {inputProps: {min, max}}
 
 function WidthTextField() {
   const width = useStore(s => s.container.w, compareState)
   const setContainerSide = useStore(s => s.setContainerSide, compareAlwaysTrue)
-  const setContainerWidth = useCallback(
-    event => setContainerSide("w", integerInBounds(event, min, min, max)),
-    []
-  )
+  const setWidth = useCallback(e => setContainerSide("w", bounds(e)), [])
   return (
-    <TextField
-      type="number" label="Ширина" className="text-field"
-      style={textFieldStyle}
+    <CustomTextField
+      variant="standard" type="number" label="Ширина"
       InputProps={textInputProps}
       value={width}
-      onChange={setContainerWidth}
+      onChange={setWidth}
     />
   )
 }
@@ -43,17 +53,13 @@ function WidthTextField() {
 function HeightTextField() {
   const height = useStore(s => s.container.h, compareState)
   const setContainerSide = useStore(s => s.setContainerSide, compareAlwaysTrue)
-  const setContainerHeight = useCallback(
-    event => setContainerSide("h", integerInBounds(event, min, min, max)),
-    []
-  )
+  const setHeight = useCallback(e => setContainerSide("h", bounds(e)), [])
   return (
-    <TextField
-      type="number" label="Ширина" className="text-field"
-      style={textFieldStyle}
+    <CustomTextField
+      variant="standard" type="number" label="Ширина"
       InputProps={textInputProps}
       value={height}
-      onChange={setContainerHeight}
+      onChange={setHeight}
     />
   )
 }
@@ -61,17 +67,13 @@ function HeightTextField() {
 function LengthTextField() {
   const length = useStore(s => s.container.l, compareState)
   const setContainerSide = useStore(s => s.setContainerSide, compareAlwaysTrue)
-  const setContainerLength = useCallback(
-    event => setContainerSide("l", integerInBounds(event, min, min, max)),
-    []
-  )
+  const setLength = useCallback(e => setContainerSide("l", bounds(e)), [])
   return (
-    <TextField
-      type="number" label="Длина" className="text-field"
-      style={textFieldStyle}
+    <CustomTextField
+      variant="standard" type="number" label="Длина"
       InputProps={textInputProps}
       value={length}
-      onChange={setContainerLength}
+      onChange={setLength}
     />
   )
 }

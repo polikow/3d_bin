@@ -4,28 +4,50 @@ import {
   Button,
   Menu,
   MenuItem,
+  styled,
   Table,
-  TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TablePagination,
   TableRow,
   TextField
-} from "@material-ui/core";
+} from "@mui/material";
 import {Event, integerInBounds} from "../../../utils";
 import ButtonAccept from "../ButtonAccept";
 import ButtonAdd from "../ButtonAdd";
 import ButtonCreate from "../ButtonCreate";
 import {Block} from "../../../wailsjs/go/models"
 import {rowsPerPage} from "../../../consts";
-import Tab from "../Tab";
 import {compareStateSlices} from "../../../store/compare"
+import OuterPaper from "../OuterPaper";
+import Title from "../Title";
+import InnerPaper from "../InnerPaper";
+import Floater from "../Floater";
+import TableBody from "../TableBody";
 
 interface BlocksProps {
   open: boolean
   onClose: () => void
 }
+
+const CustomInnerPaper = styled(InnerPaper)`
+  padding: 0;
+`
+
+const CustomTablePagination = styled(TablePagination)`
+  padding: 0;
+`
+
+const BottomButtonsWrapper = styled("div")`
+  display: flex;
+  flex-flow: column;
+  margin: 0 10px 10px 10px;
+
+  & > button {
+    margin-top: 10px;
+  }
+`
 
 export default React.memo(({open, onClose}: BlocksProps) => {
   const [blocks] = useStore(s => [s.blocks], compareStateSlices)
@@ -59,80 +81,83 @@ export default React.memo(({open, onClose}: BlocksProps) => {
   const isChanging = indexChanging !== null
 
   return (
-    <Tab title="Размеры грузов" className="blocks-table-paper" open={open} onClose={onClose}>
-      <TableContainer>
-        <Table stickyHeader className="blocks-table">
-          <TableHead>
-            <TableRow>
-              <TableCell>№</TableCell>
-              <TableCell>Ширина</TableCell>
-              <TableCell>Высота</TableCell>
-              <TableCell>Длина</TableCell>
-              <TableCell> </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {
-              blocks
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((block, i) => {
-                  const index = i + page * rowsPerPage
-                  switch (true) {
-                    case (indexChanging === null):
-                      return (
-                        <Row
-                          key={index}
-                          index={index} block={block}
-                          onChange={setIndexChanging}
-                          onRemove={removeBlockByIndex}
-                        />
-                      )
-                    case (index === indexChanging):
-                      return (
-                        <ChangeableRow
-                          key={index}
-                          index={index} initialBlock={block}
-                          onChange={onChangeChangeableRow}
-                        />
-                      )
-                    default:
-                      return (
-                        <Row
-                          key={index}
-                          index={index} block={block}
-                          onChange={setIndexChanging}
-                          onRemove={removeBlockByIndex}
-                          showChange={false}
-                        />
-                      )
-                  }
-                })
-            }
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-        component="div"
-        rowsPerPageOptions={[rowsPerPage]}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        count={blocks.length}
-        onPageChange={onPageChange}
-      />
+    <Floater open={open} onClose={onClose}>
+      <OuterPaper elevation={3}>
+        <Title>Размеры грузов</Title>
+        <CustomInnerPaper elevation={0}>
+          <TableContainer>
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <TableCell>№</TableCell>
+                  <TableCell>Ширина</TableCell>
+                  <TableCell>Высота</TableCell>
+                  <TableCell>Длина</TableCell>
+                  <TableCell> </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {
+                  blocks
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((block, i) => {
+                      const index = i + page * rowsPerPage
+                      switch (true) {
+                        case (indexChanging === null):
+                          return (
+                            <Row
+                              key={index}
+                              index={index} block={block}
+                              onChange={setIndexChanging}
+                              onRemove={removeBlockByIndex}
+                            />
+                          )
+                        case (index === indexChanging):
+                          return (
+                            <ChangeableRow
+                              key={index}
+                              index={index} initialBlock={block}
+                              onChange={onChangeChangeableRow}
+                            />
+                          )
+                        default:
+                          return (
+                            <Row
+                              key={index}
+                              index={index} block={block}
+                              onChange={setIndexChanging}
+                              onRemove={removeBlockByIndex}
+                              showChange={false}
+                            />
+                          )
+                      }
+                    })
+                }
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <CustomTablePagination
+            rowsPerPageOptions={[rowsPerPage]}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            count={blocks.length}
+            onPageChange={onPageChange}
+          />
 
-      <div id="add-generate-buttons">
-        <ButtonAdd  disabled={isChanging} onClick={onClickButtonAdd}>
-          Добавить новый груз
-        </ButtonAdd>
-        <Button variant="contained" color="primary" onClick={onRemoveAllBlocks}>
-          Удалить все грузы
-        </Button>
-        <Button variant="contained" color="primary" onClick={onGenerateBlocks}>
-          Сенерировать случайные грузы
-        </Button>
-      </div>
-
-    </Tab>
+          <BottomButtonsWrapper>
+            <ButtonAdd disabled={isChanging} onClick={onClickButtonAdd}>
+              Добавить новый груз
+            </ButtonAdd>
+            <Button variant="contained" color="primary" onClick={onRemoveAllBlocks}>
+              Удалить все грузы
+            </Button>
+            <Button variant="contained" color="primary" onClick={onGenerateBlocks}>
+              Сенерировать случайные грузы
+            </Button>
+          </BottomButtonsWrapper>
+        </CustomInnerPaper>
+      </OuterPaper>
+    </Floater>
   )
 })
 
@@ -212,6 +237,10 @@ interface ChangeableRowProps {
   onChange: (index: number, block: Block) => void
 }
 
+const CustomTextField = styled(TextField)`
+  width: 63px;
+`
+
 function ChangeableRow({index, initialBlock, onChange}: ChangeableRowProps) {
   const [block, setBlock] = useState(initialBlock)
 
@@ -235,15 +264,15 @@ function ChangeableRow({index, initialBlock, onChange}: ChangeableRowProps) {
     <TableRow key={index}>
       <TableCell align="center">{index + 1}</TableCell>
       <TableCell align="center">
-        <TextField type="number" className="blocks-table-changeable-cell"
+        <CustomTextField variant="standard" type="number"
                    value={block.w} onChange={setWidth}/>
       </TableCell>
       <TableCell align="center">
-        <TextField type="number" className="blocks-table-changeable-cell"
+        <CustomTextField variant="standard" type="number"
                    value={block.h} onChange={setHeight}/>
       </TableCell>
       <TableCell align="center">
-        <TextField type="number" className="blocks-table-changeable-cell"
+        <CustomTextField variant="standard" type="number"
                    value={block.l} onChange={setLength}/>
       </TableCell>
       <TableCell>

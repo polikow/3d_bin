@@ -1,13 +1,15 @@
-import React, {CSSProperties, useCallback, useMemo, useState} from "react";
+import React, {useCallback, useState} from "react";
 import {useStore} from "../../../store/store";
-import {Button, MenuItem, Select, TextField} from "@material-ui/core";
+import {Button, styled} from "@mui/material";
 import Floater from "../Floater";
-import MenuPaper from "../MenuPaper";
-import MenuPaperHideable from "../MenuPaperHideable";
 import {Rotation, Tab} from "../../../store/types";
-import {floatInBounds, integerInBounds} from "../../../utils";
 import {BCASettings, GASettings} from "../../../wailsjs/go/models";
 import {compareAlwaysTrue, compareState, compareStateSlices} from "../../../store/compare";
+import Title from "../Title";
+import OuterPaper from "../OuterPaper";
+import InnerPaper from "../InnerPaper";
+import NumericInput from "../NumericInput";
+import SelectInput from "../SelectInput";
 
 type Algorithm = "bca" | "ga"
 
@@ -41,10 +43,25 @@ const algorithmValuesLabels = [
   ["ga", "Генетический алгоритм"],
 ] as Array<[string, string]>
 
-const formStyle = {
-  display: "inherit",
-  flexFlow: "inherit",
-} as CSSProperties
+const CustomForm = styled("form")`
+  display: inherit;
+  flex-flow: inherit;
+`
+
+const CustomButton = styled(Button)`
+  margin: 10px 0 7px 0;
+`
+
+const ResultFloater = styled(Floater)`
+  position: initial;
+  width: fit-content;
+`
+
+const ResultInnerPaper = styled(InnerPaper)`
+  max-width: 280px;
+  max-height: 376px;
+  overflow: scroll;
+`
 
 export default React.memo(({open, onClose}: AlgorithmProps) => {
   const [startBCA, startGA, setTab] = useStore(
@@ -52,7 +69,7 @@ export default React.memo(({open, onClose}: AlgorithmProps) => {
     compareAlwaysTrue
   )
   const isSearching = useStore(s => s.isSearching, compareState)
-  const hidden = useStore(s => s.searchResult.iteration === 0, compareState)
+  const outputOpen = useStore(s => s.searchResult.iteration !== 0, compareState)
   const [algorithm, setAlgorithm] = useState(initialAlgorithm)
 
   const handleAlgorithmChange = useCallback(
@@ -86,143 +103,87 @@ export default React.memo(({open, onClose}: AlgorithmProps) => {
   )
   const handleOpenPackedButtonClick = useCallback(() => setTab(Tab.Packed), [])
   return (
-    <Floater className="algorithm-menu" open={open} onClose={onClose}>
-      <MenuPaper title="Поиск упаковки">
-        <form style={formStyle} onSubmit={handleStart}>
-          <SelectField
-            defaultValue={initialAlgorithm}
-            valuesLabels={algorithmValuesLabels}
-            onChange={handleAlgorithmChange}
-          />
-          {algorithm === "bca" && (
-            <>
-              <NumericField
-                label="Количество антител в популяции"
-                name="np" initial={defaultBCASettings.np}
-                min={1} max={10000} step={1}
-              />
-              <NumericField
-                label="Коэффициент интенсивности мутации"
-                name="ci" initial={defaultBCASettings.ci}
-                min={0.01} max={100} step={0.01}
-              />
-              <NumericField
-                label="Количество итераций без улучшений"
-                name="ni" initial={defaultBCASettings.ni}
-                min={1} max={2000} step={1}
-              />
-            </>
-          )}
-          {algorithm === "ga" && (
-            <>
-              <SelectField
-                defaultValue="deVries"
-                valuesLabels={gaValuesLabels}
-              />
-              <NumericField
-                label="Количество хросом в популяции"
-                name="np" initial={defaultGASettings.np}
-                min={1} max={10000} step={1}
-              />
-              <NumericField
-                label="Вероятность мутации"
-                name="mp" initial={defaultGASettings.mp}
-                min={0.01} max={1} step={0.01}
-              />
-              <NumericField
-                label="Количество итераций без улучшений"
-                name="ni" initial={defaultGASettings.ni}
-                min={1} max={2000} step={1}
-              />
-            </>
-          )}
-          <Button
-            variant="contained" color="primary" id="start-button" type="submit"
-            disabled={isSearching}
-          >
-            Запустить
-          </Button>
-        </form>
-      </MenuPaper>
+    <Floater open={open} onClose={onClose}>
+      <OuterPaper elevation={3}>
+        <Title>Поиск упаковки</Title>
+        <InnerPaper elevation={0}>
+          <CustomForm onSubmit={handleStart}>
+            <SelectInput
+              defaultValue={initialAlgorithm}
+              valuesLabels={algorithmValuesLabels}
+              onChange={handleAlgorithmChange}
+            />
+            {algorithm === "bca" && (
+              <>
+                <NumericInput
+                  label="Количество антител в популяции"
+                  name="np" initial={defaultBCASettings.np}
+                  min={1} max={10000} step={1}
+                />
+                <NumericInput
+                  label="Коэффициент интенсивности мутации"
+                  name="ci" initial={defaultBCASettings.ci}
+                  min={0.01} max={100} step={0.01}
+                />
+                <NumericInput
+                  label="Количество итераций без улучшений"
+                  name="ni" initial={defaultBCASettings.ni}
+                  min={1} max={2000} step={1}
+                />
+              </>
+            )}
+            {algorithm === "ga" && (
+              <>
+                <SelectInput
+                  defaultValue="deVries"
+                  valuesLabels={gaValuesLabels}
+                />
+                <NumericInput
+                  label="Количество хросом в популяции"
+                  name="np" initial={defaultGASettings.np}
+                  min={1} max={10000} step={1}
+                />
+                <NumericInput
+                  label="Вероятность мутации"
+                  name="mp" initial={defaultGASettings.mp}
+                  min={0.01} max={1} step={0.01}
+                />
+                <NumericInput
+                  label="Количество итераций без улучшений"
+                  name="ni" initial={defaultGASettings.ni}
+                  min={1} max={2000} step={1}
+                />
+              </>
+            )}
+            <CustomButton
+              variant="contained" color="primary" type="submit"
+              disabled={isSearching}
+            >
+              Запустить
+            </CustomButton>
+          </CustomForm>
+        </InnerPaper>
+      </OuterPaper>
 
-      <MenuPaperHideable hidden={hidden} className={hidden ? "" : "algorithm-result"}>
-        <>
-          <Iteration/>
-          <Value/>
-          <PackingOrder/>
-          <Button
-            variant="contained" color="primary" id="show-packed-button"
-            onClick={handleOpenPackedButtonClick}
-          >
-            Показать упакованные грузы
-          </Button>
-        </>
-      </MenuPaperHideable>
+      <ResultFloater open={outputOpen}>
+        <OuterPaper elevation={3}>
+          <ResultInnerPaper elevation={0}>
+            <Iteration/>
+            <Value/>
+            <PackingOrder/>
+            <CustomButton
+              variant="contained" color="primary"
+              onClick={handleOpenPackedButtonClick}
+            >
+              Показать упакованные грузы
+            </CustomButton>
+          </ResultInnerPaper>
+        </OuterPaper>
+      </ResultFloater>
 
     </Floater>
   )
 })
-
-interface NumericFieldProps {
-  label: string
-  name: string
-  initial: number
-  min: number
-  max: number
-  step: number
-}
-
-function NumericField({label, name, initial, min, max, step}: NumericFieldProps) {
-  const [value, setValue] = useState(initial)
-  const inputProps = useMemo(
-    () => ({inputProps: {min, max, step}}),
-    [min, max, step]
-  )
-  const handleChange = useCallback(
-    event => setValue(Number.isInteger(step)
-      ? integerInBounds(event, initial, min, max)
-      : floatInBounds(event, initial, min, max)),
-    [initial, min, max, step]
-  )
-  return (
-    <TextField
-      className="text-field"
-      type="number"
-      label={label}
-      name={name} value={value}
-      InputProps={inputProps}
-      onChange={handleChange}
-    />
-  )
-}
-
-interface SelectFieldProps {
-  defaultValue: string
-  valuesLabels: Array<[string, string]>
-  onChange?: (newValue: string) => void
-}
-
-function SelectField({defaultValue, valuesLabels, onChange}: SelectFieldProps) {
-  const [value, setValue] = useState(defaultValue)
-  const handleChange = (event: { target: { value: any; }; }) => {
-    const newValue = event.target.value;
-    setValue(value)
-    if (onChange === undefined) return;
-    onChange(newValue)
-  }
-  return (
-    <Select
-      className="selector"
-      defaultValue={defaultValue}
-      onChange={handleChange}
-    >
-      {valuesLabels.map((
-        [value, label]) =>
-        <MenuItem key={value} value={value}>{label}</MenuItem>
-      )}
-    </Select>
-  )
-}
 
 function Iteration() {
   const [isSearching, iteration] = useStore(
@@ -239,6 +200,12 @@ function Value() {
   return <p>Значение ЦФ: {value}</p>
 }
 
+const PackedSpan = styled("span")``
+
+const NotPackedSpan = styled("span")`
+  color: gray;
+`
+
 function PackingOrder() {
   const [solution, packed,] = useStore(s =>
       [s.searchResult.solution, s.searchResult.packed, s.searchResult.value],
@@ -249,8 +216,8 @@ function PackingOrder() {
       [
       {solution.map((
         {index, rotation}, i) => (i <= packed.length - 1)
-        ? <span key={i} className="packed">{`(${index + 1}, ${Rotation[rotation]})`}</span>
-        : <span key={i} className="not-packed">{`(${index + 1}, ${Rotation[rotation]})`}</span>
+        ? <PackedSpan key={i}>{`(${index + 1}, ${Rotation[rotation]})`}</PackedSpan>
+        : <NotPackedSpan key={i}>{`(${index + 1}, ${Rotation[rotation]})`}</NotPackedSpan>
       )}
       ]
     </p>
