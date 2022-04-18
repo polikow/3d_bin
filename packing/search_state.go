@@ -59,10 +59,16 @@ func (s *searchState) update(solution Solution, value float64) {
 
 // result возвращает результат поиска.
 func (s searchState) result() SearchResult {
+	copyBestSolutionFound := make(Solution, len(s.bestSolutionFound))
+	copy(copyBestSolutionFound, s.bestSolutionFound)
+
+	copyNestPackedFound := make([]BlockPosition, len(s.bestPackedFound))
+	copy(copyNestPackedFound, s.bestPackedFound)
+
 	return SearchResult{
 		Iteration: s.iterationsPassed,
 		Value:     s.bestValueFound,
-		Solution:  s.bestSolutionFound,
-		Packed:    s.bestPackedFound,
+		Solution:  copyBestSolutionFound,
+		Packed:    copyNestPackedFound,
 	}
 }
