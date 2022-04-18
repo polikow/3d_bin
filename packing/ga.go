@@ -114,6 +114,13 @@ func (g *GA) Done() bool {
 	return g.iterationsNoImprovement >= g.settings.Ni || g.bestValueFound == 1
 }
 
+func (g *GA) Progress() Progress {
+	return Progress{
+		StepsDone:  g.iterationsPassed,
+		StepsTotal: g.iterationsPassed + g.settings.Ni - g.iterationsNoImprovement,
+	}
+}
+
 // runIteration выполняет одну итерацию алгоритма.
 func (g *GA) runIteration() {
 	if g.iterationsPassed == 0 {

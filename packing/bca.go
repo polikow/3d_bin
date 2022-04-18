@@ -109,6 +109,13 @@ func (b *BCA) Done() bool {
 	return b.iterationsNoImprovement >= b.settings.Ni || b.bestValueFound == 1
 }
 
+func (b *BCA) Progress() Progress {
+	return Progress{
+		StepsDone:  b.iterationsPassed,
+		StepsTotal: b.iterationsPassed + b.settings.Ni - b.iterationsNoImprovement,
+	}
+}
+
 // runIteration выполняет одну итерацию алгоритма.
 func (b *BCA) runIteration() {
 	if b.iterationsPassed == 0 {
