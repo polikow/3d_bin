@@ -17,10 +17,13 @@ const CustomInnerPaper = styled(InnerPaper)`
   padding: 0;
 `
 
-export default ({open, onClose}: PackedProps) => {
+const Packed = React.memo(({open, onClose}: PackedProps) => {
   const [packed, solution,] = useStore(
     s => [s.searchResult.packed, s.searchResult.solution, s.searchResult.value],
-    ([, , prevValue], [, , nextValue]) => prevValue === nextValue
+    ([, , prevValue], [, , nextValue]) => {
+      // prevents render when it is not visible
+      return open ? prevValue === nextValue : true
+    }
   )
   const [page, setPage] = useState(0)
   const handlePageChange = useCallback(
@@ -77,4 +80,6 @@ export default ({open, onClose}: PackedProps) => {
       </OuterPaper>
     </Floater>
   )
-}
+})
+
+export default Packed
