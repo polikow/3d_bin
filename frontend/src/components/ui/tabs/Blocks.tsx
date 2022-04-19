@@ -1,4 +1,4 @@
-import React, {useCallback, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {useStore} from "../../../store/store";
 import {
   Button,
@@ -18,8 +18,8 @@ import ButtonAccept from "../ButtonAccept";
 import ButtonAdd from "../ButtonAdd";
 import ButtonCreate from "../ButtonCreate";
 import {Block} from "../../../wailsjs/go/models"
-import {rowsPerPage} from "../../../consts";
-import {compareStateSlices} from "../../../store/compare"
+import {blocksPerRow, rowsPerPage} from "../../../consts";
+import {compareAlwaysTrue, compareState} from "../../../store/compare"
 import OuterPaper from "../OuterPaper";
 import Title from "../Title";
 import InnerPaper from "../InnerPaper";
@@ -50,7 +50,7 @@ const BottomButtonsWrapper = styled("div")`
 `
 
 export default React.memo(({open, onClose}: BlocksProps) => {
-  const [blocks] = useStore(s => [s.blocks], compareStateSlices)
+  const blocks = useStore(s => s.blocks, compareState)
   const [
     replaceBlocks, addNewBlock, removeBlockByIndex,
     changeBlockByIndex, generateRandomBlocks
@@ -58,7 +58,7 @@ export default React.memo(({open, onClose}: BlocksProps) => {
       s.replaceBlocks, s.addNewBlock, s.removeBlockByIndex,
       s.changeBlockByIndex, s.generateRandomBlocks
     ],
-    compareStateSlices
+    compareAlwaysTrue
   )
   const [indexChanging, setIndexChanging] = useState<number | null>(null)
   const [page, setPage] = useState(0)
@@ -67,6 +67,7 @@ export default React.memo(({open, onClose}: BlocksProps) => {
     (event, newPage) => setPage(newPage),
     [blocks]
   )
+  const onRowsPerPageChange = useCallback(() => setPage(0), [])
   const onChangeChangeableRow = useCallback(
     (index: number, block: Block) => {
       setIndexChanging(null)
@@ -75,10 +76,37 @@ export default React.memo(({open, onClose}: BlocksProps) => {
     []
   )
   const onClickButtonAdd = useCallback(() => addNewBlock({w: 1, h: 1, l: 1}), [])
-  const onRemoveAllBlocks = useCallback(() => replaceBlocks([]), [])
-  const onGenerateBlocks = useCallback(() => generateRandomBlocks(), [])
-
-  const isChanging = indexChanging !== null
+  const onRemoveAllBlocks = useCallback(
+    () => {
+      replaceBlocks([])
+      setPage(0)
+    },
+    []
+  )
+  const onGenerateBlocks = useCallback(
+    () => {
+      generateRandomBlocks()
+      setPage(0)
+    },
+    []
+  )
+  const removeBlockAtIndex = useCallback(
+    (index: number) => {
+      removeBlockByIndex(index)
+      const maxPageAfterRemoval = Math.max(Math.ceil((blocks.length - 1) / rowsPerPage) - 1, 0)
+      const pageOfRemovedBlock = Math.floor(index / blocksPerRow)
+      if (pageOfRemovedBlock > maxPageAfterRemoval) {
+        setPage(prevPage => prevPage - 1)
+      }
+    },
+    [blocks]
+  )
+  // переключается на 1ю страницу в том случае, если грузы изменились при закрытой вкладке
+  useEffect(() => {
+    if (!open && page !== 0) {
+      setPage(0)
+    }
+  }, [blocks])
 
   return (
     <Floater open={open} onClose={onClose}>
@@ -109,7 +137,7 @@ export default React.memo(({open, onClose}: BlocksProps) => {
                               key={index}
                               index={index} block={block}
                               onChange={setIndexChanging}
-                              onRemove={removeBlockByIndex}
+                              onRemove={removeBlockAtIndex}
                             />
                           )
                         case (index === indexChanging):
@@ -126,7 +154,7 @@ export default React.memo(({open, onClose}: BlocksProps) => {
                               key={index}
                               index={index} block={block}
                               onChange={setIndexChanging}
-                              onRemove={removeBlockByIndex}
+                              onRemove={removeBlockAtIndex}
                               showChange={false}
                             />
                           )
@@ -140,6 +168,7 @@ export default React.memo(({open, onClose}: BlocksProps) => {
                     page={page}
                     count={blocks.length}
                     onPageChange={onPageChange}
+                    onRowsPerPageChange={onRowsPerPageChange}
                   />
                 </TableRow>
               </TableBody>
@@ -147,7 +176,7 @@ export default React.memo(({open, onClose}: BlocksProps) => {
           </TableContainer>
 
           <BottomButtonsWrapper>
-            <ButtonAdd disabled={isChanging} onClick={onClickButtonAdd}>
+            <ButtonAdd disabled={indexChanging !== null} onClick={onClickButtonAdd}>
               Добавить новый груз
             </ButtonAdd>
             <Button variant="contained" color="primary" onClick={onRemoveAllBlocks}>
