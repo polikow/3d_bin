@@ -133,16 +133,18 @@ export default React.memo(({open, onClose}: BlocksProps) => {
                       }
                     })
                 }
+                <TableRow>
+                  <CustomTablePagination
+                    rowsPerPageOptions={[rowsPerPage]}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    count={blocks.length}
+                    onPageChange={onPageChange}
+                  />
+                </TableRow>
               </TableBody>
             </Table>
           </TableContainer>
-          <CustomTablePagination
-            rowsPerPageOptions={[rowsPerPage]}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            count={blocks.length}
-            onPageChange={onPageChange}
-          />
 
           <BottomButtonsWrapper>
             <ButtonAdd disabled={isChanging} onClick={onClickButtonAdd}>

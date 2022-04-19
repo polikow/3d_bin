@@ -65,17 +65,18 @@ const Packed = React.memo(({open, onClose}: PackedProps) => {
                       </TableRow>
                     );
                   })}
+                <TableRow>
+                  <TablePagination
+                    rowsPerPageOptions={[rowsPerPage]}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    count={packed.length}
+                    onPageChange={handlePageChange}
+                  />
+                </TableRow>
               </TableBody>
             </Table>
           </TableContainer>
-          <TablePagination
-            component="div"
-            rowsPerPageOptions={[rowsPerPage]}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            count={packed.length}
-            onPageChange={handlePageChange}
-          />
         </CustomInnerPaper>
       </OuterPaper>
     </Floater>
