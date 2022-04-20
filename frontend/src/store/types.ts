@@ -1,5 +1,12 @@
 import {Vector3} from "@react-three/fiber";
-import {BCASettings, Block, BlockPosition, Container, GASettings, SearchResult} from "../wailsjs/go/models"
+import {
+  BCASettings,
+  Block,
+  BlockPosition,
+  Container,
+  GASettings,
+  MultipleSearchResult,
+} from "../wailsjs/go/models"
 
 export type Store =
   CameraState & CameraActions &
@@ -30,6 +37,8 @@ export type SettingsState = {
   onlyEdges: boolean
   targetContainer: boolean
   isGridVisible: boolean
+
+  cpus: number
 }
 
 export type SettingsActions = {
@@ -40,11 +49,13 @@ export type SettingsActions = {
   setDebugMode: (isDebugMode: boolean) => void
   setOnlyEdges: (onlyEdges: boolean) => void
   setGridVisible: (isGridVisible: boolean) => void
+
+  setCPUs: (cpus: number) => void
 }
 
 export type SearchState = {
   isSearching: boolean
-  searchResult: SearchResult
+  searchResult: MultipleSearchResult
 }
 
 export type SearchActions = {
@@ -54,8 +65,7 @@ export type SearchActions = {
   searchStarted: () => void
   searchFailedToStart: (reason: any) => void
 
-  setSearchResult: (searchResult: SearchResult) => void
-  setFinalResult: (searchResult: SearchResult) => void
+  setSearchResult: (searchResult: MultipleSearchResult) => void
 
   saveSolution: () => void
   loadSolution: () => void

@@ -5,6 +5,13 @@ const go = {
   "main": {
     "App": {
       /**
+       * AvailableCPUs
+       * @returns {Promise<number>}  - Go Type: int
+       */
+      "AvailableCPUs": () => {
+        return window.go.main.App.AvailableCPUs();
+      },
+      /**
        * Generate
        * @param {models.Container} arg1 - Go Type: packing.Container
        * @returns {Promise<Array<models.Block>|Error>}  - Go Type: []packing.Block
@@ -30,19 +37,21 @@ const go = {
        * RunBCA
        * @param {models.Task} arg1 - Go Type: packing.Task
        * @param {models.BCASettings} arg2 - Go Type: packing.BCASettings
+       * @param {number} arg3 - Go Type: int
        * @returns {Promise<Error>}  - Go Type: error
        */
-      "RunBCA": (arg1, arg2) => {
-        return window.go.main.App.RunBCA(arg1, arg2);
+      "RunBCA": (arg1, arg2, arg3) => {
+        return window.go.main.App.RunBCA(arg1, arg2, arg3);
       },
       /**
        * RunGA
        * @param {models.Task} arg1 - Go Type: packing.Task
        * @param {models.GASettings} arg2 - Go Type: packing.GASettings
+       * @param {number} arg3 - Go Type: int
        * @returns {Promise<Error>}  - Go Type: error
        */
-      "RunGA": (arg1, arg2) => {
-        return window.go.main.App.RunGA(arg1, arg2);
+      "RunGA": (arg1, arg2, arg3) => {
+        return window.go.main.App.RunGA(arg1, arg2, arg3);
       },
       /**
        * SaveSearchResult
@@ -59,6 +68,14 @@ const go = {
        */
       "SaveTask": (arg1) => {
         return window.go.main.App.SaveTask(arg1);
+      },
+      /**
+       * TSFix
+       * @param {models.MultipleSearchResult} arg1 - Go Type: packing.MultipleSearchResult
+       * @returns {Promise<void>} 
+       */
+      "TSFix": (arg1) => {
+        return window.go.main.App.TSFix(arg1);
       },
     },
   },

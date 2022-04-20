@@ -1,15 +1,19 @@
 import React, {useCallback, useState} from "react";
 import {useStore} from "../../../store/store";
 import {Button, styled} from "@mui/material";
-import Floater from "../Floater";
-import {Rotation, Tab} from "../../../store/types";
+import {Tab} from "../../../store/types";
 import {BCASettings, GASettings} from "../../../wailsjs/go/models";
-import {compareAlwaysTrue, compareState, compareStateSlices} from "../../../store/compare";
+import {compareAlwaysTrue, compareState} from "../../../store/compare";
+import Floater from "../Floater";
 import Title from "../Title";
 import OuterPaper from "../OuterPaper";
 import InnerPaper from "../InnerPaper";
 import NumericInput from "../NumericInput";
 import SelectInput from "../SelectInput";
+import Progress from "../Progress";
+import BoldSpan from "../BoldSpan";
+import PackingOrder from "../PackingOrder";
+import TextTypography from "../TextTypography";
 
 type Algorithm = "bca" | "ga"
 
@@ -54,13 +58,12 @@ const CustomButton = styled(Button)`
 
 const ResultFloater = styled(Floater)`
   position: initial;
-  width: fit-content;
+  width: 100%;
 `
 
 const ResultInnerPaper = styled(InnerPaper)`
   max-width: 280px;
   max-height: 376px;
-  overflow: scroll;
 `
 
 export default React.memo(({open, onClose}: AlgorithmProps) => {
@@ -167,15 +170,24 @@ export default React.memo(({open, onClose}: AlgorithmProps) => {
 
       <ResultFloater open={outputOpen}>
         <OuterPaper elevation={3}>
+          <Title>Прогресс поиска</Title>
           <ResultInnerPaper elevation={0}>
-            <Iteration/>
+            <Progress/>
+          </ResultInnerPaper>
+        </OuterPaper>
+      </ResultFloater>
+
+      <ResultFloater open={outputOpen}>
+        <OuterPaper elevation={3}>
+          <Title>Найденное решение</Title>
+          <ResultInnerPaper elevation={0}>
             <Value/>
             <PackingOrder/>
             <CustomButton
               variant="contained" color="primary"
               onClick={handleOpenPackedButtonClick}
             >
-              Показать упакованные грузы
+              Подробнее об упаковке...
             </CustomButton>
           </ResultInnerPaper>
         </OuterPaper>
@@ -185,41 +197,11 @@ export default React.memo(({open, onClose}: AlgorithmProps) => {
   )
 })
 
-function Iteration() {
-  const [isSearching, iteration] = useStore(
-    s => [s.isSearching, s.searchResult.iteration],
-    compareStateSlices
-  )
-  return isSearching
-    ? <p>Текущая итерация: {iteration}</p>
-    : <p>Поиск завершен на итерации: {iteration}</p>
-}
-
 function Value() {
   const value = useStore(s => s.searchResult.value, compareState)
-  return <p>Значение ЦФ: {value}</p>
-}
-
-const PackedSpan = styled("span")``
-
-const NotPackedSpan = styled("span")`
-  color: gray;
-`
-
-function PackingOrder() {
-  const [solution, packed,] = useStore(s =>
-      [s.searchResult.solution, s.searchResult.packed, s.searchResult.value],
-    ([, , prevValue], [, , nextValue]) => prevValue === nextValue
-  )
   return (
-    <p>Порядок упаковки:<br/>
-      [
-      {solution.map((
-        {index, rotation}, i) => (i <= packed.length - 1)
-        ? <PackedSpan key={i}>{`(${index + 1}, ${Rotation[rotation]})`}</PackedSpan>
-        : <NotPackedSpan key={i}>{`(${index + 1}, ${Rotation[rotation]})`}</NotPackedSpan>
-      )}
-      ]
-    </p>
+    <TextTypography>
+      Значение ЦФ: <BoldSpan>{value}</BoldSpan>
+    </TextTypography>
   )
 }

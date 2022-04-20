@@ -4,7 +4,7 @@ import * as DEFAULT from "./defaults"
 import {blockPositionForBlockAtIndex, cargoAndSpace, doesBlockFitInside, spaceNeedsToBeShrunk} from "./cargo";
 import {cargoCamera, containerCamera} from "./camera";
 import {log, logError, replaced, withoutIndex, withoutLast} from "./utils";
-import {Task} from "../wailsjs/go/models";
+import {MultipleSearchResult, SearchResult, Task} from "../wailsjs/go/models";
 
 export const useStore = create<Store>((set, get) => ({
   ...DEFAULT.state,
@@ -126,17 +126,17 @@ export const useStore = create<Store>((set, get) => ({
 
   startBCA: (settings) => {
     log(settings)
-    const {container, blocks, searchStarted, searchFailedToStart} = get()
+    const {container, blocks, cpus, searchStarted, searchFailedToStart} = get()
     const task = {container, blocks} as Task
-    window.go.main.App.RunBCA(task, settings)
+    window.go.main.App.RunBCA(task, settings, cpus)
       .then(searchStarted)
       .catch(searchFailedToStart)
   },
   startGA: (settings) => {
     log(settings)
-    const {container, blocks, searchStarted, searchFailedToStart} = get()
+    const {container, blocks, cpus, searchStarted, searchFailedToStart} = get()
     const task = {container, blocks} as Task
-    window.go.main.App.RunGA(task, settings)
+    window.go.main.App.RunGA(task, settings, cpus)
       .then(searchStarted)
       .catch(searchFailedToStart)
   },
@@ -149,9 +149,10 @@ export const useStore = create<Store>((set, get) => ({
     set({isSearching: false})
   },
   setSearchResult: searchResult => set({searchResult}),
-  setFinalResult: searchResult => set({searchResult}),  // TODO implement
   saveSolution: () => {
-    window.go.main.App.SaveSearchResult(get().searchResult)
+    window.go.main.App.SaveSearchResult(
+      SearchResult.createFrom(get().searchResult)
+    )
       .then(log)
       .catch(logError)
   },
@@ -159,7 +160,12 @@ export const useStore = create<Store>((set, get) => ({
     window.go.main.App.LoadSearchResult()
       .then(searchResult => {
         if (searchResult instanceof Error) return logError(searchResult)
-        set({searchResult})
+        set({
+          searchResult: MultipleSearchResult.createFrom({
+            ...searchResult,
+            statuses: [],
+          })
+        })
       })
       .catch(logError)
   },
@@ -203,6 +209,8 @@ export const useStore = create<Store>((set, get) => ({
   setDebugMode: isDebugMode => set({isDebugMode}),
   setOnlyEdges: onlyEdges => set({onlyEdges}),
   setGridVisible: isGridVisible => set({isGridVisible}),
+
+  setCPUs: cpus => set({cpus}),
 }))
 
 const handleResult = (data: any) => {

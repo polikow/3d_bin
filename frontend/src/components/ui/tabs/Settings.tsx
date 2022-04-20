@@ -1,4 +1,4 @@
-import React, {useCallback} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {useStore} from "../../../store/store";
 import {Button} from "@mui/material";
 import Floater from "../Floater";
@@ -39,6 +39,13 @@ export default React.memo(({open, onClose}: SettingsProps) => (
       <InnerPaper elevation={0}>
         <GridSwitch/>
         <LabelSizeSlider/>
+      </InnerPaper>
+    </OuterPaper>
+
+    <OuterPaper elevation={3}>
+      <Title>Вычисления</Title>
+      <InnerPaper elevation={0}>
+        <NumCPUSelector/>
       </InnerPaper>
     </OuterPaper>
 
@@ -160,6 +167,31 @@ function LabelSizeSlider() {
       min={1} max={30} step={1}
       value={labelScale}
       onChange={onSliderChange}
+    />
+  )
+}
+
+function NumCPUSelector() {
+  const [cpus, setCPUs] = useStore(s => [s.cpus, s.setCPUs], compareStateSlices)
+  const [cpusAvailable, setCPUsAvailable] = useState(1)
+  useEffect(() => {
+    window.go.main.App.AvailableCPUs().then((cpus) => {
+      if (cpus > 1) {
+        setCPUsAvailable(cpus)
+        setCPUs(Math.ceil(cpus * 0.65))
+      }
+    })
+  }, [])
+  const onChange = useCallback((_, value) => setCPUs(value), [])
+  return (
+    <Slider
+      label="Число используемых потоков"
+      marks={true}
+      valueLabelDisplay={true}
+      disabled={cpusAvailable === 1}
+      min={1} max={cpusAvailable} step={1}
+      value={cpus}
+      onChange={onChange}
     />
   )
 }

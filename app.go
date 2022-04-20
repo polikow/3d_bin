@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"path/filepath"
+	goruntime "runtime"
 	"strings"
 	"time"
 )
@@ -47,36 +48,48 @@ func (a *App) recover() error {
 }
 
 // RunBCA инициализирует работу иммунного алгоритма для этой задачи.
-func (a *App) RunBCA(task packing.Task, settings packing.BCASettings) (err error) {
+func (a *App) RunBCA(task packing.Task, settings packing.BCASettings, instances int) (err error) {
 	defer func() { err = a.recover() }()
-	algorithm := packing.NewBCA(task, settings)
-	go a.evaluate(algorithm)
-	return err
+
+	algorithms := make([]packing.SearchAlgorithmWithProgress, 0, instances)
+	for i := 0; i < instances; i++ {
+		algorithms = append(algorithms, packing.NewBCA(task, settings))
+	}
+
+	go a.evaluate(algorithms)
+
+	return
 }
 
 // RunGA инициализирует работу генетического алгоритма для этой задачи.
-func (a *App) RunGA(task packing.Task, settings packing.GASettings) (err error) {
+func (a *App) RunGA(task packing.Task, settings packing.GASettings, instances int) (err error) {
 	defer func() { err = a.recover() }()
-	algorithm := packing.NewGA(task, settings)
-	go a.evaluate(algorithm)
-	return err
+
+	algorithms := make([]packing.SearchAlgorithmWithProgress, 0, instances)
+	for i := 0; i < instances; i++ {
+		algorithms = append(algorithms, packing.NewGA(task, settings))
+	}
+
+	go a.evaluate(algorithms)
+
+	return
 }
 
 // evaluate отсылает результаты работы алгоритма.
-func (a *App) evaluate(algorithm packing.SearchAlgorithm) {
+func (a *App) evaluate(algorithms []packing.SearchAlgorithmWithProgress) {
 	const maxEventsPerSecond = 60
 	const minTimeBetweenEvents = time.Second / maxEventsPerSecond
 
 	// время, после которого можно вызывать следующее событие с результатом
-	nextAllowedEventTime := time.Now()
-	result := packing.SearchResult{}
+	allowedTime := time.Now()
 
-	for !algorithm.Done() {
-		result = algorithm.Run()
-		if time.Now().After(nextAllowedEventTime) {
-			nextAllowedEventTime = time.Now().Add(minTimeBetweenEvents)
+	// получение и обработка результатов
+	result := packing.MultipleSearchResult{}
+	for result = range packing.EvaluateMultiple(algorithms) {
+		if time.Now().After(allowedTime) {
+			allowedTime = time.Now().Add(minTimeBetweenEvents)
 			runtime.EventsEmit(a.ctx, "result", result)
-			runtime.LogInfo(a.ctx, fmt.Sprintf("iteration %d = %g", result.Iteration, result.Value))
+			runtime.LogInfo(a.ctx, fmt.Sprintf("StepsDone %d = %g", result.Iteration, result.Value))
 		}
 	}
 	runtime.EventsEmit(a.ctx, "result", result)
@@ -190,3 +203,9 @@ func (a *App) LoadSearchResult() (packing.SearchResult, error) {
 func (a *App) Generate(c packing.Container) ([]packing.Block, error) {
 	return packing.GenerateRandomBlocks(packing.NewRandomSeeded(), c), nil
 }
+
+func (a *App) AvailableCPUs() int {
+	return goruntime.NumCPU()
+}
+
+func (a *App) TSFix(_ packing.MultipleSearchResult) {}

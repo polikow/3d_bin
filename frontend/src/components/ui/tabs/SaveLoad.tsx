@@ -16,7 +16,6 @@ const CustomInnerPaper = styled(InnerPaper)`
   max-width: 280px;
 
   button {
-    text-transform: none;
     margin: 7px 0;
   }
 

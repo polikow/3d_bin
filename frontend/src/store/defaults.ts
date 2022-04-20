@@ -11,7 +11,7 @@ import {
 } from "./types";
 import {cargoAndSpace} from "./cargo";
 import {containerCamera} from "./camera";
-import {Container, SearchResult} from "../wailsjs/go/models"
+import {Container, MultipleSearchResult} from "../wailsjs/go/models"
 
 export const container: Container = {w: 2, h: 2, l: 2}
 
@@ -29,22 +29,25 @@ export const settingsState: SettingsState = {
   onlyEdges: false,
   targetContainer: true,
   isGridVisible: true,
+
+  cpus: 1
 }
 
-export const searchResult = SearchResult.createFrom({
+export const searchResult = MultipleSearchResult.createFrom({
   iteration: 0,
   value: 0,
   solution: [],
   packed: [],
+  statuses: [],
 })
 
 export const searchState: SearchState = {
   isSearching: false,
-  searchResult: searchResult
+  searchResult: searchResult,
 }
 
 export const uiState: UIState = {
-  tab: Tab.Nothing
+  tab: Tab.Settings
 }
 
 export const containerState: ContainerState = {
