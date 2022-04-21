@@ -56,7 +56,7 @@ function HeightTextField() {
   const setHeight = useCallback(e => setContainerSide("h", bounds(e)), [])
   return (
     <CustomTextField
-      variant="standard" type="number" label="Ширина"
+      variant="standard" type="number" label="Высота"
       InputProps={textInputProps}
       value={height}
       onChange={setHeight}
