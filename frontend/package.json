@@ -47,6 +47,7 @@
     "@types/stats.js": "^0.17.0",
     "@types/three": "^0.138.0",
     "cra-build-watch": "^3.4.0",
+    "raw-loader": "^4.0.2",
     "typescript": "^4.6.2"
   }
 }

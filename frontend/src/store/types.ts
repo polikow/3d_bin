@@ -1,4 +1,4 @@
-import {Vector3} from "@react-three/fiber";
+import {Vector3} from "three"
 import {
   BCASettings,
   Block,
@@ -29,7 +29,7 @@ export type CameraActions = {
 }
 
 export type SettingsState = {
-  opacity: number
+  transparency: number
   labelScale: number
 
   isColorful: boolean
@@ -42,7 +42,7 @@ export type SettingsState = {
 }
 
 export type SettingsActions = {
-  setOpacity: (opacity: number) => void
+  setTransparency: (transparency: number) => void
   setLabelScale: (labelScale: number) => void
 
   setColorful: (isColorful: boolean) => void

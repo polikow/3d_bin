@@ -1,32 +1,20 @@
-import React from "react";
+import React, {useEffect, useRef} from "react";
 import {useStore} from "../../store/store";
-import Block from "./Block";
-import {colors} from "../../consts";
-import {compareStateSlices} from "../../store/compare";
+import BlockGroup from "./BlockGroup";
 
 export default () => {
-  const [opacity, isColorful, onlyEdges] = useStore(
-    s => [s.opacity, s.isColorful, s.onlyEdges],
-    compareStateSlices
-  )
-  const [packed,] = useStore(
-    s => [s.searchResult.packed, s.searchResult.value],
-    ([, prevValue], [, nextValue]) => prevValue === nextValue
-  )
-
-  return (
-    <>
-      {
-        packed.map(({p1, p2}, i) =>
-          <Block
-            key={i} p1={p1} p2={p2}
-            gap={onlyEdges}
-            color={isColorful ? colors[i % colors.length] : "grey"}
-            opacity={1 - opacity}
-            onlyEdges={onlyEdges}
-          />
-        )
-      }
-    </>
-  );
+  const ref = useRef<BlockGroup>(null!)
+  useEffect(() => {
+    useStore.subscribe(s => s.searchResult, result => {
+      console.log("Blocks positions update")
+      ref.current.setPositions(result.packed)
+    }, {equalityFn: (a, b) => a.value === b.value})
+    useStore.subscribe(s => s.transparency, v => ref.current.setTransparency(v))
+    useStore.subscribe(s => s.isColorful, v => ref.current.setIsColorful(v))
+    useStore.subscribe(s => s.onlyEdges, v => ref.current.setOnlyEdges(v))
+  }, [])
+  return <primitive
+    ref={ref}
+    object={BlockGroup.createFrom(useStore.getState().searchResult.packed)}
+  />
 }

@@ -21,7 +21,7 @@ export const cameraState: CameraState = {
 }
 
 export const settingsState: SettingsState = {
-  opacity: 0.3,
+  transparency: 0.3,
   labelScale: 8,
 
   isColorful: true,
@@ -51,7 +51,7 @@ export const uiState: UIState = {
 }
 
 export const containerState: ContainerState = {
-  container: {w: 2, h: 2, l: 2}
+  container
 }
 
 export const blocksState: BlocksState = {

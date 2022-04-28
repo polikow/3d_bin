@@ -1,4 +1,5 @@
 import React from "react";
+import {colors} from "./consts";
 
 export type Event = React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement> | undefined;
 
@@ -26,3 +27,5 @@ export function floatInBounds(event: Event, defaultValue: number, min: number, m
   if (value > max) return max
   return value
 }
+
+export const colorOf = (index: number) => colors[index % colors.length]

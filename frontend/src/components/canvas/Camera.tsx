@@ -1,22 +1,23 @@
-import React from "react";
+import React, {useEffect, useRef} from "react";
 import {useStore} from "../../store/store";
-import {OrbitControls, PerspectiveCamera} from "@react-three/drei";
-import {compareStateSlices} from "../../store/compare";
+import {PerspectiveCamera} from "@react-three/drei";
+import * as THREE from "three"
 
-export default () => {
-  const [fov, position, target] = useStore(
-    s => [s.fov, s.position, s.target],
-    compareStateSlices
-  )
+const {fov, position} = useStore.getState()
+const far = 1000000
+
+const Camera = () => {
+  const camera = useRef<THREE.PerspectiveCamera>(null!)
+  useEffect(() => {
+    useStore.subscribe(s => s.fov, fov => {
+      camera.current.fov = fov
+      camera.current.updateProjectionMatrix()
+    })
+    useStore.subscribe(s => s.position, ({x, y, z}) => camera.current.position.set(x, y, z))
+  }, [])
   return (
-    <>
-      <PerspectiveCamera
-        makeDefault
-        fov={fov}
-        position={position}
-        far={1000000}
-      />
-      <OrbitControls target={target}/>
-    </>
+    <PerspectiveCamera makeDefault ref={camera} fov={fov} position={position} far={far}/>
   )
-};
+}
+
+export default Camera

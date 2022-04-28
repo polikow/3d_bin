@@ -1,45 +1,30 @@
-import React, {useEffect} from "react";
-import {useStore} from "../../store/store";
 import {Canvas} from "@react-three/fiber";
 import DebugTools from "./Debug";
 import Light from "./Light";
-import Camera from "./Camera";
 import Container from "./Container";
 import Blocks from "./Blocks";
+import Camera from "./Camera"
+import Controls from "./Controls"
+import SceneComponent from "./Scene";
 import Cargo from "./Cargo";
 import {Scene} from "../../store/types";
-import {compareState} from "../../store/compare";
 
-export default () => {
-  useEffect(() => console.log("Canvas render"))
+export default () => (
+  <Canvas>
+    <Camera/>
+    <Controls/>
+    <Light/>
 
-  return (
-    <Canvas>
-      <Camera/>
-      <DebugTools/>
-      <Light/>
+    <SceneComponent scene={Scene.Container}>
+      <Container/>
+      <Blocks/>
+    </SceneComponent>
 
-      {/*Основная сцена*/}
-      <MainScene/>
-      {/*Сцена с грузами*/}
-      <CargoScene/>
+    <SceneComponent scene={Scene.Cargo}>
+      <Cargo/>
+    </SceneComponent>
 
-    </Canvas>
-  );
-}
+    <DebugTools/>
 
-function MainScene() {
-  const scene = useStore(s => s.scene, compareState)
-
-  return scene == Scene.Container
-    ? <> <Blocks/> <Container/> </>
-    : <></>
-}
-
-function CargoScene() {
-  const scene = useStore(s => s.scene, compareState)
-
-  return scene == Scene.Cargo
-    ? <Cargo/>
-    : <></>
-}
+  </Canvas>
+)

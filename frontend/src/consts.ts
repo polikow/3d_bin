@@ -4,6 +4,8 @@ export const gap = 2
 export const colors =
   ["violet", "indigo", "blue", "green", "yellow", "orange", "red"].reverse()
 
+export const defaultColor = "grey"
+
 // количество строк в таблицах
 export const rowsPerPage = 10
 

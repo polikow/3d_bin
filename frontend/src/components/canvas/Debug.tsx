@@ -1,28 +1,19 @@
-import React from "react";
+import React, {useEffect, useRef} from "react";
 import {useStore} from "../../store/store";
-import {WebGlStats} from "./WebGlStats";
-import {Vector3} from "@react-three/fiber";
-import {compareState} from "../../store/compare";
-
-const gridPosition = [0, -20, 0] as Vector3
-const gridArgs = [1000, 1000]
+import Grid from "./Grid";
+import * as THREE from "three"
 
 export default () => {
-  const isDebugMode = useStore(s => s.isDebugMode, compareState)
-
-  // TODO add parent node (WebGlStats)
-  return isDebugMode
-    ? (
-      <>
-        <WebGlStats parent={undefined}/>
-
-        <gridHelper
-          position={gridPosition}
-          // @ts-ignore
-          args={gridArgs}
-        />
-        <axesHelper/>
-      </>
+  const ref = useRef<THREE.Group>(null!)
+  useEffect(() => {
+    useStore.subscribe(
+      s => s.isDebugMode, v => ref.current.visible = v
     )
-    : <></>
+  }, [])
+  return (
+    <group ref={ref} visible={useStore.getState().isDebugMode}>
+      <primitive object={new Grid(1000, 1000, 1, 0xaaaaaa).rotateX(Math.PI / 2)}/>
+      <axesHelper/>
+    </group>
+  )
 }

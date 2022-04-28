@@ -95,16 +95,16 @@ function CameraFOVButtonGroup() {
 }
 
 function OpacitySlider() {
-  const [opacity, setOpacity] = useStore(
-    s => [s.opacity, s.setOpacity],
+  const [transparency, setTransparency] = useStore(
+    s => [s.transparency, s.setTransparency],
     compareStateSlices
   )
-  const onChange = useCallback((_, value) => setOpacity(value), [])
+  const onChange = useCallback((_, value) => setTransparency(value), [])
   return (
     <Slider
       label="Прозрачность"
       min={0} max={1} step={0.01}
-      value={opacity}
+      value={transparency}
       onChange={onChange}
     />
   )

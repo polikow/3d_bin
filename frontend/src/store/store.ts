@@ -1,4 +1,5 @@
-import create from "zustand"
+import create, {GetState, Mutate, SetState, StoreApi} from "zustand"
+import {subscribeWithSelector} from "zustand/middleware";
 import {Scene, Store, Tab,} from "./types";
 import * as DEFAULT from "./defaults"
 import {blockPositionForBlockAtIndex, cargoAndSpace, doesBlockFitInside, spaceNeedsToBeShrunk} from "./cargo";
@@ -6,7 +7,11 @@ import {cargoCamera, containerCamera} from "./camera";
 import {log, logError, replaced, withoutIndex, withoutLast} from "./utils";
 import {MultipleSearchResult, SearchResult, Task} from "../wailsjs/go/models";
 
-export const useStore = create<Store>((set, get) => ({
+export const useStore = create<Store,
+  SetState<Store>,
+  GetState<Store>,
+  Mutate<StoreApi<Store>, [["zustand/subscribeWithSelector", never]]>>
+(subscribeWithSelector((set, get) => ({
   ...DEFAULT.state,
 
   setFOV: fov => set({fov}),
@@ -203,7 +208,7 @@ export const useStore = create<Store>((set, get) => ({
     }
   },
 
-  setOpacity: opacity => set({opacity}),
+  setTransparency: transparency => set({transparency}),
   setLabelScale: labelScale => set({labelScale}),
   setColorful: isColorful => set({isColorful}),
   setDebugMode: isDebugMode => set({isDebugMode}),
@@ -211,7 +216,7 @@ export const useStore = create<Store>((set, get) => ({
   setGridVisible: isGridVisible => set({isGridVisible}),
 
   setCPUs: cpus => set({cpus}),
-}))
+})))
 
 const handleResult = (data: any) => {
   useStore.getState().setSearchResult(data)
