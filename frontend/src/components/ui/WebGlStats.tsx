@@ -18,6 +18,10 @@ function mount() {
   end = addAfterEffect(() => stats.end())
 }
 
+if (useStore.getState().isDebugMode) {
+  mount()
+}
+
 function unmount() {
   document.body.removeChild(stats.dom)
   begin()
@@ -32,6 +36,9 @@ export default () => {
         if (isDebugMode) {
           mount()
         } else {
+          if (stats === undefined) {
+            return
+          }
           unmount()
         }
       }
