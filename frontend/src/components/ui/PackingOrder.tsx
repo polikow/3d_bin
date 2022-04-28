@@ -37,11 +37,11 @@ function PackingOrder() {
 }
 
 function success(solution: IndexRotation[], n: number): string {
-  return solution.map(({index}) => index).slice(0, n).join(' → ')
+  return solution.map(({index}) => index + 1).slice(0, n).join(' → ')
 }
 
 function failed(solution: IndexRotation[], n: number): string {
-  return " → " + solution.map(({index}) => index).slice(-n).join(' → ')
+  return " → " + solution.map(({index}) => index + 1).slice(-n).join(' → ')
 }
 
 export default PackingOrder
