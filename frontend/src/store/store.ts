@@ -209,7 +209,7 @@ export const useStore = create<Store,
   },
 
   setTransparency: transparency => set({transparency}),
-  setLabelScale: labelScale => set({labelScale}),
+  setLabelsVisible: areLabelsVisible => set({areLabelsVisible}),
   setColorful: isColorful => set({isColorful}),
   setDebugMode: isDebugMode => set({isDebugMode}),
   setOnlyEdges: onlyEdges => set({onlyEdges}),

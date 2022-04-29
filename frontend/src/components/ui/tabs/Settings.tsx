@@ -156,17 +156,16 @@ function GridSwitch() {
 }
 
 function LabelSizeSlider() {
-  const [labelScale, setLabelScale] = useStore(
-    s => [s.labelScale, s.setLabelScale],
+  const [areLabelsVisible, setLabelsVisible] = useStore(
+    s => [s.areLabelsVisible, s.setLabelsVisible],
     compareStateSlices
   )
-  const onSliderChange = useCallback((_, value) => setLabelScale(value), [])
+  const onChange = useCallback(event => setLabelsVisible(event.target.checked), [])
   return (
-    <Slider
-      label="Размер меток"
-      min={1} max={30} step={1}
-      value={labelScale}
-      onChange={onSliderChange}
+    <SwitchWithLabel
+      label="Метки"
+      checked={areLabelsVisible}
+      onChange={onChange}
     />
   )
 }

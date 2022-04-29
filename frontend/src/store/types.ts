@@ -30,7 +30,7 @@ export type CameraActions = {
 
 export type SettingsState = {
   transparency: number
-  labelScale: number
+  areLabelsVisible: boolean
 
   isColorful: boolean
   isDebugMode: boolean
@@ -43,7 +43,7 @@ export type SettingsState = {
 
 export type SettingsActions = {
   setTransparency: (transparency: number) => void
-  setLabelScale: (labelScale: number) => void
+  setLabelsVisible: (areLabelsVisible: boolean) => void
 
   setColorful: (isColorful: boolean) => void
   setDebugMode: (isDebugMode: boolean) => void

@@ -22,7 +22,7 @@ export const cameraState: CameraState = {
 
 export const settingsState: SettingsState = {
   transparency: 0.3,
-  labelScale: 8,
+  areLabelsVisible: true,
 
   isColorful: true,
   isDebugMode: false,
