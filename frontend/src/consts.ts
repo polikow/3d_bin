@@ -6,6 +6,8 @@ export const colors =
 
 export const defaultColor = "grey"
 
+export const containerColor = 0x111111
+
 // метки на осях
 export const xColor = 0xfe590a
 export const yColor = 0x17cd00

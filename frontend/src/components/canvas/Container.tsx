@@ -5,7 +5,7 @@ import {BlockPosition} from "../../wailsjs/go/models"
 import Block from "./Block";
 import Grids from "./Grids";
 import Label from "./Label";
-import {labelsPerAxis, tickColor, tickSize, xColor, yColor, zColor} from "../../consts";
+import {containerColor, labelsPerAxis, tickColor, tickSize, xColor, yColor, zColor} from "../../consts";
 import * as THREE from "three"
 
 const c = useStore.getState().container;
@@ -13,7 +13,7 @@ const labelsAreVisible = useStore.getState().areLabelsVisible
 const {w, h, l} = c
 const bp = new BlockPosition({p1: {x: 0, y: 0, z: 0}, p2: {x: w, y: h, z: l}})
 
-const containerBlockObj = new Block(bp, 0xffffff, true, 0, false)
+const containerBlockObj = new Block(bp, containerColor, true, 0, true)
 const gridsObj = new Grids({w, h, l} )
 const xObj = new Label('x', xColor).positionAtCenterOfX(c)
 const yObj = new Label('y', yColor).positionAtCenterOfY(c)

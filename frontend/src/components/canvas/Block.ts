@@ -33,7 +33,7 @@ class Block extends THREE.Group {
     this.edges = new THREE.LineSegments(edgesGeometry, edgesMaterial.clone())
     this.add(this.filled, this.edges)
     this.setPositionAndScaleFromBP(bp)
-    this.setColor(color)
+    this.setColor(color, true)
     this.setOnlyEdges(onlyEdges)
     this.setTransparency(transparency)
     this.setIsColorful(isColorful)
@@ -56,9 +56,9 @@ class Block extends THREE.Group {
     }
   }
 
-  setColor(color: THREE.ColorRepresentation) {
+  setColor(color: THREE.ColorRepresentation, initialization = false) {
     this.color = new THREE.Color(color)
-    if (!this.isColorful) return
+    if (!this.isColorful && !initialization) return
     this.edges.material.color = this.color
     this.filled.material.color = this.color
   }
