@@ -13,6 +13,7 @@ import Fab from "./Fab";
 import {compareStateSlices} from "../../store/compare";
 import {styled} from "@mui/material";
 import WebGlStats from "./WebGlStats";
+import FabPacked from "./FabPacked";
 
 const FabFloater = styled(Floater)`
   margin: 15px;
@@ -49,10 +50,12 @@ export default () => {
         <Fab title="Контейнер" active={is(Tab.Container)} onClick={toggleContainer}/>
         <Fab title="Грузы" active={is(Tab.Blocks)} onClick={toggleBlocks}/>
         <Fab icon={<Save/>} active={is(Tab.SaveLoad)} onClick={toggleSaveLoad}/>
-        <Fab icon={<PlayArrow/>} active={is(Tab.Algorithm) || is(Tab.Packed)} onClick={toggleAlgorithm}/>
+        <Fab icon={<PlayArrow/>} active={is(Tab.Algorithm)} onClick={toggleAlgorithm}/>
+        <FabPacked active={is(Tab.Packed)} onClick={togglePacked}/>
       </FabFloater>
 
       <WebGlStats/>
     </>
   )
 }
+

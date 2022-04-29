@@ -6,12 +6,15 @@ interface OptionProps {
   onClick: () => void
   title?: string
   icon?: any
+  disabled?: boolean
 }
 
-const Fab = ({active, onClick, title, icon}: OptionProps) => (
-  <MuiFab variant="extended"
-          color={active ? "primary" : "default"}
-          onClick={onClick}
+const Fab = ({active, onClick, title, icon, disabled = false}: OptionProps) => (
+  <MuiFab
+    variant="extended"
+    color={active ? "primary" : "default"}
+    onClick={onClick}
+    disabled={disabled}
   >
     {icon}
     {title}
