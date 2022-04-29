@@ -15,7 +15,14 @@ class Label extends Text {
   static readonly AXIS_SHIFT_FACTOR = 0.07
   static readonly AXIS_SHIFT_BIAS = 0.1
 
-  readonly content
+  private _content
+  get content() {
+    return this._content
+  }
+  set content(value: AllowedCharacter) {
+    this._content = typeof value === "string" ? value : String(Math.floor(value))
+    this.text = this.content
+  }
 
   constructor(value: AllowedCharacter = 1, color = Label.COLOR, fontSize = 1) {
     super()
@@ -23,11 +30,9 @@ class Label extends Text {
     this.anchorX = "center"
     this.anchorY = "middle"
 
-    this.text = typeof value === "string" ? value : String(Math.floor(value))
+    this.content = value
     this.fontSize = fontSize
     this.color = color
-
-    this.content = this.text
   }
 
   followCamera(camera: THREE.Camera) {
