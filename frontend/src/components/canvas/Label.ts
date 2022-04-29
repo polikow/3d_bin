@@ -60,6 +60,31 @@ class Label extends Text {
   private static axisShift({w, h, l}: Container | Block) {
     return -((w + h + l) / 3 * Label.AXIS_SHIFT_FACTOR + Label.AXIS_SHIFT_BIAS)
   }
+
+  private static smallAxisShift(o: Container | Block) {
+    return Label.axisShift(o) + 0.05
+  }
+
+  positionAtCornerOf(o: Container | Block): Label {
+    const s = Label.smallAxisShift(o)
+    this.position.set(s, 0, s)
+    return this
+  }
+
+  positionAtXOf(x: number, o: Container | Block) {
+    const s = Label.smallAxisShift(o)
+    this.position.set(x, 0, s)
+  }
+
+  positionAtYOf(y: number, o: Container | Block) {
+    const s = Label.smallAxisShift(o)
+    this.position.set(s, y, s)
+  }
+
+  positionAtZOf(z: number, o: Container | Block) {
+    const s = Label.smallAxisShift(o)
+    this.position.set(s, 0, z)
+  }
 }
 
 preloadFont({font: Label.FONT, characters: Label.CHARACTERS}, console.log)
