@@ -6,6 +6,11 @@ export const colors =
 
 export const defaultColor = "grey"
 
+// метки над осями
+export const xColor = 0xfe590a
+export const yColor = 0x17cd00
+export const zColor = 0x191ee1
+
 // количество строк в таблицах
 export const rowsPerPage = 10
 

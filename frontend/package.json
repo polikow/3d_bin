@@ -17,7 +17,8 @@
     "react-three-gui": "^0.4.2",
     "stats.js": "^0.17.0",
     "three": "^0.137.5",
-    "zustand": "^3.6.9"
+    "zustand": "^3.6.9",
+    "troika-three-text": "^0.46.4"
   },
   "scripts": {
     "start": "react-scripts start",
