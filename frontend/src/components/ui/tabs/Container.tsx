@@ -38,6 +38,7 @@ const textInputProps = {inputProps: {min, max}}
 
 function WidthTextField() {
   const width = useStore(s => s.container.w, compareState)
+  const isSearching = useStore(s => s.isSearching, compareState)
   const setContainerSide = useStore(s => s.setContainerSide, compareAlwaysTrue)
   const setWidth = useCallback(e => setContainerSide("w", bounds(e)), [])
   return (
@@ -46,12 +47,14 @@ function WidthTextField() {
       InputProps={textInputProps}
       value={width}
       onChange={setWidth}
+      disabled={isSearching}
     />
   )
 }
 
 function HeightTextField() {
   const height = useStore(s => s.container.h, compareState)
+  const isSearching = useStore(s => s.isSearching, compareState)
   const setContainerSide = useStore(s => s.setContainerSide, compareAlwaysTrue)
   const setHeight = useCallback(e => setContainerSide("h", bounds(e)), [])
   return (
@@ -60,12 +63,14 @@ function HeightTextField() {
       InputProps={textInputProps}
       value={height}
       onChange={setHeight}
+      disabled={isSearching}
     />
   )
 }
 
 function LengthTextField() {
   const length = useStore(s => s.container.l, compareState)
+  const isSearching = useStore(s => s.isSearching, compareState)
   const setContainerSide = useStore(s => s.setContainerSide, compareAlwaysTrue)
   const setLength = useCallback(e => setContainerSide("l", bounds(e)), [])
   return (
@@ -74,6 +79,7 @@ function LengthTextField() {
       InputProps={textInputProps}
       value={length}
       onChange={setLength}
+      disabled={isSearching}
     />
   )
 }

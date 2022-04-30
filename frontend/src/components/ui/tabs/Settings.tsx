@@ -5,7 +5,7 @@ import Floater from "../Floater";
 import ButtonGroup from "../ButtonGroup";
 import Slider from "../Slider";
 import SwitchWithLabel from "../SwitchWithLabel";
-import {compareStateSlices} from "../../../store/compare";
+import {compareState, compareStateSlices} from "../../../store/compare";
 import Title from "../Title";
 import OuterPaper from "../OuterPaper";
 import InnerPaper from "../InnerPaper";
@@ -171,6 +171,7 @@ function LabelSizeSlider() {
 }
 
 function NumCPUSelector() {
+  const isSearching = useStore(s => s.isSearching, compareState)
   const [cpus, setCPUs] = useStore(s => [s.cpus, s.setCPUs], compareStateSlices)
   const [cpusAvailable, setCPUsAvailable] = useState(1)
   useEffect(() => {
@@ -187,7 +188,7 @@ function NumCPUSelector() {
       label="Число используемых потоков"
       marks={true}
       valueLabelDisplay={true}
-      disabled={cpusAvailable === 1}
+      disabled={cpusAvailable === 1 || isSearching}
       min={1} max={cpusAvailable} step={1}
       value={cpus}
       onChange={onChange}

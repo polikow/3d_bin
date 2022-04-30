@@ -60,6 +60,7 @@ export default React.memo(({open, onClose}: BlocksProps) => {
     ],
     compareAlwaysTrue
   )
+  const isSearching = useStore(s => s.isSearching, compareState)
   const [indexChanging, setIndexChanging] = useState<number | null>(null)
   const [page, setPage] = useState(0)
 
@@ -176,13 +177,13 @@ export default React.memo(({open, onClose}: BlocksProps) => {
           </TableContainer>
 
           <BottomButtonsWrapper>
-            <ButtonAdd disabled={indexChanging !== null} onClick={onClickButtonAdd}>
+            <ButtonAdd disabled={indexChanging !== null || isSearching} onClick={onClickButtonAdd}>
               Добавить новый груз
             </ButtonAdd>
-            <Button variant="contained" color="primary" onClick={onRemoveAllBlocks}>
+            <Button disabled={isSearching} variant="contained" color="primary" onClick={onRemoveAllBlocks}>
               Удалить все грузы
             </Button>
-            <Button variant="contained" color="primary" onClick={onGenerateBlocks}>
+            <Button disabled={isSearching} variant="contained" color="primary" onClick={onGenerateBlocks}>
               Сенерировать случайные грузы
             </Button>
           </BottomButtonsWrapper>
@@ -199,6 +200,7 @@ interface ChangeMenuProps {
 }
 
 function ChangeMenu({index, onChange, onRemove}: ChangeMenuProps) {
+  const isSearching = useStore(s => s.isSearching, compareState)
   const [anchorEl, setAnchorEl] = useState(null)
 
   const openMenu = useCallback((event) => setAnchorEl(event.currentTarget), [])
@@ -227,8 +229,8 @@ function ChangeMenu({index, onChange, onRemove}: ChangeMenuProps) {
         open={anchorEl !== null}
         onClose={closeMenu}
       >
-        <MenuItem onClick={changeItem}>Изменить</MenuItem>
-        <MenuItem onClick={removeItem}>Удалить</MenuItem>
+        <MenuItem disabled={isSearching} onClick={changeItem}>Изменить</MenuItem>
+        <MenuItem disabled={isSearching} onClick={removeItem}>Удалить</MenuItem>
       </Menu>
     </>
   )
@@ -296,15 +298,15 @@ function ChangeableRow({index, initialBlock, onChange}: ChangeableRowProps) {
       <TableCell align="center">{index + 1}</TableCell>
       <TableCell align="center">
         <CustomTextField variant="standard" type="number"
-                   value={block.w} onChange={setWidth}/>
+                         value={block.w} onChange={setWidth}/>
       </TableCell>
       <TableCell align="center">
         <CustomTextField variant="standard" type="number"
-                   value={block.h} onChange={setHeight}/>
+                         value={block.h} onChange={setHeight}/>
       </TableCell>
       <TableCell align="center">
         <CustomTextField variant="standard" type="number"
-                   value={block.l} onChange={setLength}/>
+                         value={block.l} onChange={setLength}/>
       </TableCell>
       <TableCell>
         <ButtonAccept onClick={onClickButtonAccept}/>

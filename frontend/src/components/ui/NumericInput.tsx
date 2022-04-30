@@ -2,20 +2,21 @@ import React, {useCallback, useMemo, useState} from "react";
 import {styled, TextField} from "@mui/material";
 import {floatInBounds, integerInBounds} from "../../utils";
 
-interface NumericInputProps {
+interface Props {
   label: string
   name: string
   initial: number
   min: number
   max: number
   step: number
+  disabled?: boolean
 }
 
 const CustomTextField = styled(TextField)`
   margin: 10px 0 !important;
 `
 
-const NumericInput = ({label, name, initial, min, max, step}: NumericInputProps) => {
+const NumericInput = ({label, name, initial, min, max, step, disabled}: Props) => {
   const [value, setValue] = useState(initial)
   const inputProps = useMemo(
     () => ({inputProps: {min, max, step}}),
@@ -34,6 +35,7 @@ const NumericInput = ({label, name, initial, min, max, step}: NumericInputProps)
       name={name} value={value}
       InputProps={inputProps}
       onChange={handleChange}
+      disabled={disabled}
     />
   )
 }

@@ -115,6 +115,7 @@ export default React.memo(({open, onClose}: AlgorithmProps) => {
               defaultValue={initialAlgorithm}
               valuesLabels={algorithmValuesLabels}
               onChange={handleAlgorithmChange}
+              disabled={isSearching}
             />
             {algorithm === "bca" && (
               <>
@@ -122,16 +123,19 @@ export default React.memo(({open, onClose}: AlgorithmProps) => {
                   label="Количество антител в популяции"
                   name="np" initial={defaultBCASettings.np}
                   min={1} max={10000} step={1}
+                  disabled={isSearching}
                 />
                 <NumericInput
                   label="Коэффициент интенсивности мутации"
                   name="ci" initial={defaultBCASettings.ci}
                   min={0.01} max={100} step={0.01}
+                  disabled={isSearching}
                 />
                 <NumericInput
                   label="Количество итераций без улучшений"
                   name="ni" initial={defaultBCASettings.ni}
                   min={1} max={2000} step={1}
+                  disabled={isSearching}
                 />
               </>
             )}
@@ -140,21 +144,25 @@ export default React.memo(({open, onClose}: AlgorithmProps) => {
                 <SelectInput
                   defaultValue="deVries"
                   valuesLabels={gaValuesLabels}
+                  disabled={isSearching}
                 />
                 <NumericInput
                   label="Количество хросом в популяции"
                   name="np" initial={defaultGASettings.np}
                   min={1} max={10000} step={1}
+                  disabled={isSearching}
                 />
                 <NumericInput
                   label="Вероятность мутации"
                   name="mp" initial={defaultGASettings.mp}
                   min={0.01} max={1} step={0.01}
+                  disabled={isSearching}
                 />
                 <NumericInput
                   label="Количество итераций без улучшений"
                   name="ni" initial={defaultGASettings.ni}
                   min={1} max={2000} step={1}
+                  disabled={isSearching}
                 />
               </>
             )}

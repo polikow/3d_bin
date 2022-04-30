@@ -1,7 +1,7 @@
 import React from "react";
 import {useStore} from "../../../store/store";
 import {Button, styled, Typography} from "@mui/material";
-import {compareAlwaysTrue} from "../../../store/compare";
+import {compareAlwaysTrue, compareState} from "../../../store/compare";
 import Floater from "../Floater";
 import Title from "../Title";
 import OuterPaper from "../OuterPaper";
@@ -33,25 +33,30 @@ export default React.memo(({open, onClose}: SaveLoadProps) => {
     s => [s.saveTask, s.loadTask, s.saveSolution, s.loadSolution],
     compareAlwaysTrue
   )
+  const isSearching = useStore(s => s.isSearching, compareState)
   return (
     <Floater open={open} onClose={onClose}>
       <OuterPaper elevation={3}>
         <Title>Сохранение/Загрузка</Title>
         <CustomInnerPaper elevation={0}>
-          <Button variant="contained" color="inherit" onClick={saveTask}>
+          <Button disabled={isSearching}
+                  variant="contained" color="inherit" onClick={saveTask}>
             Сохранить задачу в файл...
           </Button>
-          <Button variant="contained" color="inherit" onClick={loadTask}>
+          <Button disabled={isSearching}
+                  variant="contained" color="inherit" onClick={loadTask}>
             Загрузить задачу из файла...
           </Button>
           <Typography variant="body2">
             Задача - это совокупность габаритов контейнера и габаритов грузов.
           </Typography>
 
-          <Button variant="contained" color="inherit" onClick={saveSolution}>
+          <Button disabled={isSearching}
+                  variant="contained" color="inherit" onClick={saveSolution}>
             Сохранить решение в файл...
           </Button>
-          <Button variant="contained" color="inherit" onClick={loadSolution}>
+          <Button disabled={isSearching}
+                  variant="contained" color="inherit" onClick={loadSolution}>
             Загрузить решение из файла...
           </Button>
           <Typography variant="body2">

@@ -4,6 +4,7 @@ import {MenuItem, Select, styled} from "@mui/material";
 interface SelectInputProps {
   defaultValue: string
   valuesLabels: Array<[string, string]>
+  disabled: boolean
   onChange?: (newValue: string) => void
 }
 
@@ -11,7 +12,7 @@ const CustomSelect = styled(Select)`
   margin-top: 15px;
 `
 
-const SelectInput = ({defaultValue, valuesLabels, onChange}: SelectInputProps) => {
+const SelectInput = ({defaultValue, valuesLabels, onChange, disabled}: SelectInputProps) => {
   const [value, setValue] = useState(defaultValue)
   const handleChange = (event: { target: { value: any; }; }) => {
     const newValue = event.target.value;
@@ -24,6 +25,7 @@ const SelectInput = ({defaultValue, valuesLabels, onChange}: SelectInputProps) =
       variant="standard"
       defaultValue={defaultValue}
       onChange={handleChange}
+      disabled={disabled}
     >
       {valuesLabels.map((
         [value, label]) =>
