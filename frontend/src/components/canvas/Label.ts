@@ -14,6 +14,7 @@ class Label extends Text {
   static readonly DISTANCE_FACTOR = 0.027
   static readonly AXIS_SHIFT_FACTOR = 0.07
   static readonly AXIS_SHIFT_BIAS = 0.1
+  static readonly HIDDEN_POSITION = new THREE.Vector3()
 
   private _content
   get content() {
@@ -22,6 +23,9 @@ class Label extends Text {
   set content(value: AllowedCharacter) {
     this._content = typeof value === "string" ? value : String(Math.floor(value))
     this.text = this.content
+    if (this._content === '') {
+      this.position.copy(Label.HIDDEN_POSITION)
+    }
   }
 
   constructor(value: AllowedCharacter = 1, color = Label.COLOR, fontSize = 1) {
