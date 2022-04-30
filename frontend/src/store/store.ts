@@ -2,9 +2,7 @@ import create, {GetState, Mutate, SetState, StoreApi} from "zustand"
 import {subscribeWithSelector} from "zustand/middleware";
 import {Scene, Store, Tab,} from "./types";
 import * as DEFAULT from "./defaults"
-import {blockPositionForBlockAtIndex, cargoAndSpace, doesBlockFitInside, spaceNeedsToBeShrunk} from "./cargo";
-import {cargoCamera, containerCamera} from "./camera";
-import {log, logError, replaced, withoutIndex, withoutLast} from "./utils";
+import {log, logError, replaced, withoutIndex} from "./utils";
 import {MultipleSearchResult, SearchResult, Task} from "../wailsjs/go/models";
 
 export const useStore = create<Store,
@@ -15,86 +13,79 @@ export const useStore = create<Store,
   ...DEFAULT.state,
 
   setFOV: fov => set({fov}),
-  setPositionAndTarget: (position, target) => set({position, target}),
+
+  setTransparency: transparency => set({transparency}),
+  setColorful: isColorful => set({isColorful}),
+  setOnlyEdges: onlyEdges => set({onlyEdges}),
+
+  setGridVisible: isGridVisible => set({isGridVisible}),
+  setLabelsVisible: areLabelsVisible => set({areLabelsVisible}),
+
+  setCPUs: cpus => set({cpus}),
+
+  setDebugMode: isDebugMode => set({isDebugMode}),
+
+  setTab: tab => {
+    const {tab: oldTab, scene} = get()
+    switch (true) {
+      // Переключение на ту же самую вкладку закрывает ее
+      case tab === oldTab:
+        return set({tab: Tab.Nothing})
+
+      // Переключение на вкладку "Грузы" активирует соответствующую сцену, если
+      // она не была уже активирована
+      case tab === Tab.Blocks && scene !== Scene.Cargo:
+        return set({
+          tab,
+          scene: Scene.Cargo,
+        })
+
+      // Переключение на вкладку "Контейнер" активирует соответствующую сцену, если
+      // она не была уже активирована
+      case tab === Tab.Container || tab === Tab.Algorithm && scene !== Scene.Container:
+        return set({
+          tab,
+          scene: Scene.Container,
+        })
+      // Переключение на новую вкладку
+      case (tab in Tab):
+        return set({tab})
+
+      default:
+        return logError("wrong tab specified")
+    }
+  },
 
   setContainerSide: (side, value) => {
-    const {container: oldContainer} = get()
-    if (oldContainer[side] === value) return
-    const container = {...oldContainer, [side]: value}
-    set({
-      container,
+    set(({container}) => ({
+      container: {...container, [side]: value},
       searchResult: DEFAULT.searchResult,
-      ...containerCamera(container),
-    })
+    }))
   },
+
   replaceBlocks: blocks => {
-    const {cargo, space} = cargoAndSpace(blocks)
-    const cameraSettings = (get().scene === Scene.Cargo)
-      ? cargoCamera(blocks, space)
-      : {}
     set({
-      blocks, cargo, space,
+      blocks,
       searchResult: DEFAULT.searchResult,
-      ...cameraSettings
     })
   },
   addNewBlock: block => {
-    const {blocks: oldBlocks, cargo: oldCargo, space: oldSpace} = get()
-    const blocks = [...oldBlocks, block]
-    const index = oldBlocks.length
-    if (doesBlockFitInside(block, oldSpace)) {
-      set({
-        blocks,
-        searchResult: DEFAULT.searchResult,
-        cargo: [...oldCargo, blockPositionForBlockAtIndex(block, index, oldSpace)]
-      })
-    } else {
-      const {cargo, space} = cargoAndSpace(blocks)
-      set({
-        blocks,
-        cargo, space,
-        searchResult: DEFAULT.searchResult,
-        ...cargoCamera(blocks, space)
-      })
-    }
+    set(({blocks}) => ({
+      blocks: [...blocks, block],
+      searchResult: DEFAULT.searchResult
+    }))
   },
   removeBlockByIndex: index => {
-    const {blocks: oldBlocks, space: oldSpace, cargo: oldCargo} = get()
-    const blocks = withoutIndex(oldBlocks, index)
-    if (spaceNeedsToBeShrunk(oldBlocks, oldSpace)) {
-      const {cargo, space} = cargoAndSpace(blocks)
-      set({
-        blocks, cargo, space,
-        searchResult: DEFAULT.searchResult,
-        ...cargoCamera(blocks, space)
-      })
-    } else {
-      const cargo = withoutLast(oldCargo)
-      set({
-        blocks, cargo,
-        searchResult: DEFAULT.searchResult,
-        ...cargoCamera(blocks, oldSpace)
-      })
-    }
+    set(({blocks}) => ({
+      blocks: withoutIndex(blocks, index),
+      searchResult: DEFAULT.searchResult
+    }))
   },
   changeBlockByIndex: (i, b) => {
-    const {blocks: oldBlocks, cargo: oldCargo, space: oldSpace} = get()
-    const blocks = replaced(oldBlocks, b, i)
-    if (!doesBlockFitInside(b, oldSpace) || spaceNeedsToBeShrunk(blocks, oldSpace)) {
-      const {cargo, space} = cargoAndSpace(blocks)
-      set({
-        blocks,
-        cargo, space,
-        searchResult: DEFAULT.searchResult,
-        ...cargoCamera(blocks, space)
-      })
-    } else {
-      set({
-        blocks,
-        searchResult: DEFAULT.searchResult,
-        cargo: replaced(oldCargo, blockPositionForBlockAtIndex(b, i, oldSpace), i)
-      })
-    }
+    set(({blocks}) => ({
+      blocks: replaced(blocks, b, i),
+      searchResult: DEFAULT.searchResult
+    }))
   },
   generateRandomBlocks: () => {
     window.go.main.App.Generate(get().container)
@@ -104,6 +95,7 @@ export const useStore = create<Store,
       })
       .catch(logError)
   },
+
   saveTask: () => {
     const {container, blocks} = get()
     window.go.main.App.SaveTask({container, blocks} as Task)
@@ -115,15 +107,9 @@ export const useStore = create<Store,
       .then(result => {
         if (result instanceof Error) return logError(result)
         const {container, blocks} = result
-        const {cargo, space} = cargoAndSpace(blocks)
-        const cameraSettings = (get().scene === Scene.Cargo)
-          ? cargoCamera(blocks, space)
-          : containerCamera(container)
         set({
           blocks, container,
-          cargo, space,
-          ...cameraSettings,
-          ...DEFAULT.searchState,
+          searchResult: DEFAULT.searchResult,
         })
       })
       .catch(logError)
@@ -145,6 +131,7 @@ export const useStore = create<Store,
       .then(searchStarted)
       .catch(searchFailedToStart)
   },
+
   searchStarted: () => {
     log("searchStarted")
     set({isSearching: true})
@@ -153,7 +140,9 @@ export const useStore = create<Store,
     logError(reason)
     set({isSearching: false})
   },
+
   setSearchResult: searchResult => set({searchResult}),
+
   saveSolution: () => {
     window.go.main.App.SaveSearchResult(
       SearchResult.createFrom(get().searchResult)
@@ -174,48 +163,6 @@ export const useStore = create<Store,
       })
       .catch(logError)
   },
-
-  setTab: newTab => {
-    const {tab: oldTab, scene, container, blocks, space} = get()
-    switch (true) {
-      // Переключение на ту же самую вкладку закрывает ее
-      case newTab === oldTab:
-        return set({tab: Tab.Nothing})
-
-      // Переключение на вкладку "Грузы" активирует соответствующую сцену, если
-      // она не была уже активирована
-      case newTab === Tab.Blocks && scene !== Scene.Cargo:
-        return set({
-          tab: newTab,
-          scene: Scene.Cargo,
-          ...cargoCamera(blocks, space)
-        })
-
-      // Переключение на вкладку "Контейнер" активирует соответствующую сцену, если
-      // она не была уже активирована
-      case newTab === Tab.Container || newTab === Tab.Algorithm && scene !== Scene.Container:
-        return set({
-          tab: newTab,
-          scene: Scene.Container,
-          ...containerCamera(container)
-        })
-      // Переключение на новую вкладку
-      case (newTab in Tab):
-        return set({tab: newTab})
-
-      default:
-        return logError("wrong newTab specified")
-    }
-  },
-
-  setTransparency: transparency => set({transparency}),
-  setLabelsVisible: areLabelsVisible => set({areLabelsVisible}),
-  setColorful: isColorful => set({isColorful}),
-  setDebugMode: isDebugMode => set({isDebugMode}),
-  setOnlyEdges: onlyEdges => set({onlyEdges}),
-  setGridVisible: isGridVisible => set({isGridVisible}),
-
-  setCPUs: cpus => set({cpus}),
 })))
 
 const handleResult = (data: any) => {
