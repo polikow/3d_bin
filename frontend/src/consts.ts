@@ -2,6 +2,7 @@ import {Vector3} from "three";
 
 export const blocksPerRow = 10
 export const gap = 2
+export const cargoLabelColor = 0x000000
 
 export const colors =
   ["violet", "indigo", "blue", "green", "yellow", "orange", "red"].reverse()

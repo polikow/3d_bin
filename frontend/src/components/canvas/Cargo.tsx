@@ -1,14 +1,16 @@
-import React, {useEffect, useRef} from "react";
+import React, {useEffect} from "react";
 import {useStore} from "../../store/store";
 import BlockGroup from "./BlockGroup";
 import {Block, BlockPosition} from "../../wailsjs/go/models";
-import {blocksPerRow, gap} from "../../consts";
+import {blocksPerRow, cargoLabelColor, gap} from "../../consts";
+import Label from "./Label";
+import {Group, Object3D} from "three";
+import {boundsAndCenter} from "../../utils";
 
-
-// положение грузов в режиме их отображения
 const cargo: BlockPosition[] = []
+const labels: Label[] = []
 
-const updatedCargo = (blocks: Block[]) => {
+function updateCargo(blocks: Block[]) {
   // поиск места для одного груза
   let xSpace = 0
   let ySpace = 0
@@ -53,19 +55,55 @@ const updatedCargo = (blocks: Block[]) => {
       cargo[i].p2.z = l + zSpaceShift + zShift
     }
   }
-  return cargo
 }
 
+function updateLabels(group: BlockGroup) {
+
+  // обновление числа меток
+  while (labels.length > group.children.length) {
+    (labels.pop() as unknown as Object3D).removeFromParent()
+  }
+
+  for (let i = 0; i < cargo.length; i++) {
+    if (labels[i] === undefined) {
+      labels[i] = new Label(i + 1, cargoLabelColor, 1)
+      labelsGroup.add(labels[i] as unknown as Object3D)
+    }
+
+    // обновление позиции
+    const block = group.children[i]
+    const [bounds, center] = boundsAndCenter(block)
+    center.z = bounds.z / 2 + block.position.z + 0.1;
+    (labels[i] as unknown as Object3D).position.copy(center);
+
+    // обновление размера
+    const d = Math.min(bounds.x, bounds.y);
+    (labels[i] as unknown as Object3D).scale.set(d, d, d)
+  }
+}
+
+updateCargo(useStore.getState().blocks)
+
+const cargoGroup = BlockGroup.createFrom(cargo)
+const labelsGroup = new Group()
+
+updateLabels(cargoGroup)
+
 export default () => {
-  const ref = useRef<BlockGroup>(null!)
   useEffect(() => {
-    useStore.subscribe(s => s.blocks, b => ref.current.setPositions(updatedCargo(b)))
-    useStore.subscribe(s => s.transparency, v => ref.current.setTransparency(v))
-    useStore.subscribe(s => s.isColorful, v => ref.current.setIsColorful(v))
-    useStore.subscribe(s => s.onlyEdges, v => ref.current.setOnlyEdges(v))
+    useStore.subscribe(s => s.blocks, blocks => {
+      updateCargo(blocks)
+      cargoGroup.setPositions(cargo)
+      updateLabels(cargoGroup)
+    })
+    useStore.subscribe(s => s.transparency, v => cargoGroup.setTransparency(v))
+    useStore.subscribe(s => s.isColorful, v => cargoGroup.setIsColorful(v))
+    useStore.subscribe(s => s.onlyEdges, v => cargoGroup.setOnlyEdges(v))
   }, [])
-  return <primitive
-    ref={ref}
-    object={BlockGroup.createFrom(updatedCargo(useStore.getState().blocks))}
-  />
+  return (
+    <group>
+      <primitive object={cargoGroup}/>
+      <primitive object={labelsGroup}/>
+    </group>
+  )
 }
