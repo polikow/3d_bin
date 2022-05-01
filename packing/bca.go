@@ -110,6 +110,12 @@ func (b *BCA) Done() bool {
 }
 
 func (b *BCA) Progress() Progress {
+	if b.searchState.bestValueFound == 1 {
+		return Progress{
+			StepsDone:  b.iterationsPassed,
+			StepsTotal: b.iterationsPassed,
+		}
+	}
 	return Progress{
 		StepsDone:  b.iterationsPassed,
 		StepsTotal: b.iterationsPassed + b.settings.Ni - b.iterationsNoImprovement,

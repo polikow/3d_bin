@@ -115,6 +115,12 @@ func (g *GA) Done() bool {
 }
 
 func (g *GA) Progress() Progress {
+	if g.searchState.bestValueFound == 1 {
+		return Progress{
+			StepsDone:  g.iterationsPassed,
+			StepsTotal: g.iterationsPassed,
+		}
+	}
 	return Progress{
 		StepsDone:  g.iterationsPassed,
 		StepsTotal: g.iterationsPassed + g.settings.Ni - g.iterationsNoImprovement,
