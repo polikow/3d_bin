@@ -19,15 +19,17 @@ const CustomInnerPaper = styled(InnerPaper)`
 
 const Packed = React.memo(({open, onClose}: PackedProps) => {
   const [page, setPage] = useState(0)
-  const [packed, solution,] = useStore(
-    s => [s.searchResult.packed, s.searchResult.solution, s.searchResult.value],
-    ([, , prevValue], [, , nextValue]) => {
+  const [solution, packed] = useStore(
+    s => [s.searchResult.solution, s.searchResult.packed],
+    ([prevSolution, prevPacked], [nextSolution, nextPacked]) => {
+      const isEqual = prevPacked === nextPacked && prevSolution === nextSolution
+
       // переключается на 1ю страницу в том случае, если контент изменился при закрытой вкладке
-      if (!open && prevValue !== nextValue && page !== 0) {
+      if (!open && !isEqual && page !== 0) {
         setPage(0)
       }
       // prevents render when it is not visible
-      return open ? prevValue === nextValue : true
+      return open ? isEqual : true
     }
   )
   const handlePageChange = useCallback(

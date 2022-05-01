@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect, useRef} from "react";
 import {useStore} from "../../store/store";
 import {styled} from "@mui/material";
 import BoldSpan from "./BoldSpan";
@@ -14,24 +14,25 @@ const NotPackedSpan = styled(BoldSpan)`
 `
 
 function PackingOrder() {
-  const [solution, packed,] = useStore(s =>
-      [s.searchResult.solution, s.searchResult.packed, s.searchResult.value],
-    ([, , prevValue], [, , nextValue]) => prevValue === nextValue
-  )
-  const successfullyPacked = packed.length
-  const failedToPackInside = solution.length - packed.length
+  const packedSpan = useRef<HTMLSpanElement>(null!)
+  const notPackedSpan = useRef<HTMLSpanElement>(null!)
+  useEffect(() => {
+    useStore.subscribe(
+      s => [s.searchResult.solution, s.searchResult.packed.length],
+      s => {
+        const solution = s[0] as IndexRotation[]
+        const packedLength = s[1] as number
+        packedSpan.current.textContent = success(solution, packedLength)
+        notPackedSpan.current.textContent = failed(solution, solution.length - packedLength)
+      }
+    )
+  }, [])
   return (
     <TextTypography>
       Порядок упаковки:
       <br/>
-      <PackedSpan>
-        {success(solution, successfullyPacked)}
-      </PackedSpan>
-      {failedToPackInside !== 0 &&
-        <NotPackedSpan>
-          {failed(solution, failedToPackInside)}
-        </NotPackedSpan>
-      }
+      <PackedSpan ref={packedSpan}/>
+      <NotPackedSpan ref={notPackedSpan}/>
     </TextTypography>
   )
 }
@@ -41,6 +42,7 @@ function success(solution: IndexRotation[], n: number): string {
 }
 
 function failed(solution: IndexRotation[], n: number): string {
+  if (n === 0) return ''
   return " → " + solution.map(({index}) => index + 1).slice(-n).join(' → ')
 }
 

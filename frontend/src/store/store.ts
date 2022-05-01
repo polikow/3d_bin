@@ -141,7 +141,26 @@ export const useStore = create<Store,
     set({isSearching: false})
   },
 
-  setSearchResult: searchResult => set({searchResult}),
+  // ИСПОЛЬЗОВАТЬ ТОЛЬКО ДЛЯ ОБНОВЛЕНИЯ ВО ВРЕМЯ ПОИСКА
+  setSearchResult: searchResult => {
+    const oldSearchResult = get().searchResult
+    // решение не улучшено - заменяем только статусы
+    if (searchResult.value === oldSearchResult.value) {
+      set({
+        searchResult: {
+          value: oldSearchResult.value,
+          solution: oldSearchResult.solution,
+          packed: oldSearchResult.packed,
+
+          iteration: searchResult.iteration,
+          statuses: searchResult.statuses
+        } as MultipleSearchResult
+      })
+    // решение улучшено - заменяем все на новое
+    } else {
+      set({searchResult})
+    }
+  },
 
   saveSolution: () => {
     window.go.main.App.SaveSearchResult(
