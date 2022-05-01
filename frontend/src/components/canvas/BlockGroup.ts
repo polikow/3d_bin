@@ -17,7 +17,7 @@ class BlockGroup extends THREE.Group {
     return this.children as Block[]
   }
 
-  setPositions(positions: BlockPosition[]) {
+  setPositions(positions: BlockPosition[], colorFunc = colorOf) {
     const source = (this.blocks[0] === undefined) ? useStore.getState(): this.blocks[0]
     const {transparency, isColorful, onlyEdges} = source
 
@@ -32,7 +32,7 @@ class BlockGroup extends THREE.Group {
     while (positions.length > blocks.length) {
       const i = blocks.length
       const bp = positions[i];
-      const color = colorOf(i);
+      const color = colorFunc(i);
       const block = new Block(bp, color, onlyEdges, transparency, isColorful)
       this.add(block)
     }
