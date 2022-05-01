@@ -1,10 +1,16 @@
 package packing
 
 import (
+	"errors"
 	"fmt"
-	"github.com/pkg/errors"
 	"math/rand"
 	"sort"
+)
+
+var (
+	ErrInvalidGAParameter = errors.New("invalid ga parameter value")
+	ErrGADone             = errors.New("ga is done searching")
+	ErrGAUnrecoverable    = errors.New("ga unrecoverable failure")
 )
 
 // GA - генетический алгоритм.
@@ -53,7 +59,7 @@ func (s GASettings) replaceWithDefaults() GASettings {
 		case "deVries":
 			settings.Evolution = new(DeVriesEvolution)
 		default:
-			panic(errors.Errorf("%q is not an available evolution to use", settings.EvolutionString))
+			panic(fmt.Errorf("%w: evolution string \"%v\" does not match any available evolution", ErrInvalidGAParameter, settings.Evolution))
 		}
 	}
 	return settings
@@ -62,19 +68,19 @@ func (s GASettings) replaceWithDefaults() GASettings {
 // isSane проверяет корректность параметров алгоритма.
 func (s GASettings) isSane() (bool, error) {
 	if s.Np <= 0 {
-		return false, errors.Errorf("ga can not have population of negative size \"%v\"", s.Np)
+		return false, fmt.Errorf("%w: population size = %v", ErrInvalidGAParameter, s.Np)
 	}
 	if s.Ni <= 0 {
-		return false, errors.Errorf("ga can not have \"%v\" max iterations", s.Np)
+		return false, fmt.Errorf("%w: max iterations = %v", ErrInvalidGAParameter, s.Ni)
 	}
 	if s.Mp <= 0 || s.Mp > 1 {
-		return false, errors.Errorf("ga can not have mutation probability of \"%v\"", s.Mp)
+		return false, fmt.Errorf("%w: mutation probability = %v", ErrInvalidGAParameter, s.Mp)
 	}
 	if s.Random == nil {
-		return false, errors.Errorf("ga has to have a setup random generator")
+		return false, fmt.Errorf("%w: random generator is nil", ErrInvalidGAParameter)
 	}
 	if s.Evolution == nil {
-		return false, errors.Errorf("ga has to have a setup evolution")
+		return false, fmt.Errorf("%w: evolution is nil", ErrInvalidGAParameter)
 	}
 	return true, nil
 }
@@ -103,7 +109,7 @@ func NewGA(task Task, settings GASettings) *GA {
 
 func (g *GA) Run() SearchResult {
 	if g.Done() {
-		panic("error")
+		panic(ErrGADone)
 	} else {
 		g.runIteration()
 		return g.result()
@@ -319,7 +325,7 @@ func mapped(originalP, otherP Chromosome, originalIndex int) IndexRotation {
 			}
 		}
 	}
-	panic("can't find mapped element")
+	panic(fmt.Errorf("%w: can't find mapped element", ErrGAUnrecoverable))
 }
 
 // Evolution - модель эволюции.

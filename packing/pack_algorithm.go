@@ -1,5 +1,12 @@
 package packing
 
+import (
+	"errors"
+	"fmt"
+)
+
+var ErrPackAlgorithmUnrecoverable = errors.New("unrecoverable pack algorithm failure")
+
 // PackAlgorithm - алгоритм упаковки.
 type PackAlgorithm struct {
 	container Container // контейнер, в который упаковываются грузы
@@ -16,15 +23,14 @@ type PackAlgorithm struct {
 	shiftZ, shiftY, shiftX uint // смещение начальной точки по осям
 }
 
-func NewPackAlgorithm(container Container, blocks []Block) *PackAlgorithm {
-	n := len(blocks)
-	if n == 0 {
-		panic("No blocks specified")
+func NewPackAlgorithm(task Task) *PackAlgorithm {
+	if _, err := task.isSane(); err != nil {
+		panic(err)
 	}
-
+	n := len(task.Blocks)
 	return &PackAlgorithm{
-		container: container,
-		blocks:    blocks,
+		container: task.Container,
+		blocks:    task.Blocks,
 		solution:  nil,
 		step:      0,
 		packed:    make([]BlockPosition, 0, n),
@@ -66,21 +72,8 @@ func (a *PackAlgorithm) reset(solution Solution) {
 
 // checkSolution проверяет решение.
 func (a *PackAlgorithm) checkSolution(solution Solution) {
-	if len(solution) != len(a.blocks) {
-		panic("Wrong packed specified")
-	}
-	for _, indexRotation := range solution {
-		rotation := indexRotation.Rotation
-		if rotation < XYZ || rotation > YXZ {
-			panic("Wrong rotation specified: " + string(rotation))
-		}
-	}
-	uniqueValues := make(map[int]bool, len(solution))
-	for _, indexRotation := range solution {
-		uniqueValues[indexRotation.Index] = true
-	}
-	if len(uniqueValues) < len(solution) {
-		panic("Wrong packed specified")
+	if _, err := solution.isSane(Task{a.container, a.blocks}); err != nil {
+		panic(fmt.Errorf("%w: %v", ErrPackAlgorithmUnrecoverable, err.Error()))
 	}
 }
 
@@ -166,7 +159,7 @@ func (a *PackAlgorithm) findEmptyAreasOnAxis(axis Axis, position *BlockPosition)
 				newHigher = packed.P2.Z
 			}
 		default:
-			panic("wrong axis specified " + string(axis))
+			panic(ErrInvalidAxis)
 		}
 
 		if newLower == newHigher {
@@ -192,7 +185,7 @@ func (a *PackAlgorithm) prepareBordersAndAreas(searchAxis Axis) {
 	case Z:
 		a.borders = append(a.borders, a.container.Length)
 	default:
-		panic("wrong case")
+		panic(ErrInvalidAxis)
 	}
 
 	a.isFree = append(a.isFree, true)
@@ -213,11 +206,11 @@ ApplyOverlappingArea:
 		higher = a.borders[i+1]
 
 		if lower > higher {
-			panic("lower > higher") //todo remove later
+			panic(fmt.Errorf("%w: lower > higher", ErrPackAlgorithmUnrecoverable))
 		}
 
 		if lower == higher {
-			panic("lower == higher'") //todo remove later
+			panic(fmt.Errorf("%w: lower == higher", ErrPackAlgorithmUnrecoverable))
 		}
 
 		switch {
@@ -251,7 +244,6 @@ ApplyOverlappingArea:
 			insertUINT(&a.borders, i+2, newHigher)
 			break ApplyOverlappingArea
 
-			//todo still might be some errors
 		case newLower > lower && newLower < higher && newHigher > higher:
 			insertBOOL(&a.isFree, i+1, false)
 			insertUINT(&a.borders, i+1, newLower)
@@ -267,7 +259,7 @@ ApplyOverlappingArea:
 			continue ApplyOverlappingArea
 
 		default:
-			panic("wrong case")
+			panic(fmt.Errorf("%w: wrong case", ErrPackAlgorithmUnrecoverable))
 		}
 	}
 }
@@ -427,7 +419,7 @@ func (a *PackAlgorithm) selectFirstFittingArea(size uint) (uint, bool) {
 // Все элементы, начиная с index до последнего смещаются вправо.
 func insertUINT(s *[]uint, index int, value uint) {
 	if len(*s) == cap(*s) {
-		panic("not enough capacity")
+		panic(fmt.Errorf("%w: not enough capacity", ErrPackAlgorithmUnrecoverable))
 	}
 
 	*s = append(*s, 0)
@@ -439,7 +431,7 @@ func insertUINT(s *[]uint, index int, value uint) {
 // Все элементы, начиная с index до последнего смещаются вправо.
 func insertBOOL(s *[]bool, index int, value bool) {
 	if len(*s) == cap(*s) {
-		panic("not enough capacity")
+		panic(fmt.Errorf("%w: not enough capacity", ErrPackAlgorithmUnrecoverable))
 	}
 
 	*s = append(*s, false)

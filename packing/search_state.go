@@ -17,12 +17,13 @@ type searchState struct {
 }
 
 func newSearchState(task Task) searchState {
+	task.mustBeSane()
 	return searchState{
 		Task: task,
 
 		n:               task.Size(),
 		containerVolume: float64(VolumeOf(task.Container)),
-		packAlgorithm:   NewPackAlgorithm(task.Container, task.Blocks),
+		packAlgorithm:   NewPackAlgorithm(task),
 
 		bestValueFound:          0,
 		bestSolutionFound:       make(Solution, task.Size()),

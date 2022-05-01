@@ -1,6 +1,11 @@
 package packing
 
-import "math/rand"
+import (
+	"errors"
+	"math/rand"
+)
+
+var ErrInvalidRotation = errors.New("wrong rotation value")
 
 // Rotation - вариант поворота груза.
 //

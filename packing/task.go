@@ -1,6 +1,11 @@
 package packing
 
-import "github.com/pkg/errors"
+import (
+	"errors"
+	"fmt"
+)
+
+var ErrInvalidTask = errors.New("invalid task")
 
 // Task - условия задачи
 type Task struct {
@@ -19,12 +24,15 @@ func (t Task) Size() int { return len(t.Blocks) }
 
 // isSane проверяет корректность задачи.
 func (t Task) isSane() (bool, error) {
+	if len(t.Blocks) == 0 {
+		return false, fmt.Errorf("%w: no blocks", ErrInvalidTask)
+	}
 	if VolumeOf(t.Container) == 0 {
-		return false, errors.New("container is not sane")
+		return false, fmt.Errorf("%w: container is not sane", ErrInvalidTask)
 	}
 	for _, block := range t.Blocks {
 		if VolumeOf(block) == 0 {
-			return false, errors.Errorf("block \"%v\" is not sane", block)
+			return false, fmt.Errorf("%w: block \"%v\" is not sane", ErrInvalidTask, block)
 		}
 	}
 	return true, nil

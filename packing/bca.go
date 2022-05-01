@@ -1,10 +1,16 @@
 package packing
 
 import (
+	"errors"
 	"fmt"
-	"github.com/pkg/errors"
 	"math"
 	"math/rand"
+)
+
+var (
+	ErrBCAInvalidParameter      = errors.New("invalid bca parameter value")
+	ErrBCADone                  = errors.New("bca is done searching")
+	ErrBCAFailedToCloneAntibody = errors.New("failed to clone antibody")
 )
 
 const clonalgIntensityCoefficient = 3
@@ -58,16 +64,16 @@ func (s BCASettings) replaceWithDefaults() BCASettings {
 // isSane проверяет корректность параметров алгоритма.
 func (s BCASettings) isSane() (bool, error) {
 	if s.Np <= 0 {
-		return false, errors.Errorf("bca can not have population of negative size \"%v\"", s.Np)
+		return false, fmt.Errorf("%w: population = %v", ErrBCAInvalidParameter, s.Np)
 	}
 	if s.Ni <= 0 {
-		return false, errors.Errorf("bca can not have \"%v\" max iterations", s.Np)
+		return false, fmt.Errorf("%w: max iterations = %v", ErrBCAInvalidParameter, s.Ni)
 	}
 	if s.Ci <= 0 || s.Ci > 5 {
-		return false, errors.Errorf("bca can not have mutation intensity of \"%v\"", s.Ci)
+		return false, fmt.Errorf("%w: mutation intensity = %v", ErrBCAInvalidParameter, s.Ci)
 	}
 	if s.Random == nil {
-		return false, errors.Errorf("bca has to have a setup random generator")
+		return false, fmt.Errorf("%w: random generator is nil", ErrBCAInvalidParameter)
 	}
 	return true, nil
 }
@@ -98,7 +104,7 @@ func NewBCA(task Task, settings BCASettings) *BCA {
 
 func (b *BCA) Run() SearchResult {
 	if b.Done() {
-		panic("bca: the algorithm is done searching")
+		panic(ErrBCADone)
 	} else {
 		b.runIteration()
 		return b.result()
@@ -273,9 +279,7 @@ func (a Antibody) makeClone() Antibody {
 func (a Antibody) makeCloneInDestination(dst Antibody) Antibody {
 	copied := copy(dst, a)
 	if copied != len(a) {
-		panic(fmt.Sprintf(
-			"couldn't clone into dst. copied %v values instead of %v",
-			copied, len(a)))
+		panic(ErrBCAFailedToCloneAntibody)
 	}
 	return dst
 }

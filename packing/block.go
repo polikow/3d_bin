@@ -63,7 +63,7 @@ func (b Block) findShift(rotation Rotation) (x, y, z uint) {
 		x = b.Height
 		z = b.Length
 	default:
-		panic("wrong rotation value " + string(rotation))
+		panic(ErrInvalidRotation)
 	}
 	return
 }

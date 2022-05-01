@@ -1,7 +1,5 @@
 package packing
 
-import "github.com/pkg/errors"
-
 // BlockPosition положение груза в пространстве.
 //  P1 - Координаты самого близкого угла к началу осей координат.
 //  P2 - Координаты самого удаленного угла от начала осей координат.
@@ -71,6 +69,8 @@ func (b *BlockPosition) moveToNewAxisValue(axis Axis, value uint) {
 		axisLength = b.P2.Z - b.P1.Z
 		b.P1.Z = value
 		b.P2.Z = value + axisLength
+	default:
+		panic(ErrInvalidAxis)
 	}
 }
 
@@ -84,7 +84,7 @@ func (b BlockPosition) axisSize(axis Axis) uint {
 	case Z:
 		return b.P2.Z - b.P1.Z
 	default:
-		panic(errors.Errorf("%q is not a correct axis", axis))
+		panic(ErrInvalidAxis)
 	}
 }
 
