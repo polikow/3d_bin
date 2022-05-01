@@ -8,16 +8,9 @@ import {SceneField, SceneGroup} from "./Scene";
 import {Scene} from "../../store/types";
 import {containerCameraPositionFactor} from "../../consts";
 import {OrbitControls as OC} from "three-stdlib/controls/OrbitControls";
+import {boundsAndCenter} from "../../utils";
 
 const far = ({x, y, z}: THREE.Vector3) => Math.max(x, y, z) * 1000
-
-const size = new THREE.Vector3()
-const center = new THREE.Vector3()
-const bbox = new THREE.Box3()
-const boundsAndCenter = (o: THREE.Object3D) => {
-  bbox.setFromObject(o)
-  return [bbox.getSize(size), bbox.getCenter(center)]
-}
 
 const updateContainerScene = (camera: PC, controls: OC, group: SceneGroup) => {
   const [bounds, center] = boundsAndCenter(group)
