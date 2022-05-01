@@ -1,14 +1,13 @@
 import React from "react";
 import {useStore} from "../../store/store";
 import ProgressBar from "./ProgressBar";
+import {compareState} from "../../store/compare";
 
 const Progress = () => {
-  const statuses = useStore(s => s.searchResult.statuses)
+  const statusCount = useStore(s => s.searchResult.statuses.length, compareState)
   return (
     <>
-      {statuses.map(({stepsDone, stepsTotal}, index) => (
-        <ProgressBar key={index} stepsDone={stepsDone} stepsTotal={stepsTotal}/>
-      ))}
+      {Array(statusCount).fill(0).map((_, i) => <ProgressBar key={i} index={i}/>)}
     </>
   )
 }

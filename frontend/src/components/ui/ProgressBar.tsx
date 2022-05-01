@@ -1,5 +1,6 @@
-import React from "react";
-import {styled} from "@mui/material";
+import React, {useEffect, useRef} from "react";
+import {styled, useTheme} from "@mui/material";
+import {useStore} from "../../store/store";
 
 const BarWrapper = styled("div")`
   height: 12px;
@@ -8,18 +9,9 @@ const BarWrapper = styled("div")`
   margin: 7px 0;
 `
 
-const Bar = styled("div")<{ percent: number }>`
-  width: ${({percent}) => percent}%;
+const Bar = styled("div")`
   height: 100%;
   border-radius: 3px;
-  background-color: ${
-          ({percent, theme}) => percent == 100
-                  ? theme.palette.success.main
-                  : theme.palette.success.light
-  };
-
-  transition: ${({percent}) => percent < 1 ? "none" : `width linear 100ms`};
-  transition: background-color linear ${({theme}) => theme.transitions.duration.short}ms;
 `
 
 const BarValue = styled("span")`
@@ -29,12 +21,41 @@ const BarValue = styled("span")`
   font-size: 11px;
 `
 
-const ProgressBar = ({stepsDone, stepsTotal}: { stepsDone: number, stepsTotal: number }) => (
-  <BarWrapper>
-    <Bar percent={stepsDone / stepsTotal * 100}>
-      <BarValue>{stepsDone}</BarValue>
-    </Bar>
-  </BarWrapper>
-)
+const ProgressBar = ({index}: { index: number }) => {
+  const theme = useTheme()
+  const doneColor = theme.palette.success.main
+  const workColor = theme.palette.success.light
+  const transitionSpeed = theme.transitions.duration.short
+
+  const bar = useRef<HTMLDivElement>(null!)
+  const value = useRef<HTMLSpanElement>(null!)
+
+  useEffect(() => {
+    bar.current.style.backgroundColor = workColor
+    bar.current.style.transition =
+      `background-color ${transitionSpeed}ms linear, width 100ms linear`
+
+    return useStore.subscribe(
+      s => s.searchResult.statuses[index],
+      o => {
+        if (o === undefined) return
+        const {stepsDone, stepsTotal} = o
+
+        bar.current.style.width = `${stepsDone / stepsTotal * 100}%`
+        value.current.textContent = String(stepsDone)
+        if (stepsDone === stepsTotal) {
+          bar.current.style.backgroundColor = doneColor
+        }
+      }
+    )
+  }, [])
+  return (
+    <BarWrapper>
+      <Bar ref={bar}>
+        <BarValue ref={value}/>
+      </Bar>
+    </BarWrapper>
+  )
+}
 
 export default ProgressBar
