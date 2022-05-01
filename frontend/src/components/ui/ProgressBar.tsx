@@ -7,6 +7,7 @@ const BarWrapper = styled("div")`
   border-radius: 3px;
   background-color: #e0e0e0;
   margin: 7px 0;
+  box-shadow: 0px 3px 3px -2px rgb(0 0 0 / 20%);
 `
 
 const Bar = styled("div")`
@@ -26,14 +27,14 @@ const ProgressBar = ({index}: { index: number }) => {
   const doneColor = theme.palette.success.main
   const workColor = theme.palette.success.light
   const transitionSpeed = theme.transitions.duration.short
+  const backgroundColorTransition =
+    `background-color ${transitionSpeed}ms linear, width ${transitionSpeed}ms linear`
 
   const bar = useRef<HTMLDivElement>(null!)
   const value = useRef<HTMLSpanElement>(null!)
 
   useEffect(() => {
-    bar.current.style.backgroundColor = workColor
-    bar.current.style.transition =
-      `background-color ${transitionSpeed}ms linear, width 100ms linear`
+    bar.current.style.transition = backgroundColorTransition
 
     return useStore.subscribe(
       s => s.searchResult.statuses[index],
@@ -41,8 +42,13 @@ const ProgressBar = ({index}: { index: number }) => {
         if (o === undefined) return
         const {stepsDone, stepsTotal} = o
 
+        if (stepsDone === 0 || stepsDone === 1) {
+          bar.current.style.backgroundColor = workColor
+        }
+
         bar.current.style.width = `${stepsDone / stepsTotal * 100}%`
         value.current.textContent = String(stepsDone)
+
         if (stepsDone === stepsTotal) {
           bar.current.style.backgroundColor = doneColor
         }
