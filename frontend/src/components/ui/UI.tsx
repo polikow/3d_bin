@@ -14,6 +14,7 @@ import {compareStateSlices} from "../../store/compare";
 import {styled} from "@mui/material";
 import WebGlStats from "./WebGlStats";
 import FabPacked from "./FabPacked";
+import Notifications from "./Notifications";
 
 const FabFloater = styled(Floater)`
   margin: 15px;
@@ -53,6 +54,8 @@ export default () => {
         <Fab icon={<PlayArrow/>} active={is(Tab.Algorithm)} onClick={toggleAlgorithm}/>
         <FabPacked active={is(Tab.Packed)} onClick={togglePacked}/>
       </FabFloater>
+
+      <Notifications/>
 
       <WebGlStats/>
     </>

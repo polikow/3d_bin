@@ -28,7 +28,11 @@
     "watch": "cra-build-watch"
   },
   "eslintConfig": {
-    "extends": "react-app"
+    "extends": "react-app",
+    "rules": {
+      "no-unused-vars": "warn",
+      "no-undef": "warn"
+    }
   },
   "browserslist": {
     "production": [

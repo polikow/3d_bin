@@ -1,16 +1,16 @@
 import React, {useEffect} from "react";
 import {useStore} from "../../store/store";
 import BlockGroup from "./BlockGroup";
-import {Block, BlockPosition} from "../../wailsjs/go/models";
+import {packing} from "../../wailsjs/go/models";
 import {blocksPerRow, cargoLabelColor, gap} from "../../consts";
 import Label from "./Label";
 import {Group, Object3D} from "three";
 import {boundsAndCenter} from "../../utils";
 
-const cargo: BlockPosition[] = []
+const cargo: packing.BlockPosition[] = []
 const labels: Label[] = []
 
-function updateCargo(blocks: Block[]) {
+function updateCargo(blocks: packing.Block[]) {
   // поиск места для одного груза
   let xSpace = 0
   let ySpace = 0
@@ -45,7 +45,7 @@ function updateCargo(blocks: Block[]) {
           y: h,
           z: l + zSpaceShift + zShift
         }
-      } as BlockPosition
+      } as packing.BlockPosition
     } else {
       cargo[i].p1.x = xSpaceShift + xShift
       cargo[i].p1.y = 0

@@ -1,21 +1,5 @@
 export namespace packing {
 	
-	export class Container {
-	    w: number;
-	    h: number;
-	    l: number;
-	
-	    static createFrom(source: any = {}) {
-	        return new Container(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.w = source["w"];
-	        this.h = source["h"];
-	        this.l = source["l"];
-	    }
-	}
 	export class Block {
 	    w: number;
 	    h: number;
@@ -32,105 +16,21 @@ export namespace packing {
 	        this.l = source["l"];
 	    }
 	}
-	export class Point {
-	    x: number;
-	    y: number;
-	    z: number;
+	export class Container {
+	    w: number;
+	    h: number;
+	    l: number;
 	
 	    static createFrom(source: any = {}) {
-	        return new Point(source);
+	        return new Container(source);
 	    }
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.x = source["x"];
-	        this.y = source["y"];
-	        this.z = source["z"];
+	        this.w = source["w"];
+	        this.h = source["h"];
+	        this.l = source["l"];
 	    }
-	}
-	export class BlockPosition {
-	    // Go type: Point
-	    p1: any;
-	    // Go type: Point
-	    p2: any;
-	
-	    static createFrom(source: any = {}) {
-	        return new BlockPosition(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.p1 = this.convertValues(source["p1"], null);
-	        this.p2 = this.convertValues(source["p2"], null);
-	    }
-	
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
-	}
-	export class IndexRotation {
-	    index: number;
-	    rotation: number;
-	
-	    static createFrom(source: any = {}) {
-	        return new IndexRotation(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.index = source["index"];
-	        this.rotation = source["rotation"];
-	    }
-	}
-	export class SearchResult {
-	    iteration: number;
-	    value: number;
-	    solution: IndexRotation[];
-	    packed: BlockPosition[];
-	
-	    static createFrom(source: any = {}) {
-	        return new SearchResult(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.iteration = source["iteration"];
-	        this.value = source["value"];
-	        this.solution = this.convertValues(source["solution"], IndexRotation);
-	        this.packed = this.convertValues(source["packed"], BlockPosition);
-	    }
-	
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
 	}
 	export class Task {
 	    container: Container;
@@ -212,6 +112,70 @@ export namespace packing {
 	        this.stepsTotal = source["stepsTotal"];
 	    }
 	}
+	export class Point {
+	    x: number;
+	    y: number;
+	    z: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new Point(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.x = source["x"];
+	        this.y = source["y"];
+	        this.z = source["z"];
+	    }
+	}
+	export class BlockPosition {
+	    // Go type: Point
+	    p1: any;
+	    // Go type: Point
+	    p2: any;
+	
+	    static createFrom(source: any = {}) {
+	        return new BlockPosition(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.p1 = this.convertValues(source["p1"], null);
+	        this.p2 = this.convertValues(source["p2"], null);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class IndexRotation {
+	    index: number;
+	    rotation: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new IndexRotation(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.index = source["index"];
+	        this.rotation = source["rotation"];
+	    }
+	}
 	export class MultipleSearchResult {
 	    iteration: number;
 	    value: number;
@@ -230,6 +194,44 @@ export namespace packing {
 	        this.solution = this.convertValues(source["solution"], IndexRotation);
 	        this.packed = this.convertValues(source["packed"], BlockPosition);
 	        this.statuses = this.convertValues(source["statuses"], Progress);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	
+	
+	export class SearchResult {
+	    iteration: number;
+	    value: number;
+	    solution: IndexRotation[];
+	    packed: BlockPosition[];
+	
+	    static createFrom(source: any = {}) {
+	        return new SearchResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.iteration = source["iteration"];
+	        this.value = source["value"];
+	        this.solution = this.convertValues(source["solution"], IndexRotation);
+	        this.packed = this.convertValues(source["packed"], BlockPosition);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

@@ -14,7 +14,7 @@ interface FloaterProps {
   position?: FloaterPosition
   flow?: Flow
   className?: string
-  children: React.ReactNode
+  children?: React.ReactNode
 }
 
 const hiddenLeft = css`transform: translateX(-120%);`
@@ -40,7 +40,9 @@ const CustomIconButton = styled(IconButton)`
   right: -44px;
 `
 
-const Floater = ({open, onClose, position = "top-left", flow = "column", className, children}: FloaterProps) => {
+const Floater = React.forwardRef(
+  ({open, onClose, position = "top-left", flow = "column", className, children}: FloaterProps,
+   ref: React.ForwardedRef<HTMLDivElement>) => {
   const theme = useTheme()
   const duration = theme.transitions.duration.standard
   const easing = open
@@ -64,6 +66,7 @@ const Floater = ({open, onClose, position = "top-left", flow = "column", classNa
         transition: transform ${duration}ms ${easing} 0ms;
       `}
       className={className}
+      ref={ref}
     >
       {children}
       {onClose !== undefined &&
@@ -73,6 +76,6 @@ const Floater = ({open, onClose, position = "top-left", flow = "column", classNa
       }
     </div>
   );
-}
+})
 
 export default Floater

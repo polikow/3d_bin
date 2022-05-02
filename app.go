@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"math/rand"
 	"path/filepath"
 	goruntime "runtime"
 	"strings"
@@ -40,6 +41,7 @@ func (a *App) processPanicReason(reason any) error {
 	}
 	wrappedErr := fmt.Errorf("recovered from: %w", err)
 	runtime.LogError(a.ctx, wrappedErr.Error())
+	a.notifyFailure("Произошла ошибка", wrappedErr.Error())
 	return wrappedErr
 }
 
@@ -98,6 +100,7 @@ func (a *App) evaluate(algorithms []packing.SearchAlgorithmWithProgress) {
 	}
 	runtime.EventsEmit(a.ctx, "result", result)
 	runtime.EventsEmit(a.ctx, "doneSearching")
+	a.notifySuccess("Поиск завершен", "")
 }
 
 // selectFileToSaveInto отображает диалоговое окно, в котором пользователь
@@ -151,13 +154,16 @@ func (a *App) selectJSONFileToLoadFrom(dialogTitle string) (string, error) {
 func (a *App) SaveTask(task packing.Task) error {
 	file, err := a.selectFileToSaveInto("Сохранить задачу в файл")
 	if err != nil {
+		a.notifyFailure("Не удалось сохранить задачу", err.Error())
 		return err
 	}
 
 	err = packing.SaveTaskIntoJSONFile(file, task)
 	if err != nil {
+		a.notifyFailure("Не удалось сохранить задачу", err.Error())
 		return err
 	}
+	a.notifySuccess("Задача сохранена", file)
 	return nil
 }
 
@@ -166,12 +172,16 @@ func (a *App) SaveTask(task packing.Task) error {
 func (a *App) SaveSearchResult(result packing.SearchResult) error {
 	file, err := a.selectFileToSaveInto("Сохранить решение задачи в файл")
 	if err != nil {
+		a.notifyFailure("Не удалось сохранить решение", err.Error())
 		return err
 	}
 
 	err = packing.SaveSearchResultIntoJSONFile(file, result)
 	if err != nil {
+		a.notifyFailure("Не удалось сохранить решение", err.Error())
 		return err
+	} else {
+		a.notifySuccess("Решение сохранено", file)
 	}
 	return nil
 }
@@ -181,13 +191,16 @@ func (a *App) SaveSearchResult(result packing.SearchResult) error {
 func (a *App) LoadTask() (packing.Task, error) {
 	file, err := a.selectJSONFileToLoadFrom("Загрузить задачу из файла")
 	if err != nil {
+		a.notifyFailure("Не удалось загрузить задачу", err.Error())
 		return packing.Task{}, err
 	}
 
 	task, err := packing.LoadTaskFromJSONFile(file)
 	if err != nil {
+		a.notifyFailure("Не удалось загрузить задачу", err.Error())
 		return packing.Task{}, err
 	}
+	a.notifySuccess("Задача загружена", file)
 	return task, nil
 }
 
@@ -200,6 +213,11 @@ func (a *App) LoadSearchResult() (packing.SearchResult, error) {
 	}
 
 	searchResult, err := packing.LoadSearchResultFromJSONFile(file)
+	if err != nil {
+		a.notifyFailure("Не удалось загрузить решение", err.Error())
+	} else {
+		a.notifySuccess("Решение загружено", file)
+	}
 	return searchResult, nil
 }
 
@@ -213,3 +231,31 @@ func (a *App) AvailableCPUs() int {
 }
 
 func (a *App) TSFix(_ packing.MultipleSearchResult) {}
+
+func (a *App) notifySuccess(main, secondary string) {
+	a.notify(main, secondary, true)
+}
+
+func (a *App) notifyFailure(main, secondary string) {
+	a.notify(main, secondary, false)
+}
+
+func (a *App) notify(main, secondary string, ok bool) {
+	runtime.EventsEmit(a.ctx, "notification", newNotification(main, secondary, ok))
+}
+
+type Notification struct {
+	Key       string `json:"key"`
+	Main      string `json:"main"`
+	Secondary string `json:"secondary"`
+	Ok        bool   `json:"ok"`
+}
+
+func newNotification(main, secondary string, ok bool) Notification {
+	return Notification{
+		Key:       fmt.Sprint(rand.Int()),
+		Main:      main,
+		Secondary: secondary,
+		Ok:        ok,
+	}
+}

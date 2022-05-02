@@ -166,7 +166,12 @@ export const useStore = create<Store,
 
   saveSolution: () => {
     SaveSearchResult(
-      packing.SearchResult.createFrom(get().searchResult)
+      {
+        solution: get().searchResult.solution,
+        packed: get().searchResult.packed,
+        iteration: get().searchResult.iteration,
+        value: get().searchResult.value,
+      } as packing.SearchResult
     )
       .then(log)
       .catch(logError)
@@ -176,10 +181,13 @@ export const useStore = create<Store,
       .then(searchResult => {
         if (searchResult instanceof Error) return logError(searchResult)
         set({
-          searchResult: packing.MultipleSearchResult.createFrom({
-            ...searchResult,
+          searchResult: {
+            value: searchResult.value,
+            iteration: searchResult.iteration,
             statuses: [],
-          })
+            solution: searchResult.solution,
+            packed: searchResult.packed
+          } as unknown as packing.MultipleSearchResult
         })
       })
       .catch(logError)
