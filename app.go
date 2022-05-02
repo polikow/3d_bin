@@ -3,8 +3,8 @@ package main
 import (
 	"3d_bin/packing"
 	"context"
+	"errors"
 	"fmt"
-	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"path/filepath"
 	goruntime "runtime"
@@ -32,24 +32,24 @@ func (a App) domReady(ctx context.Context) {}
 // shutdown is called at application termination
 func (a *App) shutdown(ctx context.Context) {}
 
-// recover
-func (a *App) recover() error {
-	if r := recover(); r != nil {
-		err, ok := r.(error)
-		if !ok {
-			err = errors.Errorf("unknown reason: %v", r)
-			runtime.LogError(a.ctx, errors.Wrap(err, "recovered from").Error())
-		} else {
-			runtime.LogError(a.ctx, err.Error())
-		}
-		return err
+// processPanicReason
+func (a *App) processPanicReason(reason any) error {
+	err, ok := reason.(error)
+	if !ok {
+		err = fmt.Errorf("unknown error: %v", reason)
 	}
-	return nil
+	wrappedErr := fmt.Errorf("recovered from: %w", err)
+	runtime.LogError(a.ctx, wrappedErr.Error())
+	return wrappedErr
 }
 
 // RunBCA инициализирует работу иммунного алгоритма для этой задачи.
 func (a *App) RunBCA(task packing.Task, settings packing.BCASettings, instances int) (err error) {
-	defer func() { err = a.recover() }()
+	defer func() {
+		if r := recover(); r != nil {
+			err = a.processPanicReason(r)
+		}
+	}()
 
 	algorithms := make([]packing.SearchAlgorithmWithProgress, 0, instances)
 	for i := 0; i < instances; i++ {
@@ -63,7 +63,11 @@ func (a *App) RunBCA(task packing.Task, settings packing.BCASettings, instances 
 
 // RunGA инициализирует работу генетического алгоритма для этой задачи.
 func (a *App) RunGA(task packing.Task, settings packing.GASettings, instances int) (err error) {
-	defer func() { err = a.recover() }()
+	defer func() {
+		if r := recover(); r != nil {
+			err = a.processPanicReason(r)
+		}
+	}()
 
 	algorithms := make([]packing.SearchAlgorithmWithProgress, 0, instances)
 	for i := 0; i < instances; i++ {
@@ -116,7 +120,7 @@ func (a *App) selectFileToSaveInto(dialogTitle string) (string, error) {
 		file += ".json"
 
 	case extension != "json":
-		err = errors.Errorf("file %q has extension %q", file, extension)
+		err = fmt.Errorf("file %q has extension %q", file, extension)
 		runtime.LogInfo(a.ctx, err.Error())
 		file = strings.TrimSuffix(file, extension) + ".json"
 		runtime.LogInfo(a.ctx, fmt.Sprintf("trying to save the data into %q", file))
@@ -133,7 +137,7 @@ func (a *App) selectJSONFileToLoadFrom(dialogTitle string) (string, error) {
 		Filters: []runtime.FileFilter{{"JSON файл (*.json)", "*.json"}},
 	})
 	if err != nil {
-		return "", errors.Wrap(err, "failed to select a file to load data from")
+		return "", fmt.Errorf("failed to select a file to load data from: %w", err)
 	}
 	if file == "" {
 		return "", errors.New("no file was selected to load data from")
