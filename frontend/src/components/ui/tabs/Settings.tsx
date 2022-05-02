@@ -179,7 +179,7 @@ function NumCPUSelector() {
     AvailableCPUs().then((cpus) => {
       if (cpus > 1) {
         setCPUsAvailable(cpus)
-        setCPUs(Math.ceil(cpus * 0.65))
+        setCPUs(Math.min(cpus, 4))
       }
     })
   }, [])

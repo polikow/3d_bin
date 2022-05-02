@@ -24,14 +24,10 @@ func main() {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  "3d_bin by Aleksey Polyakov",
-		Width:  1200,
-		Height: 950,
-		// MinWidth:          720,
-		// MinHeight:         570,
-		// MaxWidth:          1280,
-		// MaxHeight:         740,
-		DisableResize:     false,
+		Title:             "3d_bin by Aleksey Polyakov",
+		Width:             1200,
+		Height:            950,
+		DisableResize:     true,
 		Fullscreen:        false,
 		Frameless:         false,
 		StartHidden:       false,
@@ -49,7 +45,7 @@ func main() {
 		Windows: &windows.Options{
 			WebviewIsTransparent: false,
 			WindowIsTranslucent:  false,
-			DisableWindowIcon:    false,
+			DisableWindowIcon:    true,
 		},
 		Mac: &mac.Options{
 			TitleBar:             mac.TitleBarHiddenInset(),

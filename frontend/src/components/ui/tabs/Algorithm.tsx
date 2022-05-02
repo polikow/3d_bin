@@ -23,15 +23,15 @@ interface AlgorithmProps {
 }
 
 const defaultBCASettings: packing.BCASettings = {
-  np: 10,
+  np: 20,
   ci: 2.76,
-  ni: 500,
+  ni: 400,
 }
 
 const defaultGASettings: packing.GASettings = {
   np: 100,
   mp: 0.21,
-  ni: 500,
+  ni: 400,
   evolution: "Darwin",
 }
 
@@ -179,7 +179,7 @@ export default React.memo(({open, onClose}: AlgorithmProps) => {
       <ResultFloater open={outputOpen}>
         <OuterPaper elevation={3}>
           <Title>Прогресс поиска</Title>
-          <ResultInnerPaper sx={{maxHeight: "103px"}} elevation={0}>
+          <ResultInnerPaper sx={{maxHeight: "104px"}} elevation={0}>
             <Progress/>
           </ResultInnerPaper>
         </OuterPaper>
