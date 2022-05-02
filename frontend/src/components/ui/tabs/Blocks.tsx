@@ -17,7 +17,7 @@ import {Event, integerInBounds} from "../../../utils";
 import ButtonAccept from "../ButtonAccept";
 import ButtonAdd from "../ButtonAdd";
 import ButtonCreate from "../ButtonCreate";
-import {Block} from "../../../wailsjs/go/models"
+import {packing} from "../../../wailsjs/go/models"
 import {blocksPerRow, rowsPerPage} from "../../../consts";
 import {compareAlwaysTrue, compareState} from "../../../store/compare"
 import OuterPaper from "../OuterPaper";
@@ -70,7 +70,7 @@ export default React.memo(({open, onClose}: BlocksProps) => {
   )
   const onRowsPerPageChange = useCallback(() => setPage(0), [])
   const onChangeChangeableRow = useCallback(
-    (index: number, block: Block) => {
+    (index: number, block: packing.Block) => {
       setIndexChanging(null)
       changeBlockByIndex(index, block)
     },
@@ -238,7 +238,7 @@ function ChangeMenu({index, onChange, onRemove}: ChangeMenuProps) {
 
 interface RowProps {
   index: number
-  block: Block
+  block: packing.Block
   onChange: (index: number) => void
   onRemove: (index: number) => void
   showChange?: boolean
@@ -266,8 +266,8 @@ function Row({index, block, onChange, onRemove, showChange = true}: RowProps) {
 
 interface ChangeableRowProps {
   index: number
-  initialBlock: Block
-  onChange: (index: number, block: Block) => void
+  initialBlock: packing.Block
+  onChange: (index: number, block: packing.Block) => void
 }
 
 const CustomTextField = styled(TextField)`

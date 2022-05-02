@@ -3,7 +3,9 @@ import {subscribeWithSelector} from "zustand/middleware";
 import {Scene, Store, Tab,} from "./types";
 import * as DEFAULT from "./defaults"
 import {log, logError, replaced, withoutIndex} from "./utils";
-import {MultipleSearchResult, SearchResult, Task} from "../wailsjs/go/models";
+import {packing} from "../wailsjs/go/models";
+import {Generate, LoadSearchResult, LoadTask, RunBCA, RunGA, SaveSearchResult, SaveTask} from "../wailsjs/go/main/App"
+import {EventsOn} from "../wailsjs/runtime";
 
 export const useStore = create<Store,
   SetState<Store>,
@@ -88,7 +90,7 @@ export const useStore = create<Store,
     }))
   },
   generateRandomBlocks: () => {
-    window.go.main.App.Generate(get().container)
+    Generate(get().container)
       .then(result => {
         if (result instanceof Error) return logError(result)
         get().replaceBlocks(result)
@@ -98,12 +100,12 @@ export const useStore = create<Store,
 
   saveTask: () => {
     const {container, blocks} = get()
-    window.go.main.App.SaveTask({container, blocks} as Task)
+    SaveTask({container, blocks} as packing.Task)
       .then(log)
       .catch(logError)
   },
   loadTask: () => {
-    window.go.main.App.LoadTask()
+    LoadTask()
       .then(result => {
         if (result instanceof Error) return logError(result)
         const {container, blocks} = result
@@ -118,16 +120,16 @@ export const useStore = create<Store,
   startBCA: (settings) => {
     log(settings)
     const {container, blocks, cpus, searchStarted, searchFailedToStart} = get()
-    const task = {container, blocks} as Task
-    window.go.main.App.RunBCA(task, settings, cpus)
+    const task = {container, blocks} as packing.Task
+    RunBCA(task, settings, cpus)
       .then(searchStarted)
       .catch(searchFailedToStart)
   },
   startGA: (settings) => {
     log(settings)
     const {container, blocks, cpus, searchStarted, searchFailedToStart} = get()
-    const task = {container, blocks} as Task
-    window.go.main.App.RunGA(task, settings, cpus)
+    const task = {container, blocks} as packing.Task
+    RunGA(task, settings, cpus)
       .then(searchStarted)
       .catch(searchFailedToStart)
   },
@@ -154,27 +156,27 @@ export const useStore = create<Store,
 
           iteration: searchResult.iteration,
           statuses: searchResult.statuses
-        } as MultipleSearchResult
+        } as packing.MultipleSearchResult
       })
-    // решение улучшено - заменяем все на новое
+      // решение улучшено - заменяем все на новое
     } else {
       set({searchResult})
     }
   },
 
   saveSolution: () => {
-    window.go.main.App.SaveSearchResult(
-      SearchResult.createFrom(get().searchResult)
+    SaveSearchResult(
+      packing.SearchResult.createFrom(get().searchResult)
     )
       .then(log)
       .catch(logError)
   },
   loadSolution: () => {
-    window.go.main.App.LoadSearchResult()
+    LoadSearchResult()
       .then(searchResult => {
         if (searchResult instanceof Error) return logError(searchResult)
         set({
-          searchResult: MultipleSearchResult.createFrom({
+          searchResult: packing.MultipleSearchResult.createFrom({
             ...searchResult,
             statuses: [],
           })
@@ -190,5 +192,5 @@ const handleResult = (data: any) => {
 const handleDoneSearching = () => {
   useStore.setState({isSearching: false})
 }
-window.runtime.EventsOn("result", handleResult)
-window.runtime.EventsOn("doneSearching", handleDoneSearching)
+EventsOn("result", handleResult)
+EventsOn("doneSearching", handleDoneSearching)

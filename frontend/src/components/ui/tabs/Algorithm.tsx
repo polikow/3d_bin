@@ -2,7 +2,7 @@ import React, {useCallback, useState} from "react";
 import {useStore} from "../../../store/store";
 import {Button, styled} from "@mui/material";
 import {Tab} from "../../../store/types";
-import {BCASettings, GASettings} from "../../../wailsjs/go/models";
+import {packing} from "../../../wailsjs/go/models";
 import {compareAlwaysTrue, compareState} from "../../../store/compare";
 import Floater from "../Floater";
 import Title from "../Title";
@@ -22,13 +22,13 @@ interface AlgorithmProps {
   onClose: () => void
 }
 
-const defaultBCASettings: BCASettings = {
+const defaultBCASettings: packing.BCASettings = {
   np: 10,
   ci: 2.76,
   ni: 500,
 }
 
-const defaultGASettings: GASettings = {
+const defaultGASettings: packing.GASettings = {
   np: 100,
   mp: 0.21,
   ni: 500,
@@ -63,7 +63,7 @@ const ResultFloater = styled(Floater)`
 
 const ResultInnerPaper = styled(InnerPaper)`
   max-width: 280px;
-  max-height: 376px;
+  overflow-y: auto;
 `
 
 export default React.memo(({open, onClose}: AlgorithmProps) => {
@@ -179,7 +179,7 @@ export default React.memo(({open, onClose}: AlgorithmProps) => {
       <ResultFloater open={outputOpen}>
         <OuterPaper elevation={3}>
           <Title>Прогресс поиска</Title>
-          <ResultInnerPaper elevation={0}>
+          <ResultInnerPaper sx={{maxHeight: "103px"}} elevation={0}>
             <Progress/>
           </ResultInnerPaper>
         </OuterPaper>
@@ -188,7 +188,7 @@ export default React.memo(({open, onClose}: AlgorithmProps) => {
       <ResultFloater open={outputOpen}>
         <OuterPaper elevation={3}>
           <Title>Найденное решение</Title>
-          <ResultInnerPaper elevation={0}>
+          <ResultInnerPaper sx={{maxHeight: "230px"}} elevation={0}>
             <Value/>
             <PackingOrder/>
             <CustomButton

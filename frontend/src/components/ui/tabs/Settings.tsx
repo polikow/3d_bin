@@ -9,6 +9,7 @@ import {compareState, compareStateSlices} from "../../../store/compare";
 import Title from "../Title";
 import OuterPaper from "../OuterPaper";
 import InnerPaper from "../InnerPaper";
+import { AvailableCPUs } from "../../../wailsjs/go/main/App";
 
 interface SettingsProps {
   open: boolean
@@ -175,7 +176,7 @@ function NumCPUSelector() {
   const [cpus, setCPUs] = useStore(s => [s.cpus, s.setCPUs], compareStateSlices)
   const [cpusAvailable, setCPUsAvailable] = useState(1)
   useEffect(() => {
-    window.go.main.App.AvailableCPUs().then((cpus) => {
+    AvailableCPUs().then((cpus) => {
       if (cpus > 1) {
         setCPUsAvailable(cpus)
         setCPUs(Math.ceil(cpus * 0.65))

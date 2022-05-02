@@ -2,7 +2,7 @@ import React, {useEffect, useRef} from "react";
 import {useStore} from "../../store/store";
 import {styled} from "@mui/material";
 import BoldSpan from "./BoldSpan";
-import {IndexRotation} from "../../wailsjs/go/models";
+import {packing} from "../../wailsjs/go/models";
 import TextTypography from "./TextTypography";
 
 const PackedSpan = styled(BoldSpan)`
@@ -20,7 +20,7 @@ function PackingOrder() {
     useStore.subscribe(
       s => [s.searchResult.solution, s.searchResult.packed.length],
       s => {
-        const solution = s[0] as IndexRotation[]
+        const solution = s[0] as packing.IndexRotation[]
         const packedLength = s[1] as number
         packedSpan.current.textContent = success(solution, packedLength)
         notPackedSpan.current.textContent = failed(solution, solution.length - packedLength)
@@ -37,11 +37,11 @@ function PackingOrder() {
   )
 }
 
-function success(solution: IndexRotation[], n: number): string {
+function success(solution: packing.IndexRotation[], n: number): string {
   return solution.map(({index}) => index + 1).slice(0, n).join(' → ')
 }
 
-function failed(solution: IndexRotation[], n: number): string {
+function failed(solution: packing.IndexRotation[], n: number): string {
   if (n === 0) return ''
   return " → " + solution.map(({index}) => index + 1).slice(-n).join(' → ')
 }

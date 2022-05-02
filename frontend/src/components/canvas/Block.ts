@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import {defaultColor} from "../../consts";
-import {BlockPosition} from "../../wailsjs/go/models";
+import {packing} from "../../wailsjs/go/models";
 import {colorOf} from "../../utils";
 
 const filledGeometry = new THREE.BoxBufferGeometry()
@@ -22,7 +22,7 @@ class Block extends THREE.Group {
   isColorful = true
 
   constructor(
-    bp: BlockPosition,
+    bp: packing.BlockPosition,
     color: THREE.ColorRepresentation,
     onlyEdges: boolean,
     transparency: number,
@@ -73,7 +73,7 @@ class Block extends THREE.Group {
     this.setPositionAndScaleFromTuple([w / 2, h / 2, l / 2], [w, h, l])
   }
 
-  setPositionAndScaleFromBP(bp: BlockPosition) {
+  setPositionAndScaleFromBP(bp: packing.BlockPosition) {
     const sShift = 0.015
     const pShift = sShift / 2
 
@@ -108,7 +108,7 @@ class Block extends THREE.Group {
     for (const block of blocks) block.setOnlyEdges(onlyEdges)
   }
 
-  static createFrom(bps: BlockPosition[], onlyEdges: boolean, transparency: number, isColorful: boolean): Block[] {
+  static createFrom(bps: packing.BlockPosition[], onlyEdges: boolean, transparency: number, isColorful: boolean): Block[] {
     return bps.map((bp, i) =>
       new Block(bp, colorOf(i), onlyEdges, transparency, isColorful))
   }

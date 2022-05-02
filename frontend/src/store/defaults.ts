@@ -1,22 +1,22 @@
 import {CanvasState, Scene, Tab, TaskState, UIState} from "./types";
-import {Block, Container, MultipleSearchResult} from "../wailsjs/go/models"
+import {packing} from "../wailsjs/go/models"
 
-export const container: Container = {w: 2, h: 2, l: 2}
+export const container: packing.Container = {w: 2, h: 2, l: 2}
 
-export const blocks: Block[] = [
+export const blocks: packing.Block[] = [
   {w: 1, h: 1, l: 1},
   {w: 1, h: 1, l: 1},
   {w: 1, h: 1, l: 1},
   {w: 1, h: 1, l: 1},
 ]
 
-export const searchResult = MultipleSearchResult.createFrom({
+export const searchResult = {
   iteration: 0,
   value: 0,
   solution: [],
   packed: [],
   statuses: [],
-})
+} as unknown as packing.MultipleSearchResult
 
 export const canvasState: CanvasState = {
   scene: Scene.Container,

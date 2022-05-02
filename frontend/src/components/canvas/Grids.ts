@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import Grid from "./Grid";
-import {Block, Container} from "../../wailsjs/go/models";
+import {packing} from "../../wailsjs/go/models";
 
 class Grids extends THREE.Group {
 
@@ -13,7 +13,7 @@ class Grids extends THREE.Group {
   private readonly xzOpposite: Grid
   private readonly yzOpposite: Grid
 
-  constructor({w, h, l}: Block | Container, cellSize: number = 1) {
+  constructor({w, h, l}: packing.Block | packing.Container, cellSize: number = 1) {
     const c = Grids.COLOR;
     super();
     this.xy = new Grid(w, h, cellSize, c)
@@ -30,7 +30,7 @@ class Grids extends THREE.Group {
     )
   }
 
-  setDimensions({w, h, l}: Block | Container) {
+  setDimensions({w, h, l}: packing.Block | packing.Container) {
     this.xy.setSize(w, h)
     this.yz.setSize(l, h)
     this.xz.setSize(w, l)

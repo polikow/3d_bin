@@ -1,7 +1,7 @@
 // @ts-nocheck
 import {preloadFont, Text} from 'troika-three-text'
 import * as THREE from "three"
-import {Block, Container} from "../../wailsjs/go/models"
+import {packing} from "../../wailsjs/go/models"
 
 type AllowedCharacter = number | 'x' | 'y' | 'z' | ''
 
@@ -46,46 +46,46 @@ class Label extends Text {
     this.scale.set(d, d, d)
   }
 
-  positionAtCenterOfX(o: Container | Block): Label {
+  positionAtCenterOfX(o: packing.Container | packing.Block): Label {
     this.position.set(o.w / 3, 0, Label.axisShift(o))
     return this
   }
 
-  positionAtCenterOfY(o: Container | Block): Label {
+  positionAtCenterOfY(o: packing.Container | packing.Block): Label {
     this.position.set(Label.axisShift(o), o.h / 3, Label.axisShift(o))
     return this
   }
 
-  positionAtCenterOfZ(o: Container | Block): Label {
+  positionAtCenterOfZ(o: packing.Container | packing.Block): Label {
     this.position.set(Label.axisShift(o), 0, o.l / 3)
     return this
   }
 
-  private static axisShift({w, h, l}: Container | Block) {
+  private static axisShift({w, h, l}: packing.Container | packing.Block) {
     return -((w + h + l) / 3 * Label.AXIS_SHIFT_FACTOR + Label.AXIS_SHIFT_BIAS)
   }
 
-  private static smallAxisShift(o: Container | Block) {
+  private static smallAxisShift(o: packing.Container | packing.Block) {
     return Label.axisShift(o) + 0.05
   }
 
-  positionAtCornerOf(o: Container | Block): Label {
+  positionAtCornerOf(o: packing.Container | packing.Block): Label {
     const s = Label.smallAxisShift(o)
     this.position.set(s, 0, s)
     return this
   }
 
-  positionAtXOf(x: number, o: Container | Block) {
+  positionAtXOf(x: number, o: packing.Container | packing.Block) {
     const s = Label.smallAxisShift(o)
     this.position.set(x, 0, s)
   }
 
-  positionAtYOf(y: number, o: Container | Block) {
+  positionAtYOf(y: number, o: packing.Container | packing.Block) {
     const s = Label.smallAxisShift(o)
     this.position.set(s, y, s)
   }
 
-  positionAtZOf(z: number, o: Container | Block) {
+  positionAtZOf(z: number, o: packing.Container | packing.Block) {
     const s = Label.smallAxisShift(o)
     this.position.set(s, 0, z)
   }

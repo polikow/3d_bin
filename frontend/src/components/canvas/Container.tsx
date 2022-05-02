@@ -1,17 +1,17 @@
 import {useEffect, useRef} from "react";
 import {useStore} from "../../store/store";
 import {useFrame} from "@react-three/fiber";
-import {BlockPosition} from "../../wailsjs/go/models"
+import {packing} from "../../wailsjs/go/models"
 import Block from "./Block";
 import Grids from "./Grids";
 import Label from "./Label";
-import {containerColor, labelsPerAxis, tickColor, tickSize, xColor, yColor, zColor} from "../../consts";
+import {containerColor, labelsPerAxis, labelsYShift, tickColor, tickSize, xColor, yColor, zColor} from "../../consts";
 import * as THREE from "three"
 
 const c = useStore.getState().container;
 const labelsAreVisible = useStore.getState().areLabelsVisible
 const {w, h, l} = c
-const bp = new BlockPosition({p1: {x: 0, y: 0, z: 0}, p2: {x: w, y: h, z: l}})
+const bp = ({p1: {x: 0, y: 0, z: 0}, p2: {x: w, y: h, z: l}}) as packing.BlockPosition
 
 const containerBlockObj = new Block(bp, containerColor, true, 0, true)
 const gridsObj = new Grids({w, h, l} )
@@ -71,6 +71,7 @@ export default () => {
   const y = useRef<Label>(null!)
   const z = useRef<Label>(null!)
   useEffect(() => {
+    labels.current.translateY(labelsYShift)
     useStore.subscribe(
       s => s.container,
       c => {

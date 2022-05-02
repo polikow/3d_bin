@@ -2,7 +2,7 @@ package main
 
 import (
 	"embed"
-	"github.com/pkg/errors"
+	"fmt"
 	"log"
 
 	"github.com/wailsapp/wails/v2"
@@ -62,8 +62,7 @@ func main() {
 			},
 		},
 	})
-
 	if err != nil {
-		log.Fatal(errors.Wrap(err, "failed to run desktop app"))
+		log.Fatal(fmt.Errorf("failed to run desktop app: %w", err))
 	}
 }

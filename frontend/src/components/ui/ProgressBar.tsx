@@ -42,10 +42,7 @@ const ProgressBar = ({index}: { index: number }) => {
         if (o === undefined) return
         const {stepsDone, stepsTotal} = o
 
-        if (stepsDone === 0 || stepsDone === 1) {
-          bar.current.style.backgroundColor = workColor
-        }
-
+        bar.current.style.backgroundColor = workColor
         bar.current.style.width = `${stepsDone / stepsTotal * 100}%`
         value.current.textContent = String(stepsDone)
 

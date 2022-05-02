@@ -1,10 +1,4 @@
-import {
-  BCASettings,
-  Block,
-  Container,
-  GASettings,
-  MultipleSearchResult,
-} from "../wailsjs/go/models"
+import {packing} from "../wailsjs/go/models"
 
 export type Store =
   CanvasState & CanvasActions &
@@ -52,32 +46,32 @@ export type UIActions = {
 }
 
 export type TaskState = {
-  container: Container
-  blocks: Array<Block>
+  container: packing.Container
+  blocks: Array<packing.Block>
 
   isSearching: boolean
-  searchResult: MultipleSearchResult
+  searchResult: packing.MultipleSearchResult
 }
 
 export type TaskActions = {
   setContainerSide: (side: "w" | "h" | "l", value: number) => void
 
-  replaceBlocks: (blocks: Array<Block>) => void
-  addNewBlock: (block: Block) => void
+  replaceBlocks: (blocks: Array<packing.Block>) => void
+  addNewBlock: (block: packing.Block) => void
   removeBlockByIndex: (index: number) => void
-  changeBlockByIndex: (index: number, block: Block) => void
+  changeBlockByIndex: (index: number, block: packing.Block) => void
   generateRandomBlocks: () => void
 
   saveTask: () => void
   loadTask: () => void
 
-  startBCA: (settings: BCASettings) => void
-  startGA: (settings: GASettings) => void
+  startBCA: (settings: packing.BCASettings) => void
+  startGA: (settings: packing.GASettings) => void
 
   searchStarted: () => void
   searchFailedToStart: (reason: any) => void
 
-  setSearchResult: (searchResult: MultipleSearchResult) => void
+  setSearchResult: (searchResult: packing.MultipleSearchResult) => void
 
   saveSolution: () => void
   loadSolution: () => void

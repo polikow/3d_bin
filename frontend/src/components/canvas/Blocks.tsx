@@ -2,7 +2,7 @@ import React, {useEffect, useRef} from "react";
 import {useStore} from "../../store/store";
 import BlockGroup from "./BlockGroup";
 import {colorOf} from "../../utils";
-import {BlockPosition, IndexRotation} from "../../wailsjs/go/models";
+import {packing} from "../../wailsjs/go/models";
 
 export default () => {
   const ref = useRef<BlockGroup>(null!)
@@ -10,8 +10,8 @@ export default () => {
     useStore.subscribe(
       s => [s.searchResult.solution, s.searchResult.packed],
       s => {
-        const solution = s[0] as IndexRotation[]
-        const packed = s[1] as BlockPosition[]
+        const solution = s[0] as packing.IndexRotation[]
+        const packed = s[1] as packing.BlockPosition[]
 
         const blockColor = solution.map(o => colorOf(o.index))
         const colorFunc = (i: number) => blockColor[i]

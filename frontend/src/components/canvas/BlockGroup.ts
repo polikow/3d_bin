@@ -1,12 +1,12 @@
 import {useStore} from "../../store/store";
 import Block from "./Block";
-import {BlockPosition} from "../../wailsjs/go/models";
+import {packing} from "../../wailsjs/go/models";
 import {colorOf} from "../../utils";
 import * as THREE from "three";
 
 class BlockGroup extends THREE.Group {
 
-  static createFrom(positions: BlockPosition[]) {
+  static createFrom(positions: packing.BlockPosition[]) {
     const {transparency, isColorful, onlyEdges} = useStore.getState()
     const instance = new BlockGroup
     instance.add(...Block.createFrom(positions, onlyEdges, transparency, isColorful))
@@ -17,7 +17,7 @@ class BlockGroup extends THREE.Group {
     return this.children as Block[]
   }
 
-  setPositions(positions: BlockPosition[], colorFunc = colorOf) {
+  setPositions(positions: packing.BlockPosition[], colorFunc = colorOf) {
     const source = (this.blocks[0] === undefined) ? useStore.getState(): this.blocks[0]
     const {transparency, isColorful, onlyEdges} = source
 
