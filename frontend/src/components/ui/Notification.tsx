@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {styled, Typography, useTheme} from "@mui/material";
 import OuterPaper from "./OuterPaper";
 import InnerPaper from "./InnerPaper";
@@ -6,21 +6,31 @@ import DoneIcon from "@mui/icons-material/Done";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 
 interface Props {
+  id: string
   main: string
   secondary?: string
   ok: boolean
-  onDone: () => void
+  onDone: (id: string) => void
 }
 
-const CustomOuterPaper = styled(OuterPaper)`
-  display: flex;
+const CustomOuterPaper = styled(OuterPaper)<{ step: number }>`
+  
+  ${({step}) => (step == 1 || step == 3) && "max-height: 0px"};
+  ${({step}) => (step == 2) && "max-height: 100px"};
+  ${({step}) => (step == 3) ? "opacity: 0" : "opacity: 1"};
+  
+  ${({step}) => (step == 1 || step == 3) && "margin-bottom: 0px"};
+  ${({step}) => (step == 2) && "margin-bottom: 15px"};
+  
+  display: block;
   position: static;
 
-  margin: 0 15px 15px 0;
+  margin-top: 0;
+  margin-right: 15px; 
+  margin-left: 15px;
 
   width: fit-content;
-  height: 0;
-  transition: height linear ${({theme}) => theme.transitions.duration.standard}ms, opacity linear 300ms;
+  transition: all linear ${({theme}) => theme.transitions.duration.standard}ms;
 
   cursor: pointer;
 `
@@ -54,22 +64,29 @@ const iconStyle = {
   margin: "auto 0 auto 17px",
 }
 
-function Notification({main, secondary = '', onDone, ok}: Props) {
-  const paper = useRef<HTMLDivElement>(null!)
+const Notification = ({id, main, secondary = '', onDone, ok}: Props) => {
+  const [step, setStep] = useState(1)
   const theme = useTheme()
   const removeDelay = theme.transitions.duration.standard
-  const time = ok ? 50002 : 150002
+  const time = ok ? 5000 : 15000
+  const removeIt = useCallback(
+    () => {
+      if (step === 3) {
+        return
+      }
+      setStep(3)
+      setTimeout(() => onDone(id), removeDelay + 100)
+    },
+    [step]
+  )
   useEffect(() => {
-    paper.current.style.height = "60px"
-    const timeout = setTimeout(() => {
-      setTimeout(() => onDone(), removeDelay + 100)
-    }, time)
-    return () => clearTimeout(timeout)
+    const removeTimeout = setTimeout(removeIt, time)
+    setStep(2)
+    return () => clearTimeout(removeTimeout)
   }, [])
-  const onClick = useCallback(() => onDone(), [onDone])
   return (
-    <CustomOuterPaper ref={paper} elevation={3}>
-      <CustomInnerPaper elevation={0} onClick={onClick}>
+    <CustomOuterPaper step={step} elevation={3}>
+      <CustomInnerPaper elevation={0} onClick={removeIt}>
         <TypographyWrapper>
           <Main>{main}</Main>
           {secondary !== "" && <Secondary>{secondary}</Secondary>}

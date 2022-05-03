@@ -24,13 +24,17 @@ export default React.memo(() => {
     })
   }, [])
   const onDone = useCallback(
-    (key: string) => () => deleteByKey(key),
+    (key: string) => deleteByKey(key),
     [deleteByKey]
   )
   return (
       <NotificationsWrapper>
         {getPairs().map(([key, [main, secondary, ok]]) =>
-          <Notification key={key} main={main} secondary={secondary} ok={ok} onDone={onDone(key)}/>
+          <Notification
+            key={key} id={key}
+            main={main} secondary={secondary} ok={ok}
+            onDone={onDone}
+          />
         )}
       </NotificationsWrapper>
   )
