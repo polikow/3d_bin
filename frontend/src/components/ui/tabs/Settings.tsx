@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useState} from "react";
 import {useStore} from "../../../store/store";
 import {Button} from "@mui/material";
-import Floater from "../Floater";
+import LeftMenu from "../LeftMenu";
 import ButtonGroup from "../ButtonGroup";
 import Slider from "../Slider";
 import SwitchWithLabel from "../SwitchWithLabel";
@@ -17,7 +17,7 @@ interface SettingsProps {
 }
 
 export default React.memo(({open, onClose}: SettingsProps) => (
-  <Floater open={open} onClose={onClose}>
+  <LeftMenu open={open} onClose={onClose}>
 
     <OuterPaper elevation={3}>
       <Title>Камера</Title>
@@ -56,7 +56,7 @@ export default React.memo(({open, onClose}: SettingsProps) => (
       </InnerPaper>
     </OuterPaper>
 
-  </Floater>
+  </LeftMenu>
 ))
 
 function CameraFOVButtonGroup() {

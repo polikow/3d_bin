@@ -7,7 +7,7 @@ import {compareAlwaysTrue, compareState} from "../../../store/compare";
 import OuterPaper from "../OuterPaper";
 import InnerPaper from "../InnerPaper";
 import Title from "../Title";
-import Floater from "../Floater";
+import LeftMenu from "../LeftMenu";
 
 interface ContainerProps {
   open: boolean
@@ -15,7 +15,7 @@ interface ContainerProps {
 }
 
 export default React.memo(({open, onClose}: ContainerProps) => (
-  <Floater open={open} onClose={onClose}>
+  <LeftMenu open={open} onClose={onClose}>
     <OuterPaper elevation={3}>
       <Title>Контейнер</Title>
       <InnerPaper elevation={0}>
@@ -24,7 +24,7 @@ export default React.memo(({open, onClose}: ContainerProps) => (
         <LengthTextField/>
       </InnerPaper>
     </OuterPaper>
-  </Floater>
+  </LeftMenu>
 ))
 
 const CustomTextField = styled(TextField)`

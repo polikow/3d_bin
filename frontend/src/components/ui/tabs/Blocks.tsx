@@ -23,7 +23,7 @@ import {compareAlwaysTrue, compareState} from "../../../store/compare"
 import OuterPaper from "../OuterPaper";
 import Title from "../Title";
 import InnerPaper from "../InnerPaper";
-import Floater from "../Floater";
+import LeftMenu from "../LeftMenu";
 import TableBody from "../TableBody";
 
 interface BlocksProps {
@@ -110,7 +110,7 @@ export default React.memo(({open, onClose}: BlocksProps) => {
   }, [blocks])
 
   return (
-    <Floater open={open} onClose={onClose}>
+    <LeftMenu open={open} onClose={onClose}>
       <OuterPaper elevation={3}>
         <Title>Размеры грузов</Title>
         <CustomInnerPaper elevation={0}>
@@ -189,7 +189,7 @@ export default React.memo(({open, onClose}: BlocksProps) => {
           </BottomButtonsWrapper>
         </CustomInnerPaper>
       </OuterPaper>
-    </Floater>
+    </LeftMenu>
   )
 })
 

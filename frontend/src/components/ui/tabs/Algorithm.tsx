@@ -4,7 +4,7 @@ import {Button, styled} from "@mui/material";
 import {Tab} from "../../../store/types";
 import {packing} from "../../../wailsjs/go/models";
 import {compareAlwaysTrue, compareState} from "../../../store/compare";
-import Floater from "../Floater";
+import LeftMenu from "../LeftMenu";
 import Title from "../Title";
 import OuterPaper from "../OuterPaper";
 import InnerPaper from "../InnerPaper";
@@ -14,6 +14,7 @@ import Progress from "../Progress";
 import BoldSpan from "../BoldSpan";
 import PackingOrder from "../PackingOrder";
 import TextTypography from "../TextTypography";
+import HiddenLeft from "../HiddenLeft";
 
 type Algorithm = "bca" | "ga"
 
@@ -56,13 +57,8 @@ const CustomButton = styled(Button)`
   margin: 10px 0 7px 0;
 `
 
-const ResultFloater = styled(Floater)`
-  position: initial;
-  width: 100%;
-`
-
 const ResultInnerPaper = styled(InnerPaper)`
-  max-width: 280px;
+  max-width: 290px;
   overflow-y: auto;
 `
 
@@ -106,7 +102,7 @@ export default React.memo(({open, onClose}: AlgorithmProps) => {
   )
   const handleOpenPackedButtonClick = useCallback(() => setTab(Tab.Packed), [])
   return (
-    <Floater open={open} onClose={onClose}>
+    <LeftMenu open={open} onClose={onClose}>
       <OuterPaper elevation={3}>
         <Title>Поиск упаковки</Title>
         <InnerPaper elevation={0}>
@@ -176,19 +172,19 @@ export default React.memo(({open, onClose}: AlgorithmProps) => {
         </InnerPaper>
       </OuterPaper>
 
-      <ResultFloater open={outputOpen}>
+      <HiddenLeft open={outputOpen}>
         <OuterPaper elevation={3}>
           <Title>Прогресс поиска</Title>
-          <ResultInnerPaper sx={{maxHeight: "104px"}} elevation={0}>
+          <ResultInnerPaper elevation={0}>
             <Progress/>
           </ResultInnerPaper>
         </OuterPaper>
-      </ResultFloater>
+      </HiddenLeft>
 
-      <ResultFloater open={outputOpen}>
+      <HiddenLeft open={outputOpen}>
         <OuterPaper elevation={3}>
           <Title>Найденное решение</Title>
-          <ResultInnerPaper sx={{maxHeight: "230px"}} elevation={0}>
+          <ResultInnerPaper elevation={0}>
             <Value/>
             <PackingOrder/>
             <CustomButton
@@ -199,9 +195,9 @@ export default React.memo(({open, onClose}: AlgorithmProps) => {
             </CustomButton>
           </ResultInnerPaper>
         </OuterPaper>
-      </ResultFloater>
+      </HiddenLeft>
 
-    </Floater>
+    </LeftMenu>
   )
 })
 

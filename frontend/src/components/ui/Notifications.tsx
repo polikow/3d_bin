@@ -1,13 +1,19 @@
 import React, {useCallback, useEffect} from "react"
 import useMap from "../../hooks/useMap";
 import {styled} from "@mui/material";
-import Floater from "./Floater";
 import {EventsOn} from "../../wailsjs/runtime";
 import Notification from "./Notification";
 
 const NotificationsWrapper = styled("div")`
+  position: fixed;
+  bottom: 0;
+  right: 0;
+
   display: flex;
   flex-flow: column;
+  align-items: end;
+
+  z-index: 10;
 `
 
 export default React.memo(() => {
@@ -22,12 +28,10 @@ export default React.memo(() => {
     [deleteByKey]
   )
   return (
-    <Floater open flow="column" position="bottom-right">
       <NotificationsWrapper>
         {getPairs().map(([key, [main, secondary, ok]]) =>
           <Notification key={key} main={main} secondary={secondary} ok={ok} onDone={onDone(key)}/>
         )}
       </NotificationsWrapper>
-    </Floater>
   )
 })

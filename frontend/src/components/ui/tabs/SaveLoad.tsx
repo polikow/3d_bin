@@ -2,7 +2,7 @@ import React from "react";
 import {useStore} from "../../../store/store";
 import {Button, styled, Typography} from "@mui/material";
 import {compareAlwaysTrue, compareState} from "../../../store/compare";
-import Floater from "../Floater";
+import LeftMenu from "../LeftMenu";
 import Title from "../Title";
 import OuterPaper from "../OuterPaper";
 import InnerPaper from "../InnerPaper";
@@ -35,7 +35,7 @@ export default React.memo(({open, onClose}: SaveLoadProps) => {
   )
   const isSearching = useStore(s => s.isSearching, compareState)
   return (
-    <Floater open={open} onClose={onClose}>
+    <LeftMenu open={open} onClose={onClose}>
       <OuterPaper elevation={3}>
         <Title>Сохранение/Загрузка</Title>
         <CustomInnerPaper elevation={0}>
@@ -64,6 +64,6 @@ export default React.memo(({open, onClose}: SaveLoadProps) => {
           </Typography>
         </CustomInnerPaper>
       </OuterPaper>
-    </Floater>
+    </LeftMenu>
   )
 })

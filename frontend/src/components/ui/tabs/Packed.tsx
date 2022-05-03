@@ -1,6 +1,6 @@
 import React, {useCallback, useState} from "react";
 import {useStore} from "../../../store/store";
-import Floater from "../Floater";
+import LeftMenu from "../LeftMenu";
 import Title from "../Title";
 import {styled, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow} from "@mui/material";
 import {Rotation} from "../../../store/types";
@@ -37,7 +37,7 @@ const Packed = React.memo(({open, onClose}: PackedProps) => {
     []
   )
   return (
-    <Floater open={open} onClose={onClose}>
+    <LeftMenu open={open} onClose={onClose}>
       <OuterPaper elevation={3}>
         <Title>Позиции упакованных грузов</Title>
         <CustomInnerPaper elevation={0}>
@@ -85,7 +85,7 @@ const Packed = React.memo(({open, onClose}: PackedProps) => {
           </TableContainer>
         </CustomInnerPaper>
       </OuterPaper>
-    </Floater>
+    </LeftMenu>
   )
 })
 
