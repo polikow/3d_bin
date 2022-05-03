@@ -233,7 +233,7 @@ func (a *App) LoadSearchResult(task packing.Task) (packing.SearchResult, error) 
 	}
 
 	if isValid, err := searchResult.IsValidFor(task); !isValid {
-		a.notifyFailureShort("Решение не подходит")
+		a.notifyFailure("Решение не подходит", err)
 		return packing.SearchResult{}, err
 	}
 
