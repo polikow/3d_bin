@@ -13,6 +13,12 @@ import (
 	"time"
 )
 
+var (
+	unknownPanicReason = errors.New("unknown panic reason")
+
+	filters = []runtime.FileFilter{{"JSON файл (*.json)", "*.json"}}
+)
+
 type App struct {
 	ctx context.Context
 }
@@ -37,12 +43,10 @@ func (a *App) shutdown(ctx context.Context) {}
 func (a *App) processPanicReason(reason any) error {
 	err, ok := reason.(error)
 	if !ok {
-		err = fmt.Errorf("unknown error: %v", reason)
+		err = fmt.Errorf("%w: %v", unknownPanicReason, reason)
 	}
-	wrappedErr := fmt.Errorf("recovered from: %w", err)
-	runtime.LogError(a.ctx, wrappedErr.Error())
-	a.notifyFailure("Произошла ошибка", wrappedErr.Error())
-	return wrappedErr
+	runtime.LogErrorf(a.ctx, "recovered from: %v", err)
+	return err
 }
 
 // RunBCA инициализирует работу иммунного алгоритма для этой задачи.
@@ -50,6 +54,7 @@ func (a *App) RunBCA(task packing.Task, settings packing.BCASettings, instances 
 	defer func() {
 		if r := recover(); r != nil {
 			err = a.processPanicReason(r)
+			a.notifyFailure("Произошла ошибка работы BCA", err)
 		}
 	}()
 
@@ -59,7 +64,6 @@ func (a *App) RunBCA(task packing.Task, settings packing.BCASettings, instances 
 	}
 
 	go a.evaluate(algorithms)
-
 	return
 }
 
@@ -68,6 +72,7 @@ func (a *App) RunGA(task packing.Task, settings packing.GASettings, instances in
 	defer func() {
 		if r := recover(); r != nil {
 			err = a.processPanicReason(r)
+			a.notifyFailure("Произошла ошибка работы GA", err)
 		}
 	}()
 
@@ -77,12 +82,19 @@ func (a *App) RunGA(task packing.Task, settings packing.GASettings, instances in
 	}
 
 	go a.evaluate(algorithms)
-
 	return
 }
 
 // evaluate отсылает результаты работы алгоритма.
 func (a *App) evaluate(algorithms []packing.SearchAlgorithmWithProgress) {
+	defer func() {
+		if r := recover(); r != nil {
+			err := a.processPanicReason(r)
+			a.notifyFailure("Произошла ошибка", err)
+			runtime.EventsEmit(a.ctx, "doneSearching")
+		}
+	}()
+
 	const maxEventsPerSecond = 60
 	const minTimeBetweenEvents = time.Second / maxEventsPerSecond
 
@@ -95,7 +107,6 @@ func (a *App) evaluate(algorithms []packing.SearchAlgorithmWithProgress) {
 		if time.Now().After(allowedTime) {
 			allowedTime = time.Now().Add(minTimeBetweenEvents)
 			runtime.EventsEmit(a.ctx, "result", result)
-			runtime.LogInfo(a.ctx, fmt.Sprintf("StepsDone %d = %g", result.Iteration, result.Value))
 		}
 	}
 	runtime.EventsEmit(a.ctx, "result", result)
@@ -108,7 +119,7 @@ func (a *App) evaluate(algorithms []packing.SearchAlgorithmWithProgress) {
 func (a *App) selectFileToSaveInto(dialogTitle string) (string, error) {
 	file, err := runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
 		Title:   dialogTitle,
-		Filters: []runtime.FileFilter{{"JSON файл (*.json)", "*.json"}},
+		Filters: filters,
 	})
 	if err != nil {
 		return "", err
@@ -122,13 +133,13 @@ func (a *App) selectFileToSaveInto(dialogTitle string) (string, error) {
 	case extension == "":
 		file += ".json"
 
-	case extension != "json":
+	case extension != ".json":
 		err = fmt.Errorf("file %q has extension %q", file, extension)
 		runtime.LogInfo(a.ctx, err.Error())
 		file = strings.TrimSuffix(file, extension) + ".json"
-		runtime.LogInfo(a.ctx, fmt.Sprintf("trying to save the data into %q", file))
+		runtime.LogInfof(a.ctx, "trying to save the data into %q", file)
 	}
-	runtime.LogInfo(a.ctx, fmt.Sprintf("%v was selected to save into", file))
+	runtime.LogInfof(a.ctx, "%q was selected to save into", file)
 	return file, err
 }
 
@@ -137,7 +148,7 @@ func (a *App) selectFileToSaveInto(dialogTitle string) (string, error) {
 func (a *App) selectJSONFileToLoadFrom(dialogTitle string) (string, error) {
 	file, err := runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{
 		Title:   dialogTitle,
-		Filters: []runtime.FileFilter{{"JSON файл (*.json)", "*.json"}},
+		Filters: filters,
 	})
 	if err != nil {
 		return "", fmt.Errorf("failed to select a file to load data from: %w", err)
@@ -145,7 +156,7 @@ func (a *App) selectJSONFileToLoadFrom(dialogTitle string) (string, error) {
 	if file == "" {
 		return "", errors.New("no file was selected to load data from")
 	}
-	runtime.LogInfo(a.ctx, fmt.Sprintf("%q was selected to load from", file))
+	runtime.LogInfof(a.ctx, "%q was selected to load from", file)
 	return file, nil
 }
 
@@ -154,15 +165,16 @@ func (a *App) selectJSONFileToLoadFrom(dialogTitle string) (string, error) {
 func (a *App) SaveTask(task packing.Task) error {
 	file, err := a.selectFileToSaveInto("Сохранить задачу в файл")
 	if err != nil {
-		a.notifyFailure("Не удалось сохранить задачу", err.Error())
+		a.notifyFailure("Не удалось сохранить задачу", err)
 		return err
 	}
 
 	err = packing.SaveTaskIntoJSONFile(file, task)
 	if err != nil {
-		a.notifyFailure("Не удалось сохранить задачу", err.Error())
+		a.notifyFailure("Не удалось сохранить задачу", err)
 		return err
 	}
+
 	a.notifySuccess("Задача сохранена", file)
 	return nil
 }
@@ -172,17 +184,17 @@ func (a *App) SaveTask(task packing.Task) error {
 func (a *App) SaveSearchResult(result packing.SearchResult) error {
 	file, err := a.selectFileToSaveInto("Сохранить решение задачи в файл")
 	if err != nil {
-		a.notifyFailure("Не удалось сохранить решение", err.Error())
+		a.notifyFailure("Не удалось сохранить решение", err)
 		return err
 	}
 
 	err = packing.SaveSearchResultIntoJSONFile(file, result)
 	if err != nil {
-		a.notifyFailure("Не удалось сохранить решение", err.Error())
+		a.notifyFailure("Не удалось сохранить решение", err)
 		return err
-	} else {
-		a.notifySuccess("Решение сохранено", file)
 	}
+
+	a.notifySuccess("Решение сохранено", file)
 	return nil
 }
 
@@ -191,39 +203,47 @@ func (a *App) SaveSearchResult(result packing.SearchResult) error {
 func (a *App) LoadTask() (packing.Task, error) {
 	file, err := a.selectJSONFileToLoadFrom("Загрузить задачу из файла")
 	if err != nil {
-		a.notifyFailure("Не удалось загрузить задачу", err.Error())
+		a.notifyFailure("Не удалось загрузить задачу", err)
 		return packing.Task{}, err
 	}
 
 	task, err := packing.LoadTaskFromJSONFile(file)
 	if err != nil {
-		a.notifyFailure("Не удалось загрузить задачу", err.Error())
+		a.notifyFailure("Не удалось загрузить задачу", err)
 		return packing.Task{}, err
 	}
+
 	a.notifySuccess("Задача загружена", file)
 	return task, nil
 }
 
 // LoadSearchResult отображает диалоговое окно, в котором пользователь выбирает файл,
 // из которого необходимо решение некоторой задачи.
-func (a *App) LoadSearchResult() (packing.SearchResult, error) {
+func (a *App) LoadSearchResult(task packing.Task) (packing.SearchResult, error) {
 	file, err := a.selectJSONFileToLoadFrom("Загрузить задачу из файла")
 	if err != nil {
+		a.notifyFailure("Не удалось загрузить решение", err)
 		return packing.SearchResult{}, err
 	}
 
 	searchResult, err := packing.LoadSearchResultFromJSONFile(file)
 	if err != nil {
-		a.notifyFailure("Не удалось загрузить решение", err.Error())
-	} else {
-		a.notifySuccess("Решение загружено", file)
+		a.notifyFailure("Не удалось загрузить решение", err)
+		return packing.SearchResult{}, err
 	}
+
+	if isValid, err := searchResult.IsValidFor(task); !isValid {
+		a.notifyFailureShort("Решение не подходит")
+		return packing.SearchResult{}, err
+	}
+
+	a.notifySuccess("Решение загружено", file)
 	return searchResult, nil
 }
 
 // Generate генерирует случайные грузы для заданного контейнера.
-func (a *App) Generate(c packing.Container) ([]packing.Block, error) {
-	return packing.GenerateRandomBlocks(packing.NewRandomSeeded(), c), nil
+func (a *App) Generate(c packing.Container) []packing.Block {
+	return packing.GenerateRandomBlocks(packing.NewRandomSeeded(), c)
 }
 
 func (a *App) AvailableCPUs() int {
@@ -236,8 +256,12 @@ func (a *App) notifySuccess(main, secondary string) {
 	a.notify(main, secondary, true)
 }
 
-func (a *App) notifyFailure(main, secondary string) {
-	a.notify(main, secondary, false)
+func (a *App) notifyFailure(main string, err error) {
+	a.notify(main, err.Error(), false)
+}
+
+func (a *App) notifyFailureShort(main string) {
+	a.notify(main, "", false)
 }
 
 func (a *App) notify(main, secondary string, ok bool) {

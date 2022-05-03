@@ -91,10 +91,7 @@ export const useStore = create<Store,
   },
   generateRandomBlocks: () => {
     Generate(get().container)
-      .then(result => {
-        if (result instanceof Error) return logError(result)
-        get().replaceBlocks(result)
-      })
+      .then(get().replaceBlocks)
       .catch(logError)
   },
 
@@ -177,7 +174,10 @@ export const useStore = create<Store,
       .catch(logError)
   },
   loadSolution: () => {
-    LoadSearchResult()
+    LoadSearchResult({
+      task: get().container,
+      blocks: get().blocks
+    } as unknown as packing.Task)
       .then(searchResult => {
         if (searchResult instanceof Error) return logError(searchResult)
         set({

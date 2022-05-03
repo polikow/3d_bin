@@ -27,7 +27,7 @@ func main() {
 		Title:             "3d_bin by Aleksey Polyakov",
 		Width:             1200,
 		Height:            950,
-		DisableResize:     true,
+		DisableResize:     false,
 		Fullscreen:        false,
 		Frameless:         false,
 		StartHidden:       false,
