@@ -17,7 +17,6 @@ export const yColor = 0x17cd00
 export const zColor = 0x191ee1
 export const tickColor = 0x000000
 export const tickSize = 0.5
-export const labelsPerAxis = 9
 export const labelsYShift = 0.024
 
 export const containerCameraPositionFactor =

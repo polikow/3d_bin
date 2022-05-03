@@ -38,9 +38,16 @@ class Grid extends THREE.Mesh {
     )
   }
 
-  setSize(w: number, h: number) {
+  setSize(w: number, h: number): Grid {
     (this.material as THREE.ShaderMaterial).uniforms.u_width.value = w;
     (this.material as THREE.ShaderMaterial).uniforms.u_height.value = h;
+    return this
+  }
+
+  setCellSize(n: number) {
+    if (n <= 0) throw Error
+      // @ts-ignore
+    this.material.uniforms.u_size.value = n
   }
 }
 

@@ -6,17 +6,14 @@ import * as THREE from "three"
 import {PerspectiveCamera as PC} from "three"
 import {SceneField, SceneGroup} from "./Scene";
 import {Scene} from "../../store/types";
-import {containerCameraPositionFactor} from "../../consts";
+import {containerCameraPositionFactor, max} from "../../consts";
 import {OrbitControls as OC} from "three-stdlib/controls/OrbitControls";
 import {boundsAndCenter} from "../../utils";
-
-const far = ({x, y, z}: THREE.Vector3) => Math.max(x, y, z) * 1000
 
 const updateContainerScene = (camera: PC, controls: OC, group: SceneGroup) => {
   const [bounds, center] = boundsAndCenter(group)
 
   controls.target.copy(center)
-  camera.far = far(bounds)
   camera.position.copy(bounds.multiply(containerCameraPositionFactor))
 }
 
@@ -25,7 +22,6 @@ const updateCargoScene = (camera: PC, controls: OC, group: SceneGroup) => {
   const [bounds, center] = boundsAndCenter(group)
 
   controls.target.copy(center)
-  camera.far = far(bounds)
 
   temp.x = bounds.x * 0.5
   temp.y = bounds.y * 4 + 8
@@ -105,6 +101,7 @@ const CameraAndControls = () => {
         makeDefault
         ref={camera}
         fov={useStore.getState().fov}
+        far={max * 100}
       />
       <OrbitControls
         makeDefault

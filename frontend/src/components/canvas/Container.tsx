@@ -5,7 +5,7 @@ import {packing} from "../../wailsjs/go/models"
 import Block from "./Block";
 import Grids from "./Grids";
 import Label from "./Label";
-import {containerColor, labelsPerAxis, labelsYShift, tickColor, tickSize, xColor, yColor, zColor} from "../../consts";
+import {containerColor, labelsYShift, tickColor, tickSize, xColor, yColor, zColor} from "../../consts";
 import * as THREE from "three"
 
 const c = useStore.getState().container;
@@ -19,21 +19,25 @@ const xObj = new Label('x', xColor).positionAtCenterOfX(c)
 const yObj = new Label('y', yColor).positionAtCenterOfY(c)
 const zObj = new Label('z', zColor).positionAtCenterOfZ(c)
 
+const labelsPerAxis = 100
 const axesTickLabelsObjs = Array(labelsPerAxis * 3 + 1).fill(0).map(
   () => new Label('', tickColor, tickSize)
 )
-const tick = (j: number, axisLength: number, ticksNeeded: number) => (
-  Math.ceil((j + 1) * (axisLength / ticksNeeded))
+const cellSize = (d: number) => (
+  Math.max(Math.pow(10, Math.floor(Math.log10(d) - 1)) , 1)
 )
 const updateAxesTickLabels = ({w, h, l}: { w: number, h: number, l: number }) => {
-  const xNeeded = Math.min(w, labelsPerAxis)
-  const yNeeded = Math.min(h, labelsPerAxis)
-  const zNeeded = Math.min(l, labelsPerAxis)
+  const xTickShift = cellSize(w)
+  const yTickShift = cellSize(h)
+  const zTickShift = cellSize(l)
+  const xNeeded = w / xTickShift
+  const yNeeded = h / yTickShift
+  const zNeeded = l / zTickShift
   let i
   let j // число обработанных меток на конкретной оси
   for (j = 0, i = 0; i < labelsPerAxis; i++, j++) { // x
     if (j < xNeeded) {
-      const t = tick(j, w, xNeeded)
+      const t = Math.min(xTickShift * (j + 1), w)
       axesTickLabelsObjs[i].content = t
       axesTickLabelsObjs[i].positionAtXOf(t, c)
     } else {
@@ -42,7 +46,7 @@ const updateAxesTickLabels = ({w, h, l}: { w: number, h: number, l: number }) =>
   }
   for (j = 0, i = labelsPerAxis; i < 2 * labelsPerAxis; i++, j++) { // y
     if (j < yNeeded) {
-      const t = tick(j, h, yNeeded)
+      const t = Math.min(yTickShift * (j + 1), h)
       axesTickLabelsObjs[i].content = t
       axesTickLabelsObjs[i].positionAtYOf(t, c)
     } else {
@@ -51,7 +55,7 @@ const updateAxesTickLabels = ({w, h, l}: { w: number, h: number, l: number }) =>
   }
   for (j = 0, i = 2 * labelsPerAxis; i < 3 * labelsPerAxis; i++, j++) { // z
     if (j < zNeeded) {
-      const t = tick(j, l, zNeeded)
+      const t = Math.min(zTickShift * (j + 1), l)
       axesTickLabelsObjs[i].content = t
       axesTickLabelsObjs[i].positionAtZOf(t, c)
     } else {
@@ -76,7 +80,7 @@ export default () => {
       s => s.container,
       c => {
         containerBlock.current.setPositionAndScaleFromWHL(c)
-        grids.current.setDimensions(c)
+        grids.current.setDimensions(c, cellSize)
         x.current.positionAtCenterOfX(c)
         y.current.positionAtCenterOfY(c)
         z.current.positionAtCenterOfZ(c)

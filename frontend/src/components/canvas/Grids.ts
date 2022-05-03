@@ -30,14 +30,18 @@ class Grids extends THREE.Group {
     )
   }
 
-  setDimensions({w, h, l}: packing.Block | packing.Container) {
-    this.xy.setSize(w, h)
-    this.yz.setSize(l, h)
-    this.xz.setSize(w, l)
-    this.xyOpposite.setSize(w, h)
-    this.xzOpposite.setSize(w, l)
-    this.yzOpposite.setSize(l, h)
+  setDimensions({w, h, l}: packing.Block | packing.Container, f: (d: number) => number) {
+    this.xy.setSize(w, h).setCellSize(this.cellSizeForPlane(w, h, f))
+    this.yz.setSize(l, h).setCellSize(this.cellSizeForPlane(l, h, f))
+    this.xz.setSize(w, l).setCellSize(this.cellSizeForPlane(w, l, f))
+    this.xyOpposite.setSize(w, h).setCellSize(this.cellSizeForPlane(w, h, f))
+    this.xzOpposite.setSize(w, l).setCellSize(this.cellSizeForPlane(w, l, f))
+    this.yzOpposite.setSize(l, h).setCellSize(this.cellSizeForPlane(l, h, f))
     this.translate(w, h, l)
+  }
+
+  cellSizeForPlane(a:number, b: number, f: (d: number) => number) {
+    return Math.max(f(a), f(b))
   }
 
   private setSideVisibility() {
