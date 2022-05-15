@@ -5,10 +5,6 @@ import * as THREE from "three"
 
 export const SceneField = Symbol("SceneField")
 
-export interface ISceneGroup extends THREE.Group {
-  [SceneField]: Scene
-}
-
 export class SceneGroup extends THREE.Group {
 
   readonly [SceneField]: Scene

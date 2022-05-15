@@ -1,22 +1,19 @@
 import React, {useCallback, useEffect, useState} from "react";
 import {useStore} from "../../../store/store";
 import {
-  Button,
-  Menu,
-  MenuItem,
-  styled,
-  Table,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TablePagination,
-  TableRow,
-  TextField
+    Button, IconButton,
+    Menu,
+    MenuItem,
+    styled,
+    Table,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TablePagination,
+    TableRow,
+    TextField
 } from "@mui/material";
 import {Event, integerInBounds} from "../../../utils";
-import ButtonAccept from "../ButtonAccept";
-import ButtonAdd from "../ButtonAdd";
-import ButtonCreate from "../ButtonCreate";
 import {packing} from "../../../wailsjs/go/models"
 import {blocksPerRow, rowsPerPage} from "../../../consts";
 import {compareAlwaysTrue, compareState} from "../../../store/compare"
@@ -25,6 +22,7 @@ import Title from "../Title";
 import InnerPaper from "../InnerPaper";
 import LeftMenu from "../LeftMenu";
 import TableBody from "../TableBody";
+import {Add, Check, Create} from "@mui/icons-material";
 
 interface BlocksProps {
   open: boolean
@@ -177,9 +175,15 @@ export default React.memo(({open, onClose}: BlocksProps) => {
           </TableContainer>
 
           <BottomButtonsWrapper>
-            <ButtonAdd disabled={indexChanging !== null || isSearching} onClick={onClickButtonAdd}>
-              Добавить новый груз
-            </ButtonAdd>
+              <Button
+                  variant="contained"
+                  color="primary"
+                  disabled={indexChanging !== null || isSearching}
+                  onClick={onClickButtonAdd}
+              >
+                  Добавить новый груз
+                  <Add/>
+              </Button>
             <Button disabled={isSearching} variant="contained" color="primary" onClick={onRemoveAllBlocks}>
               Удалить все грузы
             </Button>
@@ -222,7 +226,9 @@ function ChangeMenu({index, onChange, onRemove}: ChangeMenuProps) {
 
   return (
     <>
-      <ButtonCreate onClick={openMenu}/>
+      <IconButton size="small" onClick={openMenu}>
+        <Create/>
+      </IconButton>
       <Menu
         keepMounted
         anchorEl={anchorEl}
@@ -309,7 +315,9 @@ function ChangeableRow({index, initialBlock, onChange}: ChangeableRowProps) {
                          value={block.l} onChange={setLength}/>
       </TableCell>
       <TableCell>
-        <ButtonAccept onClick={onClickButtonAccept}/>
+          <IconButton size="small" onClick={onClickButtonAccept}>
+              <Check/>
+          </IconButton>
       </TableCell>
     </TableRow>
   )

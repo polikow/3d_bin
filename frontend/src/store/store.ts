@@ -2,7 +2,7 @@ import create, {GetState, Mutate, SetState, StoreApi} from "zustand"
 import {subscribeWithSelector} from "zustand/middleware";
 import {Scene, Store, Tab,} from "./types";
 import * as DEFAULT from "./defaults"
-import {log, logError, replaced, withoutIndex} from "./utils";
+import {replaced, withoutIndex} from "./utils";
 import {packing} from "../wailsjs/go/models";
 import {Generate, LoadSearchResult, LoadTask, RunBCA, RunGA, SaveSearchResult, SaveTask} from "../wailsjs/go/main/App"
 import {EventsOn} from "../wailsjs/runtime";
@@ -54,7 +54,7 @@ export const useStore = create<Store,
         return set({tab})
 
       default:
-        return logError("wrong tab specified")
+        return console.error("wrong tab specified")
     }
   },
 
@@ -92,30 +92,30 @@ export const useStore = create<Store,
   generateRandomBlocks: () => {
     Generate(get().container)
       .then(get().replaceBlocks)
-      .catch(logError)
+      .catch(console.error)
   },
 
   saveTask: () => {
     const {container, blocks} = get()
     SaveTask({container, blocks} as packing.Task)
-      .then(log)
-      .catch(logError)
+      .then(console.log)
+      .catch(console.error)
   },
   loadTask: () => {
     LoadTask()
       .then(result => {
-        if (result instanceof Error) return logError(result)
+        if (result instanceof Error) return console.error(result)
         const {container, blocks} = result
         set({
           blocks, container,
           searchResult: DEFAULT.searchResult,
         })
       })
-      .catch(logError)
+      .catch(console.error)
   },
 
   startBCA: (settings) => {
-    log(settings)
+    console.log(settings)
     const {container, blocks, cpus, searchStarted, searchFailedToStart} = get()
     const task = {container, blocks} as packing.Task
     RunBCA(task, settings, cpus)
@@ -123,7 +123,7 @@ export const useStore = create<Store,
       .catch(searchFailedToStart)
   },
   startGA: (settings) => {
-    log(settings)
+    console.log(settings)
     const {container, blocks, cpus, searchStarted, searchFailedToStart} = get()
     const task = {container, blocks} as packing.Task
     RunGA(task, settings, cpus)
@@ -132,11 +132,11 @@ export const useStore = create<Store,
   },
 
   searchStarted: () => {
-    log("searchStarted")
+    console.log("searchStarted")
     set({isSearching: true})
   },
   searchFailedToStart: (reason: any) => {
-    logError(reason)
+    console.error(reason)
     set({isSearching: false})
   },
 
@@ -170,8 +170,8 @@ export const useStore = create<Store,
         value: get().searchResult.value,
       } as packing.SearchResult
     )
-      .then(log)
-      .catch(logError)
+      .then(console.log)
+      .catch(console.error)
   },
   loadSolution: () => {
     LoadSearchResult({
@@ -179,7 +179,7 @@ export const useStore = create<Store,
       blocks: get().blocks
     } as unknown as packing.Task)
       .then(searchResult => {
-        if (searchResult instanceof Error) return logError(searchResult)
+        if (searchResult instanceof Error) return console.error(searchResult)
         set({
           searchResult: {
             value: searchResult.value,
@@ -190,7 +190,7 @@ export const useStore = create<Store,
           } as unknown as packing.MultipleSearchResult
         })
       })
-      .catch(logError)
+      .catch(console.error)
   },
 })))
 
