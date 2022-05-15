@@ -68,6 +68,8 @@ type instanceResult struct {
 	SearchResult
 }
 
+// evaluateInstance вычисляет экземпляр алгоритма.
+// Результат очередной итерации отправляется в канал.
 func evaluateInstance(wg *sync.WaitGroup, id int, ch chan<- instanceResult, algorithm SearchAlgorithmWithProgress) {
 	iterationsWithoutImprovement := 0
 	lastValue := float64(-1)

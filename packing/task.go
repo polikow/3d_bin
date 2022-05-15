@@ -13,6 +13,7 @@ type Task struct {
 	Blocks    []Block   `json:"blocks"`    // загружаемые в контейнер грузы
 }
 
+// newTask создает новый экземпляр задачи.
 func newTask(container Container, blocks []Block) Task {
 	task := Task{Container: container, Blocks: blocks}
 	task.mustBeSane()

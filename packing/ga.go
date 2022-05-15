@@ -59,7 +59,7 @@ func (s GASettings) replaceWithDefaults() GASettings {
 		case "deVries":
 			settings.Evolution = new(DeVriesEvolution)
 		default:
-			panic(fmt.Errorf("%w: evolution string \"%v\" does not match any available evolution", ErrInvalidGAParameter, settings.Evolution))
+			panic(fmt.Errorf("%w: EvolutionString \"%v\" does not match any available evolution", ErrInvalidGAParameter, settings.Evolution))
 		}
 	}
 	return settings
@@ -107,6 +107,7 @@ func NewGA(task Task, settings GASettings) *GA {
 	}
 }
 
+// Run выполняет одну итерацию алгоритма.
 func (g *GA) Run() SearchResult {
 	if g.Done() {
 		panic(ErrGADone)
@@ -116,10 +117,12 @@ func (g *GA) Run() SearchResult {
 	}
 }
 
+// Done проверяет, завершился ли алгоритм.
 func (g *GA) Done() bool {
 	return g.iterationsNoImprovement >= g.settings.Ni || g.bestValueFound == 1
 }
 
+// Progress возвращает текущее состояние работы алгоритма.
 func (g *GA) Progress() Progress {
 	if g.searchState.bestValueFound == 1 {
 		return Progress{

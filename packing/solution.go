@@ -37,6 +37,7 @@ func newRandomSolution(random *rand.Rand, size int) Solution {
 	return s
 }
 
+// isSane проверяет корректность для заданной задачи.
 func (s *Solution) isSane(task Task) (bool, error) {
 	if len(*s) != len(task.Blocks) {
 		return false, fmt.Errorf("%w: solution length (%v) does not match the amount of blocks (%v)", ErrInvalidSolution, len(*s), len(task.Blocks))

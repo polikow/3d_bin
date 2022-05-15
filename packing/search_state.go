@@ -16,6 +16,7 @@ type searchState struct {
 	iterationsNoImprovement int             // итераций выполнено без улучшений
 }
 
+// newSearchState создает новый экземпляр состояния алгоритма поиска.
 func newSearchState(task Task) searchState {
 	task.mustBeSane()
 	return searchState{

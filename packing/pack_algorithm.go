@@ -55,10 +55,13 @@ func (a *PackAlgorithm) Run(solution Solution) []BlockPosition {
 	return a.packed
 }
 
+// isThereBlockToPack проверяет, остались ли еще неупакованные грузы.
 func (a *PackAlgorithm) isThereBlockToPack() bool {
 	return a.step < len(a.blocks)
 }
 
+// reset возвращает алгоритм в исходное состояние.
+// Используется для повторного использования алгоритма
 func (a *PackAlgorithm) reset(solution Solution) {
 	a.checkSolution(solution)
 	a.packed = a.packed[:0]

@@ -102,6 +102,7 @@ func NewBCA(task Task, settings BCASettings) *BCA {
 	}
 }
 
+// Run выполняет одну итерацию алгоритма.
 func (b *BCA) Run() SearchResult {
 	if b.Done() {
 		panic(ErrBCADone)
@@ -111,10 +112,12 @@ func (b *BCA) Run() SearchResult {
 	}
 }
 
+// Done проверяет, завершился ли алгоритм.
 func (b *BCA) Done() bool {
 	return b.iterationsNoImprovement >= b.settings.Ni || b.bestValueFound == 1
 }
 
+// Progress возвращает текущее состояние работы алгоритма.
 func (b *BCA) Progress() Progress {
 	if b.searchState.bestValueFound == 1 {
 		return Progress{

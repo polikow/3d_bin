@@ -8,6 +8,7 @@ type BlockPosition struct {
 	P2 Point `json:"p2"`
 }
 
+// Volume вычисляет объем этого груза.
 func (b BlockPosition) Volume() uint {
 	return b.axisSize(X) * b.axisSize(Y) * b.axisSize(Z)
 }

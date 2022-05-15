@@ -39,7 +39,7 @@ func (a App) domReady(ctx context.Context) {}
 // shutdown is called at application termination
 func (a *App) shutdown(ctx context.Context) {}
 
-// processPanicReason
+// processPanicReason - устанавливает причину паники.
 func (a *App) processPanicReason(reason any) error {
 	err, ok := reason.(error)
 	if !ok {
@@ -49,7 +49,8 @@ func (a *App) processPanicReason(reason any) error {
 	return err
 }
 
-// RunBCA инициализирует работу иммунного алгоритма для этой задачи.
+// RunBCA инициализирует заданное число экземпляров иммунного алгоритма
+// для этой задачи и выполняет их.
 func (a *App) RunBCA(task packing.Task, settings packing.BCASettings, instances int) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -67,7 +68,8 @@ func (a *App) RunBCA(task packing.Task, settings packing.BCASettings, instances 
 	return
 }
 
-// RunGA инициализирует работу генетического алгоритма для этой задачи.
+// RunGA инициализирует заданное число экземпляров генетического алгоритма
+// для этой задачи и выполняет их.
 func (a *App) RunGA(task packing.Task, settings packing.GASettings, instances int) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -85,7 +87,8 @@ func (a *App) RunGA(task packing.Task, settings packing.GASettings, instances in
 	return
 }
 
-// evaluate отсылает результаты работы алгоритма.
+// evaluate выполняет экземпляры алгоритма и отправляет результаты их работы
+// для дальнейшей визуализации.
 func (a *App) evaluate(algorithms []packing.SearchAlgorithmWithProgress) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -101,7 +104,7 @@ func (a *App) evaluate(algorithms []packing.SearchAlgorithmWithProgress) {
 	// время, после которого можно вызывать следующее событие с результатом
 	allowedTime := time.Now()
 
-	// получение и обработка результатов
+	// получение и обработка результатов от работающих алгоритмов
 	result := packing.MultipleSearchResult{}
 	for result = range packing.EvaluateMultiple(algorithms) {
 		if time.Now().After(allowedTime) {
@@ -246,33 +249,34 @@ func (a *App) Generate(c packing.Container) []packing.Block {
 	return packing.GenerateRandomBlocks(packing.NewRandomSeeded(), c)
 }
 
+// AvailableCPUs возвращает число доступных системных потоков
 func (a *App) AvailableCPUs() int {
 	return goruntime.NumCPU()
 }
 
 func (a *App) TSFix(_ packing.MultipleSearchResult) {}
 
+// notifySuccess отсылает уведомление об успешном выполнении некоторого действия
 func (a *App) notifySuccess(main, secondary string) {
 	a.notify(main, secondary, true)
 }
 
+// notifyFailure отсылает уведомление о произошедшей ошибке
 func (a *App) notifyFailure(main string, err error) {
 	a.notify(main, err.Error(), false)
 }
 
-func (a *App) notifyFailureShort(main string) {
-	a.notify(main, "", false)
-}
-
+// notify отсылает уведомление
 func (a *App) notify(main, secondary string, ok bool) {
 	runtime.EventsEmit(a.ctx, "notification", newNotification(main, secondary, ok))
 }
 
+// Notification - структура отображаемого уведомления
 type Notification struct {
-	Key       string `json:"key"`
-	Main      string `json:"main"`
-	Secondary string `json:"secondary"`
-	Ok        bool   `json:"ok"`
+	Key       string `json:"key"`       // уникальный идентификатор
+	Main      string `json:"main"`      // основная информация
+	Secondary string `json:"secondary"` // второстепенная информация
+	Ok        bool   `json:"ok"`        // тип
 }
 
 func newNotification(main, secondary string, ok bool) Notification {

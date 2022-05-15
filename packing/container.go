@@ -3,6 +3,7 @@ package packing
 // Container представляет собой контейнер, в который размещаются грузы.
 type Container Block
 
+// Volume вычисляет объем этого контейнера.
 func (c Container) Volume() uint {
 	return Block(c).Volume()
 }

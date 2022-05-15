@@ -19,10 +19,12 @@ type SearchResult struct {
 	Packed    []BlockPosition `json:"packed"`
 }
 
+// BetterThan проверяет, лучшее ли это решение по сравнению с заданным.
 func (s SearchResult) BetterThan(other SearchResult) bool {
 	return s.Value >= other.Value
 }
 
+// IsValidFor проверяет, является ли этот результат корректным для заданной задачи.
 func (s SearchResult) IsValidFor(task Task) (valid bool, err error) {
 	defer func() {
 		if r := recover(); r != nil {
