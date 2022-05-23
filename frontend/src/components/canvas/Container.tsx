@@ -1,7 +1,7 @@
 import {useEffect, useRef} from "react";
 import {useStore} from "../../store/store";
 import {useFrame} from "@react-three/fiber";
-import {packing} from "../../wailsjs/go/models"
+import {packing} from "../../../wailsjs/go/models"
 import Block from "./Block";
 import Grids from "./Grids";
 import Label from "./Label";

@@ -1,7 +1,7 @@
 import React, {useEffect} from "react";
 import {useStore} from "../../store/store";
 import BlockGroup from "./BlockGroup";
-import {packing} from "../../wailsjs/go/models";
+import {packing} from "../../../wailsjs/go/models";
 import {blocksPerRow, cargoLabelColor, gap} from "../../consts";
 import Label from "./Label";
 import {Group, Object3D} from "three";

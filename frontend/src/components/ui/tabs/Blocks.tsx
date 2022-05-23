@@ -14,7 +14,7 @@ import {
     TextField
 } from "@mui/material";
 import {Event, integerInBounds} from "../../../utils";
-import {packing} from "../../../wailsjs/go/models"
+import {packing} from "../../../../wailsjs/go/models"
 import {blocksPerRow, rowsPerPage} from "../../../consts";
 import {compareAlwaysTrue, compareState} from "../../../store/compare"
 import OuterPaper from "../OuterPaper";

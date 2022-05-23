@@ -2,7 +2,7 @@ import React, {useEffect, useRef} from "react";
 import {useStore} from "../../store/store";
 import {styled} from "@mui/material";
 import BoldSpan from "./BoldSpan";
-import {packing} from "../../wailsjs/go/models";
+import {packing} from "../../../wailsjs/go/models";
 import TextTypography from "./TextTypography";
 
 const PackedSpan = styled(BoldSpan)`

@@ -1,8 +1,6 @@
 import * as THREE from "three"
-/* eslint import/no-webpack-loader-syntax: off */ // @ts-ignore
-import vertexShader from "!!raw-loader!./grid.vs.glsl"
-/* eslint import/no-webpack-loader-syntax: off */ // @ts-ignore
-import fragmentShader from "!!raw-loader!./grid.fs.glsl"
+import vertexShader from "./grid.vs.glsl?raw"
+import fragmentShader from "./grid.fs.glsl?raw"
 
 class Grid extends THREE.Mesh {
 

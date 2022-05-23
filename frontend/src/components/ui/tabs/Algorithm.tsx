@@ -2,7 +2,7 @@ import React, {useCallback, useState} from "react";
 import {useStore} from "../../../store/store";
 import {Button, styled} from "@mui/material";
 import {Tab} from "../../../store/types";
-import {packing} from "../../../wailsjs/go/models";
+import {packing} from "../../../../wailsjs/go/models";
 import {compareAlwaysTrue, compareState} from "../../../store/compare";
 import LeftMenu from "../LeftMenu";
 import Title from "../Title";

@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect} from "react"
 import useMap from "../../hooks/useMap";
 import {styled} from "@mui/material";
-import {EventsOn} from "../../wailsjs/runtime";
+import {EventsOn} from "../../../wailsjs/runtime";
 import Notification from "./Notification";
 
 const NotificationsWrapper = styled("div")`

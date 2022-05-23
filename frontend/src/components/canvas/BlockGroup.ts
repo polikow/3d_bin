@@ -1,6 +1,6 @@
 import {useStore} from "../../store/store";
 import Block from "./Block";
-import {packing} from "../../wailsjs/go/models";
+import {packing} from "../../../wailsjs/go/models";
 import {colorOf} from "../../utils";
 import * as THREE from "three";
 

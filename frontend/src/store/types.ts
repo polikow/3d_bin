@@ -1,4 +1,4 @@
-import {packing} from "../wailsjs/go/models"
+import {packing} from "../../wailsjs/go/models"
 
 export type Store =
   CanvasState & CanvasActions &

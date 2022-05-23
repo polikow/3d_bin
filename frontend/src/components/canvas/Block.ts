@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import {defaultColor} from "../../consts";
-import {packing} from "../../wailsjs/go/models";
+import {packing} from "../../../wailsjs/go/models";
 import {colorOf} from "../../utils";
 
 const filledGeometry = new THREE.BoxBufferGeometry()

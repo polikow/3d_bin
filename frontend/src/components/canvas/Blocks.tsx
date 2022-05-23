@@ -2,7 +2,7 @@ import React, {useEffect, useRef} from "react";
 import {useStore} from "../../store/store";
 import BlockGroup from "./BlockGroup";
 import {colorOf} from "../../utils";
-import {packing} from "../../wailsjs/go/models";
+import {packing} from "../../../wailsjs/go/models";
 
 export default () => {
   const ref = useRef<BlockGroup>(null!)

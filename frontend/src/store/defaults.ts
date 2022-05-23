@@ -1,5 +1,5 @@
 import {CanvasState, Scene, Tab, TaskState, UIState} from "./types";
-import {packing} from "../wailsjs/go/models"
+import {packing} from "../../wailsjs/go/models"
 
 export const container: packing.Container = {w: 2, h: 2, l: 2}
 

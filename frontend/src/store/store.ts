@@ -3,9 +3,9 @@ import {subscribeWithSelector} from "zustand/middleware";
 import {Scene, Store, Tab,} from "./types";
 import * as DEFAULT from "./defaults"
 import {replaced, withoutIndex} from "./utils";
-import {packing} from "../wailsjs/go/models";
-import {Generate, LoadSearchResult, LoadTask, RunBCA, RunGA, SaveSearchResult, SaveTask} from "../wailsjs/go/main/App"
-import {EventsOn} from "../wailsjs/runtime";
+import {packing} from "../../wailsjs/go/models";
+import {Generate, LoadSearchResult, LoadTask, RunBCA, RunGA, SaveSearchResult, SaveTask} from "../../wailsjs/go/main/App"
+import {EventsOn} from "../../wailsjs/runtime";
 
 export const useStore = create<Store,
   SetState<Store>,

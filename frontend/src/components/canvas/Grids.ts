@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import Grid from "./Grid";
-import {packing} from "../../wailsjs/go/models";
+import {packing} from "../../../wailsjs/go/models";
 
 class Grids extends THREE.Group {
 

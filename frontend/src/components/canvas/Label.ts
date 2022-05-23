@@ -7,8 +7,7 @@ type AllowedCharacter = number | 'x' | 'y' | 'z' | ''
 
 class Label extends Text {
 
-  // TODO change FONT path
-  static readonly FONT = 'media/roboto-v29-latin_cyrillic-regular.90fc8764.woff'
+  static readonly FONT = 'src/assets/fonts/roboto-v29-latin_cyrillic-regular.woff'
   static readonly CHARACTERS = '-0123456789xyz'
   static readonly COLOR: THREE.ColorRepresentation = 0x000000
   static readonly DISTANCE_FACTOR = 0.027

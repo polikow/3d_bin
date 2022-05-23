@@ -9,7 +9,7 @@ import {compareState, compareStateSlices} from "../../../store/compare";
 import Title from "../Title";
 import OuterPaper from "../OuterPaper";
 import InnerPaper from "../InnerPaper";
-import { AvailableCPUs } from "../../../wailsjs/go/main/App";
+import { AvailableCPUs } from "../../../../wailsjs/go/main/App";
 
 interface SettingsProps {
   open: boolean
