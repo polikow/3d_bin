@@ -37,7 +37,7 @@ type BCA struct {
 type BCASettings struct {
 	Np     int        `json:"np"` // количество антител в популяции
 	Ni     int        `json:"ni"` // максимальное число итераций без улучшений
-	Ci     float64    `json:"ci"` // коэффициент интенсивности мутаци
+	Ci     float64    `json:"ci"` // коэффициент интенсивности мутации
 	Random *rand.Rand `json:"-"`  // генератор случайных чисел
 }
 

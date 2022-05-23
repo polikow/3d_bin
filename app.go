@@ -221,7 +221,7 @@ func (a *App) LoadTask() (packing.Task, error) {
 }
 
 // LoadSearchResult отображает диалоговое окно, в котором пользователь выбирает файл,
-// из которого необходимо решение некоторой задачи.
+// из которого необходимо загрузить решение некоторой задачи.
 func (a *App) LoadSearchResult(task packing.Task) (packing.SearchResult, error) {
 	file, err := a.selectJSONFileToLoadFrom("Загрузить задачу из файла")
 	if err != nil {

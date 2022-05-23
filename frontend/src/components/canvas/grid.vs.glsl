@@ -1,4 +1,4 @@
-varying vec3  worldPosition; // положение фрагментарного шейдера
+varying vec3  worldPosition; // положение фрагментного шейдера
 
 uniform float u_size;   // размер клетки
 uniform float u_width;  // ширина сетки
