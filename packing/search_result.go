@@ -51,12 +51,10 @@ func (s SearchResult) IsValidFor(task Task) (valid bool, err error) {
 			return false, fmt.Errorf("%w: packed does not match", ErrInvalidSearchResult)
 		}
 	}
-
 	if float64(VolumeOf(packed...))/float64(VolumeOf(task.Container)) != s.Value {
 		return false, fmt.Errorf("%w: value does not match", ErrInvalidSearchResult)
 	}
-
-	return valid, nil
+	return true, nil
 }
 
 func SaveSearchResultIntoJSONFile(path string, result SearchResult) error {

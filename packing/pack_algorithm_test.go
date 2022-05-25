@@ -79,7 +79,6 @@ func TestPackAlgorithm(t *testing.T) {
 			3,
 		},
 
-
 		{
 			Container{Width: 2, Height: 2, Length: 2},
 			[]Block{
@@ -151,12 +150,8 @@ func TestPackAlgorithm(t *testing.T) {
 	}
 
 	for _, test := range suit {
-		container := test.container
-		blocks := test.blocks
-		solution := test.solution
-		a := NewPackAlgorithm(container, blocks)
-
-		positions := a.Run(solution)
+		a := NewPackAlgorithm(newTask(test.container, test.blocks))
+		positions := a.Run(test.solution)
 
 		for i, position := range positions {
 			jsonPosition, _ := json.Marshal(position)

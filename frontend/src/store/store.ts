@@ -175,7 +175,7 @@ export const useStore = create<Store,
   },
   loadSolution: () => {
     LoadSearchResult({
-      task: get().container,
+      container: get().container,
       blocks: get().blocks
     } as unknown as packing.Task)
       .then(searchResult => {
