@@ -1,9 +1,9 @@
 package main
 
 import (
-	"3d_bin/packing"
 	"encoding/json"
 	"fmt"
+	"github.com/polikow/3d_bin/packing"
 	"io/ioutil"
 	"runtime"
 	"sort"

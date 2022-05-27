@@ -15,9 +15,6 @@ import (
 //go:embed frontend/dist
 var assets embed.FS
 
-//go:embed build/appicon.png
-var icon []byte
-
 func main() {
 	// Create an instance of the app structure
 	app := NewApp()
@@ -54,7 +51,6 @@ func main() {
 			About: &mac.AboutInfo{
 				Title:   "3d_bin by Aleksey Polyakov",
 				Message: "Part of the Wails projects",
-				Icon:    icon,
 			},
 		},
 	})

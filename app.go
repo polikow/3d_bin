@@ -1,10 +1,10 @@
 package main
 
 import (
-	"3d_bin/packing"
 	"context"
 	"errors"
 	"fmt"
+	"github.com/polikow/3d_bin/packing"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"math/rand"
 	"path/filepath"

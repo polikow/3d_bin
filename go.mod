@@ -1,4 +1,4 @@
-module 3d_bin
+module github.com/polikow/3d_bin
 
 go 1.18
 
